@@ -16,7 +16,7 @@ if uploaded_file:
 
     # Parse constants from first row
     constants_header = lines[0].split(',')
-    constants_values = list(map(float, lines[1].split(',')))
+    raw_values = lines[1].split(',')
     # Dynamically convert values with proper types
     constants = {}
     for key, val in zip(constants_header, raw_values):
