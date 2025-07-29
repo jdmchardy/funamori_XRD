@@ -5,7 +5,7 @@ import pandas as pd
 import io
 
 st.set_page_config(layout="wide")
-st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ & φ)")
+st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
 
 st.subheader("Upload CSV Input File")
 uploaded_file = st.file_uploader("Upload CSV file with parameters and multiple hkl reflections", type=["csv"])
