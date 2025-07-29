@@ -27,7 +27,7 @@ if uploaded_file:
 
         col1, col2 = st.columns(2)
         with col1:
-            a_val = st.number_input("Lattice parameter a (Å)", value=constants['a_val'], step=0.01, format="%.4f")
+            a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
         with col2:
             wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
 
