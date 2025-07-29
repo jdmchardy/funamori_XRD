@@ -19,17 +19,19 @@ if uploaded_file:
     constants_values = list(map(float, lines[1].split(',')))
     constants = dict(zip(constants_header, constants_values))
 
-    required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33'}
+    required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
     if not required_keys.issubset(constants):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
     else:
         st.subheader("Material Constants")
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns(3)
         with col1:
             a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
         with col2:
             wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
+        with col3:
+            symmetry = st.text_input("Symmetry", value=constants['symmetry'])
 
         col1, col2, col3 = st.columns(3)
         with col1:
