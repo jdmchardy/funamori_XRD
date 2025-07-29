@@ -84,6 +84,8 @@ if uploaded_file:
                 if len(selected_hkls) == 1:
                     axs = [axs]
 
+                results_dict = {}  # Store results per HKL reflection
+
                 for ax, hkl in zip(axs, selected_hkls):
                     h, k, l = hkl
                     if h == 0: h = 0.00000001
@@ -181,6 +183,14 @@ if uploaded_file:
                     psi_list = psi_deg_grid.ravel()
                     strain_list = strain_prime_33.ravel()
 
+                    hkl_label = f"{int(h)}{int(k)}{int(l)}"
+                    df = pd.DataFrame({
+                        "psi (degrees)": psi_list,
+                        "ε′₃₃": strain_list,
+                        "intensity": intensity
+                    })
+                    results_dict[hkl_label] = df
+
                     scatter = ax.scatter(psi_list, strain_list, color="black", s=0.2, alpha=0.1)
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
@@ -188,3 +198,27 @@ if uploaded_file:
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
 
                 st.pyplot(fig)
+
+        st.subheader("Download Computed Data")
+        
+        if results_dict:
+            output_buffer = io.BytesIO()
+            with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                for hkl_label, df in results_dict.items():
+                    sheet_name = f"hkl_{hkl_label}"
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+        
+                    # Optional: auto-width adjustment
+                    worksheet = writer.sheets[sheet_name]
+                    for i, col in enumerate(df.columns):
+                        max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                        worksheet.set_column(i, i, max_width)
+        
+            output_buffer.seek(0)
+        
+            st.download_button(
+                label="📥 Download Results as Excel (.xlsx)",
+                data=output_buffer,
+                file_name="strain_results.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
