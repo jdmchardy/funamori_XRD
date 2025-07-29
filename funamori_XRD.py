@@ -23,13 +23,19 @@ if uploaded_file:
     if not required_keys.issubset(constants):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
     else:
-        a_val = constants['a']
-        c11 = constants['C11']
-        c12 = constants['C12']
-        c44 = constants['C44']
-        sigma_11 = constants['sig11']
-        sigma_22 = constants['sig22']
-        sigma_33 = constants['sig33']
+        st.subheader("Material Constants")
+
+        a_val = st.number_input("Lattice parameter a", value=constants['a'])
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            c11 = st.number_input("C11", value=constants['C11'])
+            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
+        with col2:
+            c12 = st.number_input("C12", value=constants['C12'])
+            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
+        with col3:
+            c44 = st.number_input("C44", value=constants['C44'])
+            sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
 
         # Parse HKL section
         hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
