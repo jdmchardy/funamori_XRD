@@ -198,17 +198,16 @@ if uploaded_file:
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
 
                 st.pyplot(fig)
-
-        st.subheader("Download Computed Data")
         
-        if results_dict:
+        if results_dict != {}:
+            st.subheader("Download Computed Data")
             output_buffer = io.BytesIO()
             with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
                 for hkl_label, df in results_dict.items():
                     sheet_name = f"hkl_{hkl_label}"
                     df.to_excel(writer, sheet_name=sheet_name, index=False)
         
-                    # Optional: auto-width adjustment
+                    # auto-width adjustment
                     worksheet = writer.sheets[sheet_name]
                     for i, col in enumerate(df.columns):
                         max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
