@@ -37,19 +37,37 @@ if uploaded_file:
             c44 = st.number_input("C44", value=constants['C44'])
             sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
 
-        # Parse HKL section
+        # Parse HKL section including intensity
         hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
-        if not {'h', 'k', 'l'}.issubset(hkl_df.columns):
-            st.error("HKL section must have columns: h, k, l")
+        if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
+            st.error("HKL section must have columns: h, k, l, intensity")
         else:
+            # Ensure intensity is numeric
+            hkl_df['intensity'] = pd.to_numeric(hkl_df['intensity'], errors='coerce').fillna(1.0)
+        
             hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
-
-            st.subheader("Select Reflections to Compute")
+        
+            st.subheader("Select Reflections and Edit Intensities")
             selected_hkls = []
+            intensities = []
+        
             for i, hkl in enumerate(hkl_list):
-                label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
-                if st.checkbox(label, value=True, key=f"chk_{i}"):
+                # Find matching row to get intensity
+                h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
+                default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
+        
+                col1, col2 = st.columns([3, 1])
+                with col1:
+                    label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
+                    selected = st.checkbox(label, value=True, key=f"chk_{i}")
+                with col2:
+                    intensity = st.number_input(
+                        f"Intensity {i+1}", min_value=0.0, value=default_intensity, step=0.1, key=f"intensity_{i}"
+                    )
+        
+                if selected:
                     selected_hkls.append(hkl)
+                    intensities.append(intensity)
 
             st.subheader("Computation Settings")
             col1, col2 = st.columns(2)
