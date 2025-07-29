@@ -90,6 +90,8 @@ if uploaded_file:
 
                     phi_values = np.linspace(0, 2 * np.pi, phi_steps)
                     psi_values = np.linspace(0, np.pi/2, psi_steps)
+
+                    #Method avoids looping and implements numpy broadcasting for speed
                     # Assume phi_values and psi_values are 1D numpy arrays
                     phi_values = np.asarray(phi_values)
                     psi_values = np.asarray(psi_values)
@@ -138,7 +140,7 @@ if uploaded_file:
                     ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
                     ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
                     
-                    # ε'_33 = b13²ε₁₁ + b23²ε₂₂ + b33²ε₃₃ + 2b13b23ε₁₂ + 2b13b33ε₁₃ + 2b23b33ε₂₃
+                    # ε'_33
                     b13, b23, b33 = B[0, 2], B[1, 2], B[2, 2]
                     strain_prime_33 = (
                         b13**2 * ε[..., 0, 0] +
@@ -158,12 +160,6 @@ if uploaded_file:
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_xlim(0,90)
-                    ax.set_title("Strain ε′₃₃ vs ψ")
-
-                    #c = ax.pcolormesh(PHI*180/np.pi, PSI*180/np.pi, e33_prime, shading='auto', cmap='viridis')
-                    #ax.set_title(f"ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
-                    #ax.set_xlabel("φ (deg)")
-                    #ax.set_ylabel("ψ (deg)")
-                    #fig.colorbar(c, ax=ax, label="Strain ε′₃₃")
+                    ax.set_title(f"Strain ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
 
                 st.pyplot(fig)
