@@ -143,10 +143,16 @@ if uploaded_file:
                             
                             e33_prime[i,j] = strain_prime_33
 
-                    c = ax.pcolormesh(PHI*180/np.pi, PSI*180/np.pi, e33_prime, shading='auto', cmap='viridis')
-                    ax.set_title(f"ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
-                    ax.set_xlabel("φ (deg)")
-                    ax.set_ylabel("ψ (deg)")
-                    fig.colorbar(c, ax=ax, label="Strain ε′₃₃")
+                    scatter = ax.scatter(np.degrees(PHI), e33_prime, color="black", s=0.2, alpha=0.1)
+                    ax.set_xlabel("ψ (degrees)")
+                    ax.set_ylabel("ε′₃₃")
+                    ax.set_xlim(0,90)
+                    ax.set_title("Strain ε′₃₃ vs ψ")
+
+                    #c = ax.pcolormesh(PHI*180/np.pi, PSI*180/np.pi, e33_prime, shading='auto', cmap='viridis')
+                    #ax.set_title(f"ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
+                    #ax.set_xlabel("φ (deg)")
+                    #ax.set_ylabel("ψ (deg)")
+                    #fig.colorbar(c, ax=ax, label="Strain ε′₃₃")
 
                 st.pyplot(fig)
