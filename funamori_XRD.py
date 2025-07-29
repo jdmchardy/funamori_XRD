@@ -191,9 +191,11 @@ if uploaded_file:
                         2 * b23 * b33 * ε[..., 1, 2]
                     )
                     
-                    # Convert psi grid to degrees for output
+                    # Convert psi and phi grid to degrees for output
                     psi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[1])
+                    phi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[0])
                     psi_list = psi_deg_grid.ravel()
+                    phi_list = phi_deg_grid.ravel()
                     strain_33_list = strain_prime_33.ravel()
 
                     #Compute d0 and 2th
@@ -212,6 +214,7 @@ if uploaded_file:
                     hkl_label = f"{int(h)}{int(k)}{int(l)}"
                     df = pd.DataFrame({
                         "psi (degrees)": psi_list,
+                        "phi (degrees)": phi_list,
                         "ε′₃₃": strain_33_list,
                         "d strain": d_strain,
                         "2th" : two_th,
