@@ -79,12 +79,12 @@ if uploaded_file:
             psi_steps = int(2 * np.sqrt(total_points))
             phi_steps = int(np.sqrt(total_points) / 2)
 
+            results_dict = {}  # Store results per HKL reflection
+
             if st.button("Compute Strains") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
-
-                results_dict = {}  # Store results per HKL reflection
 
                 for ax, hkl in zip(axs, selected_hkls):
                     h, k, l = hkl
