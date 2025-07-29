@@ -79,7 +79,7 @@ if uploaded_file:
             psi_steps = int(2 * np.sqrt(total_points))
             phi_steps = int(np.sqrt(total_points) / 2)
 
-            if st.button("Run Calculation") and selected_hkls:
+            if st.button("Compute Strains") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
