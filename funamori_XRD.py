@@ -57,7 +57,7 @@ if uploaded_file:
                 default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
         
                 # Horizontal layout: checkbox left, intensity right
-                cols = st.columns([2, 2, 4])  # Wider for checkbox label, narrower for intensity
+                cols = st.columns([2, 2, 8])  # Wider for checkbox label, narrower for intensity
                 with cols[0]:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
