@@ -17,7 +17,13 @@ if uploaded_file:
     # Parse constants from first row
     constants_header = lines[0].split(',')
     constants_values = list(map(float, lines[1].split(',')))
-    constants = dict(zip(constants_header, constants_values))
+    # Dynamically convert values with proper types
+    constants = {}
+    for key, val in zip(constants_header, raw_values):
+        try:
+            constants[key] = float(val)
+        except ValueError:
+            constants[key] = val.strip()
 
     required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
     if not required_keys.issubset(constants):
