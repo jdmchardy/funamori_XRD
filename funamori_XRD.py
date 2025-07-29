@@ -194,17 +194,32 @@ if uploaded_file:
                     # Convert psi grid to degrees for output
                     psi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[1])
                     psi_list = psi_deg_grid.ravel()
-                    strain_list = strain_prime_33.ravel()
+                    strain_33_list = strain_prime_33.ravel()
+
+                    #Compute d0 and 2th
+                    if symmetry == 'cubic':
+                        d0 = a_val / np.linalg.norm([h, k, l])
+                        #Compute strains
+                        d_strain = d0*(1+strain_33_list)
+                        #Compute 2ths
+                        sin_th = wavelength / (2 * d_strain)
+                        two_th = 2 * np.degrees(np.arcsin(sin_th))
+                    else:
+                        st.write("No support for {} symmetries".format(symmetry))
+                        d_strain = 0
+                        two_th = 0
 
                     hkl_label = f"{int(h)}{int(k)}{int(l)}"
                     df = pd.DataFrame({
                         "psi (degrees)": psi_list,
-                        "ε′₃₃": strain_list,
+                        "ε′₃₃": strain_33_list,
+                        "d strain": d_strain,
+                        "2th" : two_th,
                         "intensity": intensity
                     })
                     results_dict[hkl_label] = df
 
-                    scatter = ax.scatter(psi_list, strain_list, color="black", s=0.2, alpha=0.1)
+                    scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_xlim(0,90)
