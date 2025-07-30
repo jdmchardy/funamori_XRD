@@ -4,6 +4,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 
+def Gaussian(x, x0, sigma):
+    return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
+
 def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry):
     """Evaluates strain_33 component for given hkl reflection
     
@@ -48,9 +51,19 @@ def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values
     ])
 
     #Method avoids looping and implements numpy broadcasting for speed
-    # Assume phi_values and psi_values are 1D numpy arrays
+    #Check if phi_values are given or if it must be calculated for XRD generation
+    if psi_values==0:
+        d0 = a_val / np.linalg.norm([h, k, l])
+        sin_theta0 = lambda_val / (2 * d0)
+        if sin_theta0 > 1:
+            continue
+        theta0 = np.arcsin(sin_theta0)
+        #Compute the psi_value assuming compression axis aligned with X-rays
+        psi_values = np.asarray([np.pi/2 - theta0])
+    else:
+        # Assume phi_values and psi_values are 1D numpy arrays
+        psi_values = np.asarray(psi_values)
     phi_values = np.asarray(phi_values)
-    psi_values = np.asarray(psi_values)
     
     cos_phi = np.cos(phi_values)
     sin_phi = np.sin(phi_values)
@@ -273,4 +286,60 @@ if uploaded_file:
                         )
             with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    t=1
+                    phi_values = np.linspace(0, 2 * np.pi, 360)
+                    psi_values = 0
+                    results_dict = {}
+                    for ax, hkl in zip(axs, selected_hkls):
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
+                        results_dict[hkl_label] = df
+
+                    # Define constants
+                    fwhm = 0.06  # degrees
+                    sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
+                    
+                    # Define common 2-theta range for evaluation
+                    theta_min = df["2theta (deg)"].min() - 1
+                    theta_max = df["2theta (deg)"].max() + 1
+                    theta_grid = np.linspace(theta_min, theta_max, 2000)
+                    
+                    # Container to store individual peak curves
+                    peak_curves = {}
+                    
+                    # Loop over unique (h, k, l)
+                    for (h, k, l), group in df.groupby(["h", "k", "l"]):
+                        peak_intensity = group["intensity"].iloc[0]
+                        total_gauss = np.zeros_like(theta_grid)
+                    
+                        for _, row in group.iterrows():
+                            two_theta = row["2theta (deg)"]
+                            gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
+                            total_gauss += gauss
+                    
+                        avg_gauss = total_gauss / len(group)
+                        peak_curves[(h, k, l)] = avg_gauss
+                    
+                        # Save to file
+                        peak_df = pd.DataFrame({
+                            "2theta (deg)": theta_grid,
+                            "Intensity": avg_gauss
+                        })
+                        filename = f"peak_h{h:.1f}_k{k:.1f}_l{l:.1f}.csv".replace('.', 'p')
+                        #peak_df.to_csv(filename, index=False)
+                        
+                    # Save combined total pattern
+                    total_pattern = sum(peak_curves.values())
+                    total_df = pd.DataFrame({
+                        "2theta (deg)": theta_grid,
+                        "Total Intensity": total_pattern
+                    })
+
+                    # Plotting the total pattern
+                    fig, ax = plt.subplots(figsize=(8, 4))
+                    ax.plot(theta_grid, total_pattern, label="Simulated XRD", lw=1, color="black")
+                    ax.set_xlabel("2θ (deg)")
+                    ax.set_ylabel("Intensity (a.u.)")
+                    ax.set_title("Simulated XRD Pattern")
+                    ax.legend()
+                    ax.grid(True)
+                
+                    st.pyplot(fig)
