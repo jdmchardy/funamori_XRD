@@ -389,6 +389,9 @@ if uploaded_file:
         data = pd.read_csv(io.StringIO("\n".join(data_lines)), delim_whitespace=True, header=None, names=['2th', 'intensity'])
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
+
+        # Normalize experimental intensity
+        y_exp = y_exp / np.max(y_exp)
     
         if st.button("Run Refinement"):
             phi_values = np.linspace(0, 2 * np.pi, 360)
