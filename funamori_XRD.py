@@ -286,7 +286,7 @@ if uploaded_file:
                         )
             with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    phi_values = np.linspace(0, 2 * np.pi, 360)
+                    phi_values = np.linspace(0, 2 * np.pi, 100)
                     psi_values = 0
                     results_dict = {}
                     for ax, hkl in zip(axs, selected_hkls):
@@ -300,7 +300,7 @@ if uploaded_file:
                     # Define common 2-theta range for evaluation
                     theta_min = df["2theta (deg)"].min() - 1
                     theta_max = df["2theta (deg)"].max() + 1
-                    theta_grid = np.linspace(theta_min, theta_max, 2000)
+                    theta_grid = np.linspace(theta_min, theta_max, 500)
                     
                     # Container to store individual peak curves
                     peak_curves = {}
