@@ -404,9 +404,10 @@ if uploaded_file:
             x_max_sim = np.max(twoth_sim)
         
             # Identify experimental x values within the simulated range
-            within_range_mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
-            x_exp_common = x_exp[within_range_mask]
-            y_exp_common = y_exp[within_range_mask]
+            st.write(x_exp)
+            mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
+            x_exp_common = x_exp[mask]
+            y_exp_common = y_exp[mask]
         
             # Interpolate simulation
             interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
