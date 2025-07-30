@@ -136,7 +136,7 @@ def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values
         "2th" : two_th,
         "intensity": intensity
     })
-return hkl_label, df
+    return hkl_label, df
 
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
