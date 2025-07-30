@@ -184,7 +184,7 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     all_dfs = []  # Collect all dfs here
 
     for hkl, intensity in zip(selected_hkls, intensities):
-        hkl_label, df, psi_list, strain_33_list = compute_strain(*strain_sim_params)
+        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, *strain_sim_params)
         st.write(hkl_label)
         results_dict[hkl_label] = df
         all_dfs.append(df)
@@ -364,7 +364,7 @@ if uploaded_file:
                 if st.button("Generate XRD") and selected_hkls:
                     phi_values = np.linspace(0, 2 * np.pi, 360)
                     psi_values = 0
-                    strain_sim_params = (hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                    strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
                     XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
                     theta_grid = XRD_df["2th"]
