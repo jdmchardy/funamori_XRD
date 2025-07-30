@@ -78,6 +78,7 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
 
     #Method avoids looping and implements numpy broadcasting for speed
     #Check if phi_values are given or if it must be calculated for XRD generation
+    st.write(psi_values)
     if psi_values==0:
         d0 = a_val / np.linalg.norm([h, k, l])
         sin_theta0 = wavelength / (2 * d0)
