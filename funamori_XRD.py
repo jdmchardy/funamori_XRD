@@ -319,6 +319,7 @@ if uploaded_file:
                     results_dict = {}
                     for hkl, intensity in zip(selected_hkls, intensities):
                         hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                        st.write(hkl_label)
                         results_dict[hkl_label] = df
 
                     # Define constants
@@ -351,8 +352,6 @@ if uploaded_file:
                             "2th": theta_grid,
                             "Intensity": avg_gauss
                         })
-                        #filename = f"peak_h{h:.1f}_k{k:.1f}_l{l:.1f}.csv".replace('.', 'p')
-                        #peak_df.to_csv(filename, index=False)
                         
                     # Combined total pattern
                     total_pattern = sum(peak_curves.values())
@@ -368,6 +367,5 @@ if uploaded_file:
                     ax.set_ylabel("Intensity (a.u.)")
                     ax.set_title("Simulated XRD Pattern")
                     ax.legend()
-                    ax.grid(True)
                 
                     st.pyplot(fig)
