@@ -391,7 +391,7 @@ if uploaded_file:
         y_exp = data['intensity'].values
 
         # Normalize experimental intensity
-        y_exp = y_exp / np.max(y_exp)
+        y_exp = y_exp / np.max(y_exp)*100
     
         if st.button("Run Refinement"):
             phi_values = np.linspace(0, 2 * np.pi, 360)
