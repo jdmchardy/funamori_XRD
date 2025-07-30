@@ -341,7 +341,7 @@ if uploaded_file:
                         for _, row in group.iterrows():
                             two_theta = row["2th"]
                             gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
-                            total_gauss += gauss
+                            total_gauss += gaussian_peak
                     
                         avg_gauss = total_gauss / len(group)
                         peak_curves[(h, k, l)] = avg_gauss
