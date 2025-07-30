@@ -136,7 +136,7 @@ def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values
         "2th" : two_th,
         "intensity": intensity
     })
-    return hkl_label, df
+    return hkl_label, df, psi_list, strain_33_list
 
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
@@ -237,7 +237,7 @@ if uploaded_file:
                 psi_values = np.linspace(0, np.pi/2, psi_steps)
 
                 for ax, hkl in zip(axs, selected_hkls):
-                    hkl_label, df = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
                     results_dict[hkl_label] = df
 
                     scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
