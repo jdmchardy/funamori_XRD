@@ -262,7 +262,9 @@ if uploaded_file:
             col1, col2, col3 = st.columns(3)
             with col1:
                 total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=1000)
-
+            with col2:
+                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.01, step=0.01)
+            
             # Determine grid sizes
             psi_steps = int(2 * np.sqrt(total_points))
             phi_steps = int(np.sqrt(total_points) / 2)
@@ -331,7 +333,7 @@ if uploaded_file:
                     combined_df = pd.concat(all_dfs, ignore_index=True)
 
                     # Define constants
-                    fwhm = 0.06  # degrees
+                    fwhm = Gaussian_FWHM  # degrees
                     sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
                     
                     # Define common 2-theta range for evaluation
