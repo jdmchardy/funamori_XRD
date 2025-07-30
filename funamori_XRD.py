@@ -284,7 +284,7 @@ if uploaded_file:
                         )
             with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    phi_values = np.linspace(0, 2 * np.pi, 100)
+                    phi_values = np.linspace(0, 2 * np.pi, 360)
                     psi_values = 0
                     results_dict = {}
                     for hkl in selected_hkls:
@@ -296,9 +296,9 @@ if uploaded_file:
                     sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
                     
                     # Define common 2-theta range for evaluation
-                    theta_min = df["2theta (deg)"].min() - 1
-                    theta_max = df["2theta (deg)"].max() + 1
-                    theta_grid = np.linspace(theta_min, theta_max, 500)
+                    theta_min = df["2th"].min() - 1
+                    theta_max = df["2th"].max() + 1
+                    theta_grid = np.linspace(theta_min, theta_max, 2000)
                     
                     # Container to store individual peak curves
                     peak_curves = {}
@@ -321,10 +321,10 @@ if uploaded_file:
                             "2theta (deg)": theta_grid,
                             "Intensity": avg_gauss
                         })
-                        filename = f"peak_h{h:.1f}_k{k:.1f}_l{l:.1f}.csv".replace('.', 'p')
+                        #filename = f"peak_h{h:.1f}_k{k:.1f}_l{l:.1f}.csv".replace('.', 'p')
                         #peak_df.to_csv(filename, index=False)
                         
-                    # Save combined total pattern
+                    # Combined total pattern
                     total_pattern = sum(peak_curves.values())
                     total_df = pd.DataFrame({
                         "2theta (deg)": theta_grid,
