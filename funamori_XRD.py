@@ -379,3 +379,4 @@ if uploaded_file:
                     ax.legend()
                 
                     st.pyplot(fig)
+    st.subheader("Refine XRD")
