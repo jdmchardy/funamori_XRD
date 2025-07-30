@@ -426,7 +426,7 @@ if uploaded_file:
             ax1.legend()
             ax1.set_title("Overlay of Experimental and Simulated Patterns")
     
-            ax2.plot(x_exp_common, residuals, color='blue')
+            ax2.plot(x_exp_common, residuals, color='blue', lw=0.5)
             ax2.axhline(0, color='gray', lw=0.5)
             ax2.set_xlabel("2θ (degrees)")
             ax2.set_ylabel("Residuals")
