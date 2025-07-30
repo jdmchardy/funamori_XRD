@@ -344,7 +344,7 @@ if uploaded_file:
                     peak_curves = {}
                     
                     # Loop over unique (h, k, l)
-                    for (h, k, l), group in df.groupby(["h", "k", "l"]):
+                    for (h, k, l), group in combined_df.groupby(["h", "k", "l"]):
                         peak_intensity = group["intensity"].iloc[0]
                         total_gauss = np.zeros_like(theta_grid)
                     
