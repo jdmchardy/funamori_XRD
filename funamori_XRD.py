@@ -366,7 +366,7 @@ if uploaded_file:
                     strain_sim_params = (hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
                     XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
-                    theta_grid, = XRD_df["2th"]
+                    theta_grid = XRD_df["2th"]
                     total_pattern = XRD_df["Total Intensity"]
 
                     # Plotting the total pattern
