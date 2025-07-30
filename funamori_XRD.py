@@ -436,5 +436,5 @@ if uploaded_file:
                 ax2.set_xlim(x_min_sim, x_max_sim)
         
                 st.pyplot(fig)
-        else:
-            st.info("Please upload an .xy file to begin refinement.")
+            else:
+                st.info("Please upload an .xy file to begin refinement.")
