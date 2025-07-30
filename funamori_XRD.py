@@ -54,7 +54,7 @@ def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values
     #Check if phi_values are given or if it must be calculated for XRD generation
     if psi_values==0:
         d0 = a_val / np.linalg.norm([h, k, l])
-        sin_theta0 = lambda_val / (2 * d0)
+        sin_theta0 = wavelength / (2 * d0)
         theta0 = np.arcsin(sin_theta0)
         #Compute the psi_value assuming compression axis aligned with X-rays
         psi_values = np.asarray([np.pi/2 - theta0])
