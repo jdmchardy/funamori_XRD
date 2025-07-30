@@ -7,7 +7,7 @@ import io
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
 
-def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry):
+def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
     """
     Evaluates strain_33 component for given hkl reflection.
     
@@ -275,7 +275,7 @@ if uploaded_file:
                     psi_values = np.linspace(0, np.pi/2, psi_steps)
     
                     for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry)
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
                         results_dict[hkl_label] = df
     
                         scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
@@ -314,7 +314,7 @@ if uploaded_file:
                     psi_values = 0
                     results_dict = {}
                     for hkl, intensity in zip(selected_hkls, intensities):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry)
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
                         results_dict[hkl_label] = df
 
                     # Define constants
