@@ -391,9 +391,6 @@ if uploaded_file:
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
 
-        # Normalize experimental intensity
-        y_exp = y_exp / np.max(y_exp)*100
-
         col1,col2,col3 = st.columns(3)
         with col1:
             if st.button("Run Refinement"):
@@ -413,10 +410,16 @@ if uploaded_file:
                 mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
                 x_exp_common = x_exp[mask]
                 y_exp_common = y_exp[mask]
+
+                # Normalize experimental intensity
+                y_exp_common = y_exp_common / np.max(y_exp_common)*100
             
                 # Interpolate simulation
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
+
+                # Normalize simulated intensity
+                y_sim_common = y_sim_common / np.max(y_sim_common)*100
             
                 residuals = y_exp_common - y_sim_common
     
