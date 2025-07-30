@@ -273,4 +273,4 @@ if uploaded_file:
                         )
             with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    
+                    t=1
