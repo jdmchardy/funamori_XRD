@@ -4,6 +4,139 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 
+def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry):
+    """Evaluates strain_33 component for given hkl reflection
+    
+    Returns:
+    --------
+    hkl_label, dataframe
+    dataframe contains: 
+        strain_33, 
+        phi_list, 
+        psi_list,
+        d_strain
+        two_th,
+        intensity
+    """
+
+    h, k, l = hkl
+    if h == 0: h = 0.00000001
+    if k == 0: k = 0.00000001
+    if l == 0: l = 0.00000001
+    # Normalize
+    H = h / a_val
+    K = k / a_val
+    L = l / a_val
+    N = np.sqrt(K**2 + L**2)
+    M = np.sqrt(H**2 + K**2 + L**2)
+
+    # Elastic constants matrix
+    elastic = np.array([
+        [c11, c12, c12, 0, 0, 0],
+        [c12, c11, c12, 0, 0, 0],
+        [c12, c12, c11, 0, 0, 0],
+        [0, 0, 0, c44, 0, 0],
+        [0, 0, 0, 0, c44, 0],
+        [0, 0, 0, 0, 0, c44]
+    ])
+    elastic_compliance = np.linalg.inv(elastic)
+    
+    sigma = np.array([
+        [sigma_11, 0, 0],
+        [0, sigma_22, 0],
+        [0, 0, sigma_33]
+    ])
+
+    #Method avoids looping and implements numpy broadcasting for speed
+    # Assume phi_values and psi_values are 1D numpy arrays
+    phi_values = np.asarray(phi_values)
+    psi_values = np.asarray(psi_values)
+    
+    cos_phi = np.cos(phi_values)
+    sin_phi = np.sin(phi_values)
+    cos_psi = np.cos(psi_values)
+    sin_psi = np.sin(psi_values)
+    
+    # Create meshgrids for broadcasting
+    cos_phi, cos_psi = np.meshgrid(cos_phi, cos_psi, indexing='ij')
+    sin_phi, sin_psi = np.meshgrid(sin_phi, sin_psi, indexing='ij')
+    
+    # Rotation matrix A (shape: [n_phi, n_psi, 3, 3])
+    A = np.empty((cos_phi.shape[0], cos_phi.shape[1], 3, 3))
+    A[..., 0, 0] = cos_phi * cos_psi
+    A[..., 0, 1] = -sin_phi
+    A[..., 0, 2] = cos_phi * sin_psi
+    A[..., 1, 0] = sin_phi * cos_psi
+    A[..., 1, 1] = cos_phi
+    A[..., 1, 2] = sin_phi * sin_psi
+    A[..., 2, 0] = -sin_psi
+    A[..., 2, 1] = 0
+    A[..., 2, 2] = cos_psi
+    
+    # Matrix B is constant
+    B = np.array([
+        [N/M, 0, H/M],
+        [-H*K/(N*M), L/N, K/M],
+        [-H*L/(N*M), -K/N, L/M]
+    ])
+    
+    # Apply rotation: sigma' = A @ sigma @ A.T
+    sigma_prime = A @ sigma @ np.transpose(A, (0, 1, 3, 2))
+    
+    # Apply B transform: sigma'' = B @ sigma' @ B.T
+    sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
+    
+    # Strain tensor ε
+    ε = np.zeros_like(sigma_double_prime)
+    
+    ε[..., 0, 0] = elastic_compliance[0, 0] * sigma_double_prime[..., 0, 0] + elastic_compliance[0, 1] * (sigma_double_prime[..., 1, 1] + sigma_double_prime[..., 2, 2])
+    ε[..., 1, 1] = elastic_compliance[0, 0] * sigma_double_prime[..., 1, 1] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 2, 2])
+    ε[..., 2, 2] = elastic_compliance[0, 0] * sigma_double_prime[..., 2, 2] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 1, 1])
+    ε[..., 0, 1] = ε[..., 1, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 1]
+    ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
+    ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
+    
+    # ε'_33
+    b13, b23, b33 = B[0, 2], B[1, 2], B[2, 2]
+    strain_prime_33 = (
+        b13**2 * ε[..., 0, 0] +
+        b23**2 * ε[..., 1, 1] +
+        b33**2 * ε[..., 2, 2] +
+        2 * b13 * b23 * ε[..., 0, 1] +
+        2 * b13 * b33 * ε[..., 0, 2] +
+        2 * b23 * b33 * ε[..., 1, 2]
+    )
+    
+    # Convert psi and phi grid to degrees for output
+    psi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[1])
+    phi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[0])
+    psi_list = psi_deg_grid.ravel()
+    phi_list = phi_deg_grid.ravel()
+    strain_33_list = strain_prime_33.ravel()
+
+    #Compute d0 and 2th
+    if symmetry == 'cubic':
+        d0 = a_val / np.linalg.norm([h, k, l])
+        #Compute strains
+        d_strain = d0*(1+strain_33_list)
+        #Compute 2ths
+        sin_th = wavelength / (2 * d_strain)
+        two_th = 2 * np.degrees(np.arcsin(sin_th))
+    else:
+        st.write("No support for {} symmetries".format(symmetry))
+        d_strain = 0
+        two_th = 0
+
+    hkl_label = f"{int(h)}{int(k)}{int(l)}"
+    df = pd.DataFrame({
+        "strain_33": strain_33_list,
+        "psi (degrees)": psi_list,
+        "phi (degrees)": phi_list,
+        "d strain": d_strain,
+        "2th" : two_th,
+        "intensity": intensity
+    })
+
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
 
@@ -99,127 +232,11 @@ if uploaded_file:
                 if len(selected_hkls) == 1:
                     axs = [axs]
 
+                phi_values = np.linspace(0, 2 * np.pi, phi_steps)
+                psi_values = np.linspace(0, np.pi/2, psi_steps)
+
                 for ax, hkl in zip(axs, selected_hkls):
-                    h, k, l = hkl
-                    if h == 0: h = 0.00000001
-                    if k == 0: k = 0.00000001
-                    if l == 0: l = 0.00000001
-                    # Normalize
-                    H = h / a_val
-                    K = k / a_val
-                    L = l / a_val
-                    N = np.sqrt(K**2 + L**2)
-                    M = np.sqrt(H**2 + K**2 + L**2)
-
-                    # Elastic constants matrix
-                    elastic = np.array([
-                        [c11, c12, c12, 0, 0, 0],
-                        [c12, c11, c12, 0, 0, 0],
-                        [c12, c12, c11, 0, 0, 0],
-                        [0, 0, 0, c44, 0, 0],
-                        [0, 0, 0, 0, c44, 0],
-                        [0, 0, 0, 0, 0, c44]
-                    ])
-                    elastic_compliance = np.linalg.inv(elastic)
-                    
-                    sigma = np.array([
-                        [sigma_11, 0, 0],
-                        [0, sigma_22, 0],
-                        [0, 0, sigma_33]
-                    ])
-
-                    phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                    psi_values = np.linspace(0, np.pi/2, psi_steps)
-
-                    #Method avoids looping and implements numpy broadcasting for speed
-                    # Assume phi_values and psi_values are 1D numpy arrays
-                    phi_values = np.asarray(phi_values)
-                    psi_values = np.asarray(psi_values)
-                    
-                    cos_phi = np.cos(phi_values)
-                    sin_phi = np.sin(phi_values)
-                    cos_psi = np.cos(psi_values)
-                    sin_psi = np.sin(psi_values)
-                    
-                    # Create meshgrids for broadcasting
-                    cos_phi, cos_psi = np.meshgrid(cos_phi, cos_psi, indexing='ij')
-                    sin_phi, sin_psi = np.meshgrid(sin_phi, sin_psi, indexing='ij')
-                    
-                    # Rotation matrix A (shape: [n_phi, n_psi, 3, 3])
-                    A = np.empty((cos_phi.shape[0], cos_phi.shape[1], 3, 3))
-                    A[..., 0, 0] = cos_phi * cos_psi
-                    A[..., 0, 1] = -sin_phi
-                    A[..., 0, 2] = cos_phi * sin_psi
-                    A[..., 1, 0] = sin_phi * cos_psi
-                    A[..., 1, 1] = cos_phi
-                    A[..., 1, 2] = sin_phi * sin_psi
-                    A[..., 2, 0] = -sin_psi
-                    A[..., 2, 1] = 0
-                    A[..., 2, 2] = cos_psi
-                    
-                    # Matrix B is constant
-                    B = np.array([
-                        [N/M, 0, H/M],
-                        [-H*K/(N*M), L/N, K/M],
-                        [-H*L/(N*M), -K/N, L/M]
-                    ])
-                    
-                    # Apply rotation: sigma' = A @ sigma @ A.T
-                    sigma_prime = A @ sigma @ np.transpose(A, (0, 1, 3, 2))
-                    
-                    # Apply B transform: sigma'' = B @ sigma' @ B.T
-                    sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
-                    
-                    # Strain tensor ε
-                    ε = np.zeros_like(sigma_double_prime)
-                    
-                    ε[..., 0, 0] = elastic_compliance[0, 0] * sigma_double_prime[..., 0, 0] + elastic_compliance[0, 1] * (sigma_double_prime[..., 1, 1] + sigma_double_prime[..., 2, 2])
-                    ε[..., 1, 1] = elastic_compliance[0, 0] * sigma_double_prime[..., 1, 1] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 2, 2])
-                    ε[..., 2, 2] = elastic_compliance[0, 0] * sigma_double_prime[..., 2, 2] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 1, 1])
-                    ε[..., 0, 1] = ε[..., 1, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 1]
-                    ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
-                    ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
-                    
-                    # ε'_33
-                    b13, b23, b33 = B[0, 2], B[1, 2], B[2, 2]
-                    strain_prime_33 = (
-                        b13**2 * ε[..., 0, 0] +
-                        b23**2 * ε[..., 1, 1] +
-                        b33**2 * ε[..., 2, 2] +
-                        2 * b13 * b23 * ε[..., 0, 1] +
-                        2 * b13 * b33 * ε[..., 0, 2] +
-                        2 * b23 * b33 * ε[..., 1, 2]
-                    )
-                    
-                    # Convert psi and phi grid to degrees for output
-                    psi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[1])
-                    phi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[0])
-                    psi_list = psi_deg_grid.ravel()
-                    phi_list = phi_deg_grid.ravel()
-                    strain_33_list = strain_prime_33.ravel()
-
-                    #Compute d0 and 2th
-                    if symmetry == 'cubic':
-                        d0 = a_val / np.linalg.norm([h, k, l])
-                        #Compute strains
-                        d_strain = d0*(1+strain_33_list)
-                        #Compute 2ths
-                        sin_th = wavelength / (2 * d_strain)
-                        two_th = 2 * np.degrees(np.arcsin(sin_th))
-                    else:
-                        st.write("No support for {} symmetries".format(symmetry))
-                        d_strain = 0
-                        two_th = 0
-
-                    hkl_label = f"{int(h)}{int(k)}{int(l)}"
-                    df = pd.DataFrame({
-                        "psi (degrees)": psi_list,
-                        "phi (degrees)": phi_list,
-                        "ε′₃₃": strain_33_list,
-                        "d strain": d_strain,
-                        "2th" : two_th,
-                        "intensity": intensity
-                    })
+                    hkl_label, df = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
                     results_dict[hkl_label] = df
 
                     scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
