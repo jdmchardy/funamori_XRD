@@ -404,7 +404,7 @@ if uploaded_file:
             x_max_sim = np.max(twoth_sim)
         
             # Identify experimental x values within the simulated range
-            within_range_mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+            within_range_mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
             x_exp_common = x_exp[within_range_mask]
             y_exp_common = y_exp[within_range_mask]
         
