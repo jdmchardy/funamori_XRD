@@ -394,7 +394,7 @@ if uploaded_file:
         # Normalize experimental intensity
         y_exp = y_exp / np.max(y_exp)*100
 
-        col1,col2,col3 = st.colums(3)
+        col1,col2,col3 = st.columns(3)
         with col1:
             if st.button("Run Refinement"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
