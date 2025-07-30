@@ -324,7 +324,6 @@ if uploaded_file:
                             hkl, intensity, a_val, wavelength, c11, c12, c44,
                             sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry
                         )
-                        st.write(hkl_label)
                         results_dict[hkl_label] = df
                         all_dfs.append(df)
                 
@@ -371,7 +370,7 @@ if uploaded_file:
 
                     # Plotting the total pattern
                     fig, ax = plt.subplots(figsize=(8, 4))
-                    ax.plot(theta_grid, total_pattern, label="Simulated XRD", lw=1, color="black")
+                    ax.plot(theta_grid, total_pattern, label="Simulated XRD", lw=0.5, color="black")
                     ax.set_xlabel("2θ (deg)")
                     ax.set_ylabel("Intensity (a.u.)")
                     ax.set_title("Simulated XRD Pattern")
