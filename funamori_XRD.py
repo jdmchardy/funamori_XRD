@@ -379,6 +379,7 @@ if uploaded_file:
                     ax.legend()
                 
                     st.pyplot(fig)
+                    
     st.subheader("Refine XRD")
 
     uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
@@ -392,46 +393,48 @@ if uploaded_file:
 
         # Normalize experimental intensity
         y_exp = y_exp / np.max(y_exp)*100
-    
-        if st.button("Run Refinement"):
-            phi_values = np.linspace(0, 2 * np.pi, 360)
-            psi_values = 0
-            strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
-            XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
-            twoth_sim = XRD_df["2th"]
-            intensity_sim = XRD_df["Total Intensity"]
-
-            # Determine bounds of simulated x values
-            x_min_sim = np.min(twoth_sim)
-            x_max_sim = np.max(twoth_sim)
-        
-            # Identify experimental x values within the simulated range
-            mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
-            x_exp_common = x_exp[mask]
-            y_exp_common = y_exp[mask]
-        
-            # Interpolate simulation
-            interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
-            y_sim_common = interp_sim(x_exp_common)
-        
-            residuals = y_exp_common - y_sim_common
-
-            #Plot up the overlay with residuals
-            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+        col1,col2,col3 = st.colums(3)
+        with col1:
+            if st.button("Run Refinement"):
+                phi_values = np.linspace(0, 2 * np.pi, 360)
+                psi_values = 0
+                strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
     
-            ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
-            ax1.plot(x_exp_common, y_sim_common, label="Simulated", linestyle='--', color='red', lw=0.5)
-            ax1.set_ylabel("Intensity")
-            ax1.legend()
-            ax1.set_title("Overlay of Experimental and Simulated Patterns")
+                XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                twoth_sim = XRD_df["2th"]
+                intensity_sim = XRD_df["Total Intensity"]
     
-            ax2.plot(x_exp_common, residuals, color='blue', lw=0.5)
-            ax2.axhline(0, color='gray', lw=0.5)
-            ax2.set_xlabel("2θ (degrees)")
-            ax2.set_ylabel("Residuals")
-            ax2.set_xlim(x_min_sim, x_max_sim)
+                # Determine bounds of simulated x values
+                x_min_sim = np.min(twoth_sim)
+                x_max_sim = np.max(twoth_sim)
+            
+                # Identify experimental x values within the simulated range
+                mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
+                x_exp_common = x_exp[mask]
+                y_exp_common = y_exp[mask]
+            
+                # Interpolate simulation
+                interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                y_sim_common = interp_sim(x_exp_common)
+            
+                residuals = y_exp_common - y_sim_common
     
-            st.pyplot(fig)
-    else:
-        st.info("Please upload an .xy file to begin refinement.")
+                #Plot up the overlay with residuals
+                fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+        
+                ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
+                ax1.plot(x_exp_common, y_sim_common, label="Simulated", linestyle='--', color='red', lw=0.5)
+                ax1.set_ylabel("Intensity")
+                ax1.legend()
+                ax1.set_title("Overlay of Experimental and Simulated Patterns")
+        
+                ax2.plot(x_exp_common, residuals, color='blue', lw=0.5)
+                ax2.axhline(0, color='gray', lw=0.5)
+                ax2.set_xlabel("2θ (degrees)")
+                ax2.set_ylabel("Residuals")
+                ax2.set_xlim(x_min_sim, x_max_sim)
+        
+                st.pyplot(fig)
+        else:
+            st.info("Please upload an .xy file to begin refinement.")
