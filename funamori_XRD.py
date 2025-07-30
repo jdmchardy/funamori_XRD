@@ -7,19 +7,45 @@ import io
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
 
-def compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry):
-    """Evaluates strain_33 component for given hkl reflection
+def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry):
+    """
+    Evaluates strain_33 component for given hkl reflection.
     
-    Returns:
-    --------
-    hkl_label, dataframe
-    dataframe contains: 
-        strain_33, 
-        phi_list, 
-        psi_list,
-        d_strain
-        two_th,
-        intensity
+    Parameters
+    ----------
+    hkl : tuple
+        Miller indices (h, k, l)
+    a_val : float
+        Lattice parameter
+    wavelength : float
+        X-ray wavelength
+    c11, c12, c44 : float
+        Elastic constants
+    phi_values : np.array
+        Array of phi values in radians
+    psi_values : np.array or scalar
+        Array of psi values in radians (or 0 to auto-calculate)
+    symmetry : str
+        Crystal symmetry
+    sigma_11, sigma_22, sigma_33 : float
+        Stress tensor components (default assumes uniaxial stress)
+    intensity : float
+        Arbitrary intensity for plotting
+
+    Returns
+    -------
+    hkl_label : str
+        String label of hkl
+    df : pd.DataFrame
+        DataFrame with columns:
+            - strain_33
+            - psi (degrees)
+            - phi (degrees)
+            - d strain
+            - 2theta (deg)
+            - intensity
+    psi_list : list
+    strain_33_list : list
     """
 
     h, k, l = hkl
@@ -248,8 +274,8 @@ if uploaded_file:
                     phi_values = np.linspace(0, 2 * np.pi, phi_steps)
                     psi_values = np.linspace(0, np.pi/2, psi_steps)
     
-                    for ax, hkl in zip(axs, selected_hkls):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
+                    for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry)
                         results_dict[hkl_label] = df
     
                         scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
@@ -287,8 +313,8 @@ if uploaded_file:
                     phi_values = np.linspace(0, 2 * np.pi, 360)
                     psi_values = 0
                     results_dict = {}
-                    for hkl in selected_hkls:
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
+                    for hkl, intensity in zip(selected_hkls, intensities):
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sig11, sig22, sig33, phi_values, psi_values, symmetry)
                         results_dict[hkl_label] = df
 
                     # Define constants
@@ -318,7 +344,7 @@ if uploaded_file:
                     
                         # Save to file
                         peak_df = pd.DataFrame({
-                            "2theta (deg)": theta_grid,
+                            "2th": theta_grid,
                             "Intensity": avg_gauss
                         })
                         #filename = f"peak_h{h:.1f}_k{k:.1f}_l{l:.1f}.csv".replace('.', 'p')
@@ -327,7 +353,7 @@ if uploaded_file:
                     # Combined total pattern
                     total_pattern = sum(peak_curves.values())
                     total_df = pd.DataFrame({
-                        "2theta (deg)": theta_grid,
+                        "2th": theta_grid,
                         "Total Intensity": total_pattern
                     })
 
