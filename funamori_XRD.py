@@ -404,7 +404,6 @@ if uploaded_file:
             x_max_sim = np.max(twoth_sim)
         
             # Identify experimental x values within the simulated range
-            st.write(x_exp)
             mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
             x_exp_common = x_exp[mask]
             y_exp_common = y_exp[mask]
@@ -419,7 +418,7 @@ if uploaded_file:
             fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
     
             ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
-            ax1.plot(x_exp, y_sim, label="Simulated", linestyle='--', color='red', lw=0.5)
+            ax1.plot(x_exp_common, y_sim_common, label="Simulated", linestyle='--', color='red', lw=0.5)
             ax1.set_ylabel("Intensity")
             ax1.legend()
             ax1.set_title("Overlay of Experimental and Simulated Patterns")
