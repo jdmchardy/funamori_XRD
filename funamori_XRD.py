@@ -227,7 +227,8 @@ if uploaded_file:
             phi_steps = int(np.sqrt(total_points) / 2)
 
             results_dict = {}  # Store results per HKL reflection
-            with col2:
+            col1, col2, col3 = st.columns([2, 2, 8])
+            with col1:
                 if st.button("Compute Strains") and selected_hkls:
                     fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                     if len(selected_hkls) == 1:
@@ -270,6 +271,6 @@ if uploaded_file:
                             file_name="strain_results.xlsx",
                             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                         )
-            with col3:
+            with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    contine
+                    continue
