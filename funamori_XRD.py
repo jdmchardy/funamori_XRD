@@ -244,7 +244,7 @@ if uploaded_file:
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_xlim(0,90)
-                    ax.set_title(f"Strain ε′₃₃ for hkl = ({int(h)}, {int(k)}, {int(l)})")
+                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
 
                 st.pyplot(fig)
         
