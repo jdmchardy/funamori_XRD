@@ -430,6 +430,7 @@ if uploaded_file:
             ax2.axhline(0, color='gray', lw=0.5)
             ax2.set_xlabel("2θ (degrees)")
             ax2.set_ylabel("Residuals")
+            ax2.set_xlim(x_min_sim, x_max_sim)
     
             st.pyplot(fig)
     else:
