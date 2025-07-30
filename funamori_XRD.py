@@ -336,8 +336,8 @@ if uploaded_file:
                     sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
                     
                     # Define common 2-theta range for evaluation
-                    theta_min = df["2th"].min() - 1
-                    theta_max = df["2th"].max() + 1
+                    theta_min = combined_df["2th"].min() - 1
+                    theta_max = combined_df["2th"].max() + 1
                     theta_grid = np.linspace(theta_min, theta_max, 2000)
                     
                     # Container to store individual peak curves
