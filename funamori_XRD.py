@@ -384,7 +384,9 @@ if uploaded_file:
     uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
 
     if uploaded_XRD is not None:
-        data = pd.read_csv(uploaded_XRD, delim_whitespace=True, header=None, names=['2th', 'intensity'])
+        raw_lines = uploaded_file.read().decode("utf-8").splitlines()
+        data_lines = [line for line in raw_lines if not line.strip().startswith("#") and line.strip()]
+        data = pd.read_csv(io.StringIO("\n".join(data_lines)), delim_whitespace=True, header=None, names=['2theta', 'intensity'])
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
     
