@@ -169,7 +169,7 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     df = pd.DataFrame({
         "h": int(h),
         "k": int(k),
-        "l": int(l)
+        "l": int(l),
         "strain_33": strain_33_list,
         "psi (degrees)": psi_list,
         "phi (degrees)": phi_list,
