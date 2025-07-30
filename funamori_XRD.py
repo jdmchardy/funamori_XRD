@@ -78,13 +78,13 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
 
     #Method avoids looping and implements numpy broadcasting for speed
     #Check if phi_values are given or if it must be calculated for XRD generation
-    st.write(psi_values)
-    if psi_values==0:
-        d0 = a_val / np.linalg.norm([h, k, l])
-        sin_theta0 = wavelength / (2 * d0)
-        theta0 = np.arcsin(sin_theta0)
-        #Compute the psi_value assuming compression axis aligned with X-rays
-        psi_values = np.asarray([np.pi/2 - theta0])
+    if len(psi_values)==1:
+        if psi_values==0:
+            d0 = a_val / np.linalg.norm([h, k, l])
+            sin_theta0 = wavelength / (2 * d0)
+            theta0 = np.arcsin(sin_theta0)
+            #Compute the psi_value assuming compression axis aligned with X-rays
+            psi_values = np.asarray([np.pi/2 - theta0])
     else:
         # Assume phi_values and psi_values are 1D numpy arrays
         psi_values = np.asarray(psi_values)
