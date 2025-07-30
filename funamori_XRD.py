@@ -184,8 +184,8 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     all_dfs = []  # Collect all dfs here
 
     for hkl, intensity in zip(selected_hkls, intensities):
-        st.write(hkl_label)
         hkl_label, df, psi_list, strain_33_list = compute_strain(*strain_sim_params)
+        st.write(hkl_label)
         results_dict[hkl_label] = df
         all_dfs.append(df)
 
