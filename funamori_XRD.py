@@ -426,7 +426,7 @@ if uploaded_file:
                 #Plot up the overlay with residuals
                 fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
         
-                ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
+                ax1.plot(x_exp_common, y_exp_common, label="Experimental", color='black', lw=0.5)
                 ax1.plot(x_exp_common, y_sim_common, label="Simulated", linestyle='--', color='red', lw=0.5)
                 ax1.set_ylabel("Intensity")
                 ax1.legend()
