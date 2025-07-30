@@ -218,7 +218,7 @@ if uploaded_file:
                     intensities.append(intensity)
 
             st.subheader("Computation Settings")
-            col1, col2 = st.columns(2)
+            col1, col2, col3 = st.columns(3)
             with col1:
                 total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=1000)
 
@@ -227,46 +227,49 @@ if uploaded_file:
             phi_steps = int(np.sqrt(total_points) / 2)
 
             results_dict = {}  # Store results per HKL reflection
-
-            if st.button("Compute Strains") and selected_hkls:
-                fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
-                if len(selected_hkls) == 1:
-                    axs = [axs]
-
-                phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                psi_values = np.linspace(0, np.pi/2, psi_steps)
-
-                for ax, hkl in zip(axs, selected_hkls):
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
-                    results_dict[hkl_label] = df
-
-                    scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
-                    ax.set_xlabel("ψ (degrees)")
-                    ax.set_ylabel("ε′₃₃")
-                    ax.set_xlim(0,90)
-                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
-
-                st.pyplot(fig)
-        
-        if results_dict != {}:
-            st.subheader("Download Computed Data")
-            output_buffer = io.BytesIO()
-            with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-                for hkl_label, df in results_dict.items():
-                    sheet_name = f"hkl_{hkl_label}"
-                    df.to_excel(writer, sheet_name=sheet_name, index=False)
-        
-                    # auto-width adjustment
-                    worksheet = writer.sheets[sheet_name]
-                    for i, col in enumerate(df.columns):
-                        max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
-                        worksheet.set_column(i, i, max_width)
-        
-            output_buffer.seek(0)
-        
-            st.download_button(
-                label="📥 Download Results as Excel (.xlsx)",
-                data=output_buffer,
-                file_name="strain_results.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            )
+            with col2:
+                if st.button("Compute Strains") and selected_hkls:
+                    fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
+                    if len(selected_hkls) == 1:
+                        axs = [axs]
+    
+                    phi_values = np.linspace(0, 2 * np.pi, phi_steps)
+                    psi_values = np.linspace(0, np.pi/2, psi_steps)
+    
+                    for ax, hkl in zip(axs, selected_hkls):
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
+                        results_dict[hkl_label] = df
+    
+                        scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
+                        ax.set_xlabel("ψ (degrees)")
+                        ax.set_ylabel("ε′₃₃")
+                        ax.set_xlim(0,90)
+                        ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
+    
+                    st.pyplot(fig)
+            
+                    if results_dict != {}:
+                        st.subheader("Download Computed Data")
+                        output_buffer = io.BytesIO()
+                        with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                            for hkl_label, df in results_dict.items():
+                                sheet_name = f"hkl_{hkl_label}"
+                                df.to_excel(writer, sheet_name=sheet_name, index=False)
+                    
+                                # auto-width adjustment
+                                worksheet = writer.sheets[sheet_name]
+                                for i, col in enumerate(df.columns):
+                                    max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                                    worksheet.set_column(i, i, max_width)
+                    
+                        output_buffer.seek(0)
+                    
+                        st.download_button(
+                            label="📥 Download Results as Excel (.xlsx)",
+                            data=output_buffer,
+                            file_name="strain_results.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+            with col3:
+                if st.button("Generate XRD") and selected_hkls:
+                    contine
