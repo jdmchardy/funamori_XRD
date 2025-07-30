@@ -317,10 +317,19 @@ if uploaded_file:
                     phi_values = np.linspace(0, 2 * np.pi, 360)
                     psi_values = 0
                     results_dict = {}
+                    all_dfs = []  # Collect all dfs here
+
                     for hkl, intensity in zip(selected_hkls, intensities):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(
+                            hkl, intensity, a_val, wavelength, c11, c12, c44,
+                            sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry
+                        )
                         st.write(hkl_label)
                         results_dict[hkl_label] = df
+                        all_dfs.append(df)
+                
+                    # Concatenate all dataframes
+                    combined_df = pd.concat(all_dfs, ignore_index=True)
 
                     # Define constants
                     fwhm = 0.06  # degrees
