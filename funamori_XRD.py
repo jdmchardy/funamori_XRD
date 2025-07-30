@@ -287,7 +287,7 @@ if uploaded_file:
                     phi_values = np.linspace(0, 2 * np.pi, 100)
                     psi_values = 0
                     results_dict = {}
-                    for ax, hkl in zip(axs, selected_hkls):
+                    for hkl in selected_hkls:
                         hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, a_val, wavelength, c11, c12, c44, phi_values, psi_values, symmetry)
                         results_dict[hkl_label] = df
 
