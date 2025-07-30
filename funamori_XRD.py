@@ -339,7 +339,7 @@ if uploaded_file:
                         total_gauss = np.zeros_like(theta_grid)
                     
                         for _, row in group.iterrows():
-                            two_theta = row["2theta (deg)"]
+                            two_theta = row["2th"]
                             gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
                             total_gauss += gauss
                     
