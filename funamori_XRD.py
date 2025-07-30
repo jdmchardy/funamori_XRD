@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import io
+from scipy.interpolate import interp1d
 
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
@@ -196,9 +197,9 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
     
     # Define common 2-theta range for evaluation
-    theta_min = combined_df["2th"].min() - 0.3
-    theta_max = combined_df["2th"].max() + 0.3
-    theta_grid = np.linspace(theta_min, theta_max, 2000)
+    twotheta_min = combined_df["2th"].min() - 0.3
+    twotheta_max = combined_df["2th"].max() + 0.3
+    twotheta_grid = np.linspace(twotheta_min, twotheta_max, 2000)
     
     # Container to store individual peak curves
     peak_curves = {}
@@ -210,7 +211,7 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     
         for _, row in group.iterrows():
             two_theta = row["2th"]
-            gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
+            gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
             total_gauss += gaussian_peak
     
         avg_gauss = total_gauss / len(group)
@@ -219,7 +220,7 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     # Combined total pattern
     total_pattern = sum(peak_curves.values())
     total_df = pd.DataFrame({
-        "2th": theta_grid,
+        "2th": twotheta_grid,
         "Total Intensity": total_pattern
     })
     return total_df
@@ -366,12 +367,12 @@ if uploaded_file:
                     strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
                     XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
-                    theta_grid = XRD_df["2th"]
+                    twotheta_grid = XRD_df["2th"]
                     total_pattern = XRD_df["Total Intensity"]
 
                     # Plotting the total pattern
                     fig, ax = plt.subplots(figsize=(8, 4))
-                    ax.plot(theta_grid, total_pattern, label="Simulated XRD", lw=0.5, color="black")
+                    ax.plot(twotheta_grid, total_pattern, label="Simulated XRD", lw=0.5, color="black")
                     ax.set_xlabel("2θ (deg)")
                     ax.set_ylabel("Intensity (a.u.)")
                     ax.set_title("Simulated XRD Pattern")
@@ -379,3 +380,52 @@ if uploaded_file:
                 
                     st.pyplot(fig)
     st.subheader("Refine XRD")
+
+    uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
+
+    if uploaded_XRD is not None:
+        data = pd.read_csv(uploaded_XRD, delim_whitespace=True, header=None, names=['2th', 'intensity'])
+        x_exp = data['2th'].values
+        y_exp = data['intensity'].values
+    
+        if st.button("Run Refinement"):
+            phi_values = np.linspace(0, 2 * np.pi, 360)
+            psi_values = 0
+            strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+
+            XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+            twoth_sim = XRD_df["2th"]
+            intensity_sim = XRD_df["Total Intensity"]
+
+            # Determine bounds of simulated x values
+            x_min_sim = np.min(twoth_sim)
+            x_max_sim = np.max(twoth_sim)
+        
+            # Identify experimental x values within the simulated range
+            within_range_mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+            x_exp_common = x_exp[within_range_mask]
+            y_exp_common = y_exp[within_range_mask]
+        
+            # Interpolate simulation
+            interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+            y_sim_common = interp_sim(x_exp_common)
+        
+            residuals = y_exp_common - y_sim_common
+
+            #Plot up the overlay with residuals
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    
+            ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
+            ax1.plot(x_exp, y_sim, label="Simulated", linestyle='--', color='red', lw=0.5)
+            ax1.set_ylabel("Intensity")
+            ax1.legend()
+            ax1.set_title("Overlay of Experimental and Simulated Patterns")
+    
+            ax2.plot(x_exp, residuals, color='blue')
+            ax2.axhline(0, color='gray', lw=0.5)
+            ax2.set_xlabel("2θ (degrees)")
+            ax2.set_ylabel("Residuals")
+    
+            st.pyplot(fig)
+    else:
+        st.info("Please upload an .xy file to begin refinement.")
