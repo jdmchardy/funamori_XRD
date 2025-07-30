@@ -179,6 +179,51 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     })
     return hkl_label, df, psi_list, strain_33_list
 
+def Generate_XRD(selected_hkls, intensities, strain_sim_params):
+    results_dict = {}
+    all_dfs = []  # Collect all dfs here
+
+    for hkl, intensity in zip(selected_hkls, intensities):
+        hkl_label, df, psi_list, strain_33_list = compute_strain(*strain_sim_params)
+        results_dict[hkl_label] = df
+        all_dfs.append(df)
+
+    # Concatenate all dataframes
+    combined_df = pd.concat(all_dfs, ignore_index=True)
+
+    # Define constants
+    fwhm = Gaussian_FWHM  # degrees
+    sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
+    
+    # Define common 2-theta range for evaluation
+    theta_min = combined_df["2th"].min() - 0.3
+    theta_max = combined_df["2th"].max() + 0.3
+    theta_grid = np.linspace(theta_min, theta_max, 2000)
+    
+    # Container to store individual peak curves
+    peak_curves = {}
+    
+    # Loop over unique (h, k, l)
+    for (h, k, l), group in combined_df.groupby(["h", "k", "l"]):
+        peak_intensity = group["intensity"].iloc[0]
+        total_gauss = np.zeros_like(theta_grid)
+    
+        for _, row in group.iterrows():
+            two_theta = row["2th"]
+            gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
+            total_gauss += gaussian_peak
+    
+        avg_gauss = total_gauss / len(group)
+        peak_curves[(h, k, l)] = avg_gauss
+        
+    # Combined total pattern
+    total_pattern = sum(peak_curves.values())
+    total_df = pd.DataFrame({
+        "2th": theta_grid,
+        "Total Intensity": total_pattern
+    })
+    return total_df
+
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
 
@@ -318,57 +363,11 @@ if uploaded_file:
                 if st.button("Generate XRD") and selected_hkls:
                     phi_values = np.linspace(0, 2 * np.pi, 360)
                     psi_values = 0
-                    results_dict = {}
-                    all_dfs = []  # Collect all dfs here
+                    strain_sim_params = (hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
-                    for hkl, intensity in zip(selected_hkls, intensities):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(
-                            hkl, intensity, a_val, wavelength, c11, c12, c44,
-                            sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry
-                        )
-                        results_dict[hkl_label] = df
-                        all_dfs.append(df)
-                
-                    # Concatenate all dataframes
-                    combined_df = pd.concat(all_dfs, ignore_index=True)
-
-                    # Define constants
-                    fwhm = Gaussian_FWHM  # degrees
-                    sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
-                    
-                    # Define common 2-theta range for evaluation
-                    theta_min = combined_df["2th"].min() - 0.3
-                    theta_max = combined_df["2th"].max() + 0.3
-                    theta_grid = np.linspace(theta_min, theta_max, 2000)
-                    
-                    # Container to store individual peak curves
-                    peak_curves = {}
-                    
-                    # Loop over unique (h, k, l)
-                    for (h, k, l), group in combined_df.groupby(["h", "k", "l"]):
-                        peak_intensity = group["intensity"].iloc[0]
-                        total_gauss = np.zeros_like(theta_grid)
-                    
-                        for _, row in group.iterrows():
-                            two_theta = row["2th"]
-                            gaussian_peak = peak_intensity * Gaussian(theta_grid, two_theta, sigma_gauss) 
-                            total_gauss += gaussian_peak
-                    
-                        avg_gauss = total_gauss / len(group)
-                        peak_curves[(h, k, l)] = avg_gauss
-                    
-                        # Save to file
-                        peak_df = pd.DataFrame({
-                            "2th": theta_grid,
-                            "Intensity": avg_gauss
-                        })
-                        
-                    # Combined total pattern
-                    total_pattern = sum(peak_curves.values())
-                    total_df = pd.DataFrame({
-                        "2th": theta_grid,
-                        "Total Intensity": total_pattern
-                    })
+                    XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                    theta_grid, = XRD_df["2th"]
+                    total_pattern = XRD_df["Total Intensity"]
 
                     # Plotting the total pattern
                     fig, ax = plt.subplots(figsize=(8, 4))
