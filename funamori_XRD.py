@@ -489,7 +489,6 @@ if uploaded_file:
                 #initial_guess = np.append(initial_guess, intensities)
 
                 arguments = (selected_hkls, intensities, wavelength, c11, c12, phi_values, psi_values, symmetry)
-                st.write(arguments)
             
                 # ---- Run constrained minimization ---- #
                 param_constraints = [(2,4), (-50, 100), (-5, 5)]
