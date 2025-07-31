@@ -483,7 +483,7 @@ if uploaded_file:
                     residuals = y_exp_common - y_sim_common
 
                     weighted_residuals = residuals*(1/y_exp_common**0.5)
-                    return np.sum(residuals**2)
+                    return np.sum(weighted_residuals**2)
             
                 # ---- Initial guess ---- #
                 t = 3*sigma_33/2
