@@ -258,6 +258,15 @@ def get_initial_parameters():
 
     st.session_state.params.update({"a_val": a_val, "c44": c44, "t": t})
     return a_val, c44, t
+
+def select_parameters_to_refine():
+    """Returns flags for parameters the user wants to refine."""
+    st.subheader("Select Parameters to Refine")
+    return {
+        "a_val": st.checkbox("Refine a", value=True),
+        "c44": st.checkbox("Refine c44", value=False),
+        "t": st.checkbox("Refine t", value=False)
+    }
     
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
@@ -454,7 +463,7 @@ if uploaded_file:
         with col2:
             a_val, c44, t = get_initial_parameters()
             param_flags = select_parameters_to_refine()
-        
+        """
             if st.button("Refine XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
                 psi_values = 0
