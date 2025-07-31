@@ -394,7 +394,7 @@ if uploaded_file:
 
         col1,col2,col3 = st.columns(3)
         with col1:
-            if st.button("Plot XRD"):
+            if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
                 psi_values = 0
                 strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
