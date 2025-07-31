@@ -393,7 +393,7 @@ if uploaded_file:
 
         col1,col2,col3 = st.columns(3)
         with col1:
-            if st.button("Run Refinement"):
+            if st.button("Plot XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
                 psi_values = 0
                 strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
@@ -441,3 +441,79 @@ if uploaded_file:
                 st.pyplot(fig)
             else:
                 st.info("Please upload an .xy file to begin refinement.")
+
+        with col2:
+            if st.button("Refine XRD"):
+                phi_values = np.linspace(0, 2 * np.pi, 360)
+                psi_values = 0
+            
+                # ---- Objective function ---- #
+                def objective(params, selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry):
+                    a_val_opt, c44_opt, t_opt, intensities_opt = params
+
+                    sigma_11_opt = -t_opt/3
+                    sigma_22_opt = -t_opt/3
+                    sigma_33_opt = 2*t_opt/3
+            
+                    strain_sim_params = (
+                        a_val_opt, wavelength, c11, c12, c44_opt,
+                        sigma_11_opt, sigma_22_opt, sigma_33_opt,
+                        phi_values, psi_values, symmetry
+                    )
+            
+                    XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
+                    twoth_sim = XRD_df["2th"]
+                    intensity_sim = XRD_df["Total Intensity"]
+            
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    y_sim_common = interp_sim(x_exp_common)
+                    y_sim_common = y_sim_common / np.nanmax(y_sim_common) * 100 * intensity_scale
+            
+                    # Residuals ignoring NaNs
+                    mask_valid = ~np.isnan(y_sim_common)
+                    residuals = y_exp_common[mask_valid] - y_sim_common[mask_valid]
+                    return np.sum(residuals**2)
+            
+                # ---- Initial guess ---- #
+                initial_guess = [a_val, c44, sigma_11, sigma_22, sigma_33, 1.0]
+            
+                # ---- Run unconstrained minimization ---- #
+                result = minimize(objective, initial_guess, method='BFGS')
+            
+                if result.success:
+                    opt_params = result.x
+                    st.success("Refinement successful!")
+                    st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, σ₁₁ = {opt_params[2]:.3f}, σ₂₂ = {opt_params[3]:.3f}, σ₃₃ = {opt_params[4]:.3f}, Intensity scale = {opt_params[5]:.2f}")
+            
+                    # Generate final simulated pattern
+                    strain_sim_params = (
+                        opt_params[0], wavelength, c11, c12, opt_params[1],
+                        opt_params[2], opt_params[3], opt_params[4],
+                        phi_values, psi_values, symmetry
+                    )
+            
+                    XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                    twoth_sim = XRD_df["2th"]
+                    intensity_sim = XRD_df["Total Intensity"]
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    y_sim_common = interp_sim(x_exp_common)
+                    y_sim_common = y_sim_common / np.nanmax(y_sim_common) * 100 * opt_params[5]
+                    residuals = y_exp_common - y_sim_common
+            
+                    # Plot overlay and residuals
+                    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+                    ax1.plot(x_exp_common, y_exp_common, label="Experimental", color='black', lw=0.5)
+                    ax1.plot(x_exp_common, y_sim_common, label="Simulated (Optimized)", linestyle='--', color='red', lw=0.5)
+                    ax1.set_ylabel("Intensity")
+                    ax1.legend()
+                    ax1.set_title("Refined Fit: Experimental vs Simulated")
+            
+                    ax2.plot(x_exp_common, residuals, color='blue', lw=0.5)
+                    ax2.axhline(0, color='gray', lw=0.5)
+                    ax2.set_xlabel("2θ (degrees)")
+                    ax2.set_ylabel("Residuals")
+            
+                    st.pyplot(fig)
+            
+                else:
+                    st.error("Refinement failed. Check initial guesses or model consistency.")
