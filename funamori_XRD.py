@@ -445,7 +445,7 @@ if uploaded_file:
                 psi_values = 0
             
                 # ---- Objective function ---- #
-                def objective(params, selected_hkls, intensites_opt, wavelength, c11, c12, phi_values, psi_values, symmetry):
+                def objective(params, selected_hkls, intensities_opt, wavelength, c11, c12, phi_values, psi_values, symmetry):
                     a_val_opt = params[0]
                     c44_opt = params[1]
                     t_opt =  params[2]
