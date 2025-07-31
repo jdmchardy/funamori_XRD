@@ -518,7 +518,7 @@ if uploaded_file:
             "c44": c44,
             "sigma_11": sigma_11,
             "sigma_33": sigma_33
-        }
+            }
         col1, col2, col3 = st.columns(3)
         with col1:
             a_val, c44, t = get_initial_parameters(defaults)
@@ -528,13 +528,16 @@ if uploaded_file:
         if st.button("Refine XRD"):
             phi_values = np.linspace(0, 2 * np.pi, 360)
             psi_values = 0
-            result = run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values)
-        """
+            result = run_refinement(
+                a_val, c44, t, param_flags, selected_hkls, intensities, 
+                phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
+                )
+        
             if result.success:
                 st.success("Refinement successful!")
                 # Update session state with new values
                 idx = 0
-                if param_flags["a"]:
+                if param_flags["a_val"]:
                     st.session_state.params["a"] = result.x[idx]
                     idx += 1
                 if param_flags["c44"]:
@@ -542,7 +545,7 @@ if uploaded_file:
                     idx += 1
                 if param_flags["t"]:
                     st.session_state.params["t"] = result.x[idx]
-    
+            """
                 # Final simulation and plot
                 XRD_df = simulate_xrd(
                     st.session_state.params["a"],
