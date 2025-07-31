@@ -242,13 +242,13 @@ def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
 
     st.pyplot(fig)
 
-def get_initial_parameters():
+def get_initial_parameters(defaults):
     """Returns editable parameter fields with memory between runs."""
     if "params" not in st.session_state:
         st.session_state.params = {
-            "a_val": a_val,
-            "c44": c44,
-            "t": sigma_33 - sigma_11
+            "a_val": defaults["a"],
+            "c44": defaults["c44"],
+            "t": defaults["sigma_33"] - defaults["sigma_11"]
         }
 
     st.subheader("Initial Refinement Parameters")
@@ -461,7 +461,13 @@ if uploaded_file:
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
     
         with col2:
-            a_val, c44, t = get_initial_parameters()
+            defaults = {
+                "a_val": a_val,
+                "c44": c44,
+                "sigma_11": sigma_11,
+                "sigma_33": sigma_33
+            }
+            a_val, c44, t = get_initial_parameters(defaults)
             param_flags = select_parameters_to_refine()
         """
             if st.button("Refine XRD"):
