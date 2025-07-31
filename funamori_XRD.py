@@ -433,7 +433,7 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
         
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
-        
+        """
         with col2:
             a, c44, t = get_initial_parameters()
             param_flags = select_parameters_to_refine()
@@ -477,7 +477,7 @@ if uploaded_file:
                 else:
                     st.error("Refinement failed.")
 
-
+        """
 
 
 
