@@ -415,7 +415,7 @@ if uploaded_file:
                 psi_values = 0
                 t = sigma_33 - sigma_11
                 strain_sim_params = (
-                    a, wavelength, c11, c12, c44,
+                    a_val, wavelength, c11, c12, c44,
                     sigma_11, sigma_22, sigma_33,
                     phi_values, psi_values, symmetry
                 )
