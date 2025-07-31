@@ -459,55 +459,57 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
         
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
-    
-        with col2:
-            defaults = {
-                "a_val": a_val,
-                "c44": c44,
-                "sigma_11": sigma_11,
-                "sigma_33": sigma_33
-            }
+
+        defaults = {
+            "a_val": a_val,
+            "c44": c44,
+            "sigma_11": sigma_11,
+            "sigma_33": sigma_33
+        }
+        col1, col2 = st.columns
+        with col1:
             a_val, c44, t = get_initial_parameters(defaults)
+        with col2:
             param_flags = select_parameters_to_refine()
-        """
-            if st.button("Refine XRD"):
-                phi_values = np.linspace(0, 2 * np.pi, 360)
-                psi_values = 0
-                result = run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values)
-        
-                if result.success:
-                    st.success("Refinement successful!")
-                    # Update session state with new values
-                    idx = 0
-                    if param_flags["a"]:
-                        st.session_state.params["a"] = result.x[idx]
-                        idx += 1
-                    if param_flags["c44"]:
-                        st.session_state.params["c44"] = result.x[idx]
-                        idx += 1
-                    if param_flags["t"]:
-                        st.session_state.params["t"] = result.x[idx]
-        
-                    # Final simulation and plot
-                    XRD_df = simulate_xrd(
-                        st.session_state.params["a"],
-                        st.session_state.params["c44"],
-                        st.session_state.params["t"],
-                        selected_hkls, intensities, phi_values, psi_values
-                    )
-                    twoth_sim = XRD_df["2th"]
-                    intensity_sim = XRD_df["Total Intensity"]
-                    x_min_sim = np.min(twoth_sim)
-                    x_max_sim = np.max(twoth_sim)
-                    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
-                    x_exp_common = x_exp[mask]
-                    y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
-                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
-                    y_sim_common = interp_sim(x_exp_common)
-        
-                    plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
-                else:
-                    st.error("Refinement failed.")
+    """
+        if st.button("Refine XRD"):
+            phi_values = np.linspace(0, 2 * np.pi, 360)
+            psi_values = 0
+            result = run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values)
+    
+            if result.success:
+                st.success("Refinement successful!")
+                # Update session state with new values
+                idx = 0
+                if param_flags["a"]:
+                    st.session_state.params["a"] = result.x[idx]
+                    idx += 1
+                if param_flags["c44"]:
+                    st.session_state.params["c44"] = result.x[idx]
+                    idx += 1
+                if param_flags["t"]:
+                    st.session_state.params["t"] = result.x[idx]
+    
+                # Final simulation and plot
+                XRD_df = simulate_xrd(
+                    st.session_state.params["a"],
+                    st.session_state.params["c44"],
+                    st.session_state.params["t"],
+                    selected_hkls, intensities, phi_values, psi_values
+                )
+                twoth_sim = XRD_df["2th"]
+                intensity_sim = XRD_df["Total Intensity"]
+                x_min_sim = np.min(twoth_sim)
+                x_max_sim = np.max(twoth_sim)
+                mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+                x_exp_common = x_exp[mask]
+                y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+                interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                y_sim_common = interp_sim(x_exp_common)
+    
+                plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+            else:
+                st.error("Refinement failed.")
 
         """
 
