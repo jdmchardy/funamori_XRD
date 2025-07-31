@@ -489,9 +489,11 @@ if uploaded_file:
                 #initial_guess = np.append(initial_guess, intensities)
 
                 arguments = (selected_hkls, intensities, wavelength, c11, c12, phi_values, psi_values, symmetry)
+                st.write(arguments)
             
                 # ---- Run unconstrained minimization ---- #
                 result = minimize(objective, initial_guess, args=arguments, method='BFGS')
+                st.write(result)
             
                 if result.success:
                     opt_params = result.x
