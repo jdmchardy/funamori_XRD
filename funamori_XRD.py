@@ -267,6 +267,59 @@ def select_parameters_to_refine():
         "c44": st.checkbox("Refine c44", value=False),
         "t": st.checkbox("Refine t", value=False)
     }
+
+def run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+    fixed_vals = {"a": a, "c44": c44, "t": t}
+    initial_guess = [fixed_vals[key] for key in ["a", "c44", "t"] if param_flags[key]]
+    bounds = {
+        "a": (0.5 * a, 1.5 * a),
+        "c44": (-50, 100),
+        "t": (-10, 10)
+    }
+    param_bounds = [bounds[key] for key in ["a", "c44", "t"] if param_flags[key]]
+
+    result = minimize(
+        cost_function,
+        initial_guess,
+        args=(param_flags, fixed_vals, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
+        method='Nelder-Mead',
+        bounds=param_bounds,
+        options={'maxiter': 1000, 'disp': True}
+    )
+
+    return result
+
+def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_opt, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+    idx = 0
+    a_val_opt = fixed_vals["a"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
+    c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
+    t_opt     = fixed_vals["t"] if not param_flags["t"] else params[idx]; idx += int(param_flags["t"])
+
+    sigma_11_opt = -t_opt/3
+    sigma_22_opt = -t_opt/3
+    sigma_33_opt = 2*t_opt/3
+
+    strain_sim_params = (
+        a_val_opt, wavelength, c11, c12, c44_opt,
+        sigma_11_opt, sigma_22_opt, sigma_33_opt,
+        phi_values, psi_values, symmetry
+    )
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
+    twoth_sim = XRD_df["2th"]
+    intensity_sim = XRD_df["Total Intensity"]
+
+    x_min_sim = np.min(twoth_sim)
+    x_max_sim = np.max(twoth_sim)
+    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+    x_exp_common = x_exp[mask]
+    y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+
+    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+    y_sim_common = interp_sim(x_exp_common)
+
+    residuals = y_exp_common - y_sim_common
+    weighted_residuals = residuals * (1 / (y_exp_common + 1))
+    return np.sum(weighted_residuals ** 2)
     
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
@@ -471,12 +524,12 @@ if uploaded_file:
             a_val, c44, t = get_initial_parameters(defaults)
         with col2:
             param_flags = select_parameters_to_refine()
-        """
+
         if st.button("Refine XRD"):
             phi_values = np.linspace(0, 2 * np.pi, 360)
             psi_values = 0
             result = run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values)
-    
+        """
             if result.success:
                 st.success("Refinement successful!")
                 # Update session state with new values
@@ -576,7 +629,7 @@ with col2:
         psi_values = 0
     
         # ---- Objective function ---- #
-        def objective(params, selected_hkls, intensities_opt, wavelength, c11, c12, phi_values, psi_values, symmetry):
+        def objective(params, selected_hkls, intensities_opt, wavelength, c11, c12, phi_values, psi_values, symmetry, x_exp, y_exp):
             a_val_opt = params[0]
             c44_opt = params[1]
             t_opt =  params[2]
