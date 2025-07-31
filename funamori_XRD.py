@@ -493,7 +493,7 @@ if uploaded_file:
                 arguments = (selected_hkls, intensities, wavelength, c11, c12, phi_values, psi_values, symmetry)
             
                 # ---- Run constrained minimization ---- #
-                param_constraints = [(2,4), (-50, 100), (-5, 5)]
+                param_constraints = [(0.5*a_val,1.5*a_val), (-50, 100), (-10, 10)]
                 result = minimize(
                     objective,
                     initial_guess,
