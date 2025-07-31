@@ -291,7 +291,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
 
 def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_opt, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     idx = 0
-    a_val_opt = fixed_vals["a"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
+    a_val_opt = fixed_vals["a_val"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
     c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
     t_opt     = fixed_vals["t"] if not param_flags["t"] else params[idx]; idx += int(param_flags["t"])
 
