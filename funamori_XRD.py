@@ -482,7 +482,7 @@ if uploaded_file:
                     y_sim_common = interp_sim(x_exp_common)
                     residuals = y_exp_common - y_sim_common
 
-                    weighted_residuals = residuals*(1/y_exp_common**0.5)
+                    weighted_residuals = residuals*(1/(y_exp_common+1)**0.5)
                     return np.sum(weighted_residuals**2)
             
                 # ---- Initial guess ---- #
