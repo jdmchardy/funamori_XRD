@@ -392,7 +392,7 @@ if uploaded_file:
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
 
-        col1,col2,col3 = st.columns(3)
+        col1,col2 = st.columns([2,4])
         with col1:
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
@@ -506,13 +506,40 @@ if uploaded_file:
                     opt_params = result.x
                     st.success("Refinement successful!")
                     st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, t = {opt_params[2]:.3f}")
-                    """
                     # Generate final simulated pattern
+                    a_val_opt = opt_params[0]
+                    c44_opt = opt_params[1]
+                    t_opt = opt_params[2]
+                    sigma_11_opt = -t_opt/3
+                    sigma_22_opt = -t_opt/3
+                    sigma_33_opt = 2*t_opt/3
+                    
                     strain_sim_params = (
-                        opt_params[0], wavelength, c11, c12, opt_params[1],
-                        opt_params[2], opt_params[3], opt_params[4],
+                        a_val_opt, wavelength, c11, c12, c44_opt,
+                        sigma_11_opt, sigma_22_opt, sigma_33_opt,
                         phi_values, psi_values, symmetry
                     )
+
+                    XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
+                    twoth_sim = XRD_df["2th"]
+                    intensity_sim = XRD_df["Total Intensity"]
+
+                    # Determine bounds of simulated x values
+                    x_min_sim = np.min(twoth_sim)
+                    x_max_sim = np.max(twoth_sim)
+                
+                    # Identify experimental x values within the simulated range
+                    mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
+                    x_exp_common = x_exp[mask]
+                    y_exp_common = y_exp[mask]
+    
+                    # Normalize experimental intensity
+                    y_exp_common = y_exp_common / np.max(y_exp_common)*100
+                
+                    # Interpolate simulation
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    y_sim_common = interp_sim(x_exp_common)
+                    residuals = y_exp_common - y_sim_common
             
                     # Plot overlay and residuals
                     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
@@ -528,7 +555,6 @@ if uploaded_file:
                     ax2.set_ylabel("Residuals")
             
                     st.pyplot(fig)
-                    """
             
                 else:
                     st.error("Refinement failed. Check initial guesses or model consistency.")
