@@ -226,6 +226,22 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     })
     return total_df
 
+def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
+    residuals = y_exp - y_sim
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
+    ax1.plot(x_exp, y_exp, label="Experimental", color='black', lw=0.5)
+    ax1.plot(x_exp, y_sim, label="Simulated", linestyle='--', color='red', lw=0.5)
+    ax1.set_ylabel("Intensity")
+    ax1.legend()
+    ax1.set_title(title)
+
+    ax2.plot(x_exp, residuals, color='blue', lw=0.5)
+    ax2.axhline(0, color='gray', lw=0.5)
+    ax2.set_xlabel("2θ (degrees)")
+    ax2.set_ylabel("Residuals")
+
+    st.pyplot(fig)
+    
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
 
@@ -391,6 +407,88 @@ if uploaded_file:
         data = pd.read_csv(io.StringIO("\n".join(data_lines)), delim_whitespace=True, header=None, names=['2th', 'intensity'])
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
+
+        col1, col2 = st.columns([2, 4])
+        with col1:
+            if st.button("Overlay XRD"):
+                phi_values = np.linspace(0, 2 * np.pi, 360)
+                psi_values = 0
+                t = sigma_33 - sigma_11
+                strain_sim_params = (
+                    a, wavelength, c11, c12, c44,
+                    sigma_11, sigma_22, sigma_33,
+                    phi_values, psi_values, symmetry
+                )
+                XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                twoth_sim = XRD_df["2th"]
+                intensity_sim = XRD_df["Total Intensity"]
+                
+                #Determine common data and interpolate
+                x_min_sim = np.min(twoth_sim)
+                x_max_sim = np.max(twoth_sim)
+                mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+                x_exp_common = x_exp[mask]
+                y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+                interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                y_sim_common = interp_sim(x_exp_common)
+        
+                plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
+        
+        with col2:
+            a, c44, t = get_initial_parameters()
+            param_flags = select_parameters_to_refine()
+        
+            if st.button("Refine XRD"):
+                phi_values = np.linspace(0, 2 * np.pi, 360)
+                psi_values = 0
+                result = run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values)
+        
+                if result.success:
+                    st.success("Refinement successful!")
+                    # Update session state with new values
+                    idx = 0
+                    if param_flags["a"]:
+                        st.session_state.params["a"] = result.x[idx]
+                        idx += 1
+                    if param_flags["c44"]:
+                        st.session_state.params["c44"] = result.x[idx]
+                        idx += 1
+                    if param_flags["t"]:
+                        st.session_state.params["t"] = result.x[idx]
+        
+                    # Final simulation and plot
+                    XRD_df = simulate_xrd(
+                        st.session_state.params["a"],
+                        st.session_state.params["c44"],
+                        st.session_state.params["t"],
+                        selected_hkls, intensities, phi_values, psi_values
+                    )
+                    twoth_sim = XRD_df["2th"]
+                    intensity_sim = XRD_df["Total Intensity"]
+                    x_min_sim = np.min(twoth_sim)
+                    x_max_sim = np.max(twoth_sim)
+                    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+                    x_exp_common = x_exp[mask]
+                    y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    y_sim_common = interp_sim(x_exp_common)
+        
+                    plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+                else:
+                    st.error("Refinement failed.")
+
+
+
+
+
+
+
+
+
+
+
+
+        """
 
         col1,col2 = st.columns([2,4])
         with col1:
@@ -559,3 +657,4 @@ if uploaded_file:
             
                 else:
                     st.error("Refinement failed. Check initial guesses or model consistency.")
+        """
