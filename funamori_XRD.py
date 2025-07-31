@@ -519,7 +519,7 @@ if uploaded_file:
                         phi_values, psi_values, symmetry
                     )
 
-                    XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
+                    XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
                     twoth_sim = XRD_df["2th"]
                     intensity_sim = XRD_df["Total Intensity"]
 
