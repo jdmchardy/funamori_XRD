@@ -483,11 +483,15 @@ if uploaded_file:
                 # ---- Initial guess ---- #
                 t = 3*sigma_33/2
                 initial_guess = [a_val, c44, t, intensities]
+
+                arguments = (selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry)
             
                 # ---- Run unconstrained minimization ---- #
-                result = minimize(objective, initial_guess, method='BFGS')
+                result = minimize(objective, initial_guess, args=arguments, method='BFGS')
             
                 if result.success:
+                    st.write("success")
+                    """
                     opt_params = result.x
                     st.success("Refinement successful!")
                     st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, σ₁₁ = {opt_params[2]:.3f}, σ₂₂ = {opt_params[3]:.3f}, σ₃₃ = {opt_params[4]:.3f}, Intensity scale = {opt_params[5]:.2f}")
@@ -513,6 +517,7 @@ if uploaded_file:
                     ax2.set_ylabel("Residuals")
             
                     st.pyplot(fig)
+                    """
             
                 else:
                     st.error("Refinement failed. Check initial guesses or model consistency.")
