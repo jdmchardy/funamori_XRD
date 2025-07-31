@@ -547,9 +547,9 @@ if uploaded_file:
                     st.session_state.params["t"] = result.x[idx]
             
                 # Final simulation and plot
-                a_val_opt = st.session_state.params["a_val"],
-                c44_opt = st.session_state.params["c44"],
-                t_opt = st.session_state.params["t"],
+                a_val_opt = st.session_state.params["a_val"]
+                c44_opt = st.session_state.params["c44"]
+                t_opt = st.session_state.params["t"]
                 sigma_11_opt = -t_opt/3
                 sigma_22_opt = -t_opt/3
                 sigma_33_opt = 2*t_opt/3
