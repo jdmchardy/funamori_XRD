@@ -322,7 +322,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_op
     return np.sum(weighted_residuals ** 2)
     
 st.set_page_config(layout="wide")
-st.title("Funamori Strain (Batch Mode and XRD")
+st.title("Funamori Strain (Batch Mode and XRD)")
 
 st.subheader("Upload CSV Input File")
 uploaded_file = st.file_uploader("Upload CSV file with parameters and multiple hkl reflections", type=["csv"])
