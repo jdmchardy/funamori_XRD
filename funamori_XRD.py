@@ -483,6 +483,8 @@ if uploaded_file:
             
                 # ---- Initial guess ---- #
                 t = 3*sigma_33/2
+                st.write(intensities)
+                st.write(np.type(intensities))
                 initial_guess = [a_val, c44, t, intensities]
 
                 arguments = (selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry)
