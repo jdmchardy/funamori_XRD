@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 from scipy.interpolate import interp1d
+from scipy.optimize import minimize
 
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
