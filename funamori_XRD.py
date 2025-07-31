@@ -417,10 +417,6 @@ if uploaded_file:
                 # Interpolate simulation
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
-
-                # Normalize simulated intensity
-                y_sim_common = y_sim_common / np.max(y_sim_common)*100
-            
                 residuals = y_exp_common - y_sim_common
     
                 #Plot up the overlay with residuals
@@ -464,18 +460,29 @@ if uploaded_file:
                     XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
                     twoth_sim = XRD_df["2th"]
                     intensity_sim = XRD_df["Total Intensity"]
-            
+
+                    # Determine bounds of simulated x values
+                    x_min_sim = np.min(twoth_sim)
+                    x_max_sim = np.max(twoth_sim)
+                
+                    # Identify experimental x values within the simulated range
+                    mask = (x_exp >= x_min_sim) * (x_exp <= x_max_sim)
+                    x_exp_common = x_exp[mask]
+                    y_exp_common = y_exp[mask]
+    
+                    # Normalize experimental intensity
+                    y_exp_common = y_exp_common / np.max(y_exp_common)*100
+                
+                    # Interpolate simulation
                     interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                     y_sim_common = interp_sim(x_exp_common)
-                    y_sim_common = y_sim_common / np.nanmax(y_sim_common) * 100 * intensity_scale
-            
-                    # Residuals ignoring NaNs
-                    mask_valid = ~np.isnan(y_sim_common)
-                    residuals = y_exp_common[mask_valid] - y_sim_common[mask_valid]
+                    residuals = y_exp_common - y_sim_common
+
                     return np.sum(residuals**2)
             
                 # ---- Initial guess ---- #
-                initial_guess = [a_val, c44, sigma_11, sigma_22, sigma_33, 1.0]
+                t = 3*sigma_33/2
+                initial_guess = [a_val, c44, t, intensities]
             
                 # ---- Run unconstrained minimization ---- #
                 result = minimize(objective, initial_guess, method='BFGS')
@@ -491,14 +498,6 @@ if uploaded_file:
                         opt_params[2], opt_params[3], opt_params[4],
                         phi_values, psi_values, symmetry
                     )
-            
-                    XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
-                    twoth_sim = XRD_df["2th"]
-                    intensity_sim = XRD_df["Total Intensity"]
-                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
-                    y_sim_common = interp_sim(x_exp_common)
-                    y_sim_common = y_sim_common / np.nanmax(y_sim_common) * 100 * opt_params[5]
-                    residuals = y_exp_common - y_sim_common
             
                     # Plot overlay and residuals
                     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
