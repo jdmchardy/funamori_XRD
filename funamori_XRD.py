@@ -538,7 +538,7 @@ if uploaded_file:
                 # Update session state with new values
                 idx = 0
                 if param_flags["a_val"]:
-                    st.session_state.params["a"] = result.x[idx]
+                    st.session_state.params["a_val"] = result.x[idx]
                     idx += 1
                 if param_flags["c44"]:
                     st.session_state.params["c44"] = result.x[idx]
