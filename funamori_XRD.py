@@ -486,8 +486,6 @@ if uploaded_file:
             
                 # ---- Initial guess ---- #
                 t = 3*sigma_33/2
-                st.write(intensities)
-                st.write(type(intensities))
                 initial_guess = [a_val, c44, t] 
                 initial_guess = np.append(initial_guess, intensities)
 
