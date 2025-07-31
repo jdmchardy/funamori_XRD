@@ -273,7 +273,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
     initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
     bounds = {
         "a_val": (0.5 * a_val, 1.5 * a_val),
-        "c44": (-50, 100),
+        "c44": (-100, 200),
         "t": (-10, 10)
     }
     param_bounds = [bounds[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
