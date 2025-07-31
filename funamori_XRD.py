@@ -466,7 +466,7 @@ if uploaded_file:
             "sigma_11": sigma_11,
             "sigma_33": sigma_33
         }
-        col1, col2 = st.columns
+        col1, col2, col3 = st.columns(3)
         with col1:
             a_val, c44, t = get_initial_parameters(defaults)
         with col2:
