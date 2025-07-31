@@ -545,14 +545,21 @@ if uploaded_file:
                     idx += 1
                 if param_flags["t"]:
                     st.session_state.params["t"] = result.x[idx]
-            """
+            
                 # Final simulation and plot
-                XRD_df = simulate_xrd(
-                    st.session_state.params["a"],
-                    st.session_state.params["c44"],
-                    st.session_state.params["t"],
-                    selected_hkls, intensities, phi_values, psi_values
+                a_val_opt = st.session_state.params["a_val"],
+                c44_opt = st.session_state.params["c44"],
+                t_opt = st.session_state.params["t"],
+                sigma_11_opt = -t_opt/3
+                sigma_22_opt = -t_opt/3
+                sigma_33_opt = 2*t_opt/3
+                
+                strain_sim_params = (
+                    a_val_opt, wavelength, c11, c12, c44_opt,
+                    sigma_11_opt, sigma_22_opt, sigma_33_opt,
+                    phi_values, psi_values, symmetry
                 )
+                XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 x_min_sim = np.min(twoth_sim)
