@@ -548,11 +548,11 @@ if uploaded_file:
 
                 # Extract refined values
                 idx = 0
-                if param_flags["a"]:
+                if param_flags["a_val"]:
                     a_refined = result.x[idx]
                     idx += 1
                 else:
-                    a_refined = st.session_state.params["a"]
+                    a_refined = st.session_state.params["a_val"]
             
                 if param_flags["c44"]:
                     c44_refined = result.x[idx]
