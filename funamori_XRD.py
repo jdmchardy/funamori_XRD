@@ -246,7 +246,7 @@ def get_initial_parameters(defaults):
     """Returns editable parameter fields with memory between runs."""
     if "params" not in st.session_state:
         st.session_state.params = {
-            "a_val": defaults["a"],
+            "a_val": defaults["a_val"],
             "c44": defaults["c44"],
             "t": defaults["sigma_33"] - defaults["sigma_11"]
         }
