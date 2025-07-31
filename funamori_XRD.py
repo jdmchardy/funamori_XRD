@@ -566,9 +566,7 @@ if uploaded_file:
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
-                st.markdown(f"- **a** = {a_refined:.4f}")
-                st.markdown(f"- **c44** = {c44_refined:.2f}")
-                st.markdown(f"- **t** = {t_refined:.2f}")
+                st.markdown(f"- **a** = {a_refined:.4f}", f"- **c44** = {c44_refined:.2f}", f"- **t** = {t_refined:.2f}")
             
                 # Final simulation and plot
                 a_val_opt = st.session_state.params["a_val"]
