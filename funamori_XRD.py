@@ -491,14 +491,21 @@ if uploaded_file:
                 arguments = (selected_hkls, intensities, wavelength, c11, c12, phi_values, psi_values, symmetry)
                 st.write(arguments)
             
-                # ---- Run unconstrained minimization ---- #
-                result = minimize(objective, initial_guess, args=arguments, method='BFGS')
-                st.write(result)
+                # ---- Run constrained minimization ---- #
+                param_constraints = [(2,4), (-50, 100), (-5, 5)]
+                result = minimize(
+                    objective,
+                    initial_guess,
+                    args=arguments,
+                    method='Nelder-Mead',
+                    bounds=param_constraints,
+                    options={'maxiter': 1000, 'disp': True}
+                )
             
                 if result.success:
                     opt_params = result.x
                     st.success("Refinement successful!")
-                    st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, t = {opt_params[2]:.3f}, intensities = {opt_params[3:]:.3f}")
+                    st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, t = {opt_params[2]:.3f}")
                     """
                     # Generate final simulated pattern
                     strain_sim_params = (
