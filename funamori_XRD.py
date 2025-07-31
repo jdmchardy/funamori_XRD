@@ -268,15 +268,15 @@ def select_parameters_to_refine():
         "t": st.checkbox("Refine t", value=False)
     }
 
-def run_refinement(a, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
-    fixed_vals = {"a": a, "c44": c44, "t": t}
-    initial_guess = [fixed_vals[key] for key in ["a", "c44", "t"] if param_flags[key]]
+def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+    fixed_vals = {"a_val": a_val, "c44": c44, "t": t}
+    initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
     bounds = {
-        "a": (0.5 * a, 1.5 * a),
+        "a_val": (0.5 * a_val, 1.5 * a_val),
         "c44": (-50, 100),
         "t": (-10, 10)
     }
-    param_bounds = [bounds[key] for key in ["a", "c44", "t"] if param_flags[key]]
+    param_bounds = [bounds[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
     result = minimize(
         cost_function,
