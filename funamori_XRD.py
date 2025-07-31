@@ -477,7 +477,7 @@ if uploaded_file:
                     interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                     y_sim_common = interp_sim(x_exp_common)
                     residuals = y_exp_common - y_sim_common
-
+                    st.write(residuals)
                     return np.sum(residuals**2)
             
                 # ---- Initial guess ---- #
