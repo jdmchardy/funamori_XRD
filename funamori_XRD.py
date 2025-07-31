@@ -446,7 +446,10 @@ if uploaded_file:
             
                 # ---- Objective function ---- #
                 def objective(params, selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry):
-                    a_val_opt, c44_opt, t_opt, intensities_opt = params
+                    a_val_opt = params[0]
+                    c44_opt = params[1]
+                    t_opt =  params[2]
+                    intensities_opt = params[3:]
 
                     sigma_11_opt = -t_opt/3
                     sigma_22_opt = -t_opt/3
@@ -485,7 +488,8 @@ if uploaded_file:
                 t = 3*sigma_33/2
                 st.write(intensities)
                 st.write(type(intensities))
-                initial_guess = [a_val, c44, t, intensities]
+                initial_guess = [a_val, c44, t] 
+                initial_guess = np.append(initial_guess, intensities)
 
                 arguments = (selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry)
             
