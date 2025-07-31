@@ -241,6 +241,23 @@ def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     ax2.set_ylabel("Residuals")
 
     st.pyplot(fig)
+
+def get_initial_parameters():
+    """Returns editable parameter fields with memory between runs."""
+    if "params" not in st.session_state:
+        st.session_state.params = {
+            "a_val": a_val,
+            "c44": c44,
+            "t": sigma_33 - sigma_11
+        }
+
+    st.subheader("Initial Refinement Parameters")
+    a = st.number_input("Lattice parameter a", value=st.session_state.params["a_val"], format="%.6f")
+    c44 = st.number_input("c44", value=st.session_state.params["c44"], format="%.3f")
+    t = st.number_input("t", value=st.session_state.params["t"], format="%.3f")
+
+    st.session_state.params.update({"a_val": a_val, "c44": c44, "t": t})
+    return a_val, c44, t
     
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode: ε′₃₃ vs ψ)")
@@ -433,9 +450,9 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
         
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
-        """
+    
         with col2:
-            a, c44, t = get_initial_parameters()
+            a_val, c44, t = get_initial_parameters()
             param_flags = select_parameters_to_refine()
         
             if st.button("Refine XRD"):
