@@ -445,11 +445,11 @@ if uploaded_file:
                 psi_values = 0
             
                 # ---- Objective function ---- #
-                def objective(params, selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry):
+                def objective(params, selected_hkls, intensites_opt, wavelength, c11, c12, phi_values, psi_values, symmetry):
                     a_val_opt = params[0]
                     c44_opt = params[1]
                     t_opt =  params[2]
-                    intensities_opt = params[3:]
+                    #intensities_opt = params[3:]
 
                     sigma_11_opt = -t_opt/3
                     sigma_22_opt = -t_opt/3
@@ -486,20 +486,18 @@ if uploaded_file:
                 # ---- Initial guess ---- #
                 t = 3*sigma_33/2
                 initial_guess = [a_val, c44, t] 
-                initial_guess = np.append(initial_guess, intensities)
+                #initial_guess = np.append(initial_guess, intensities)
 
-                arguments = (selected_hkls, wavelength, c11, c12, phi_values, psi_values, symmetry)
+                arguments = (selected_hkls, intensities, wavelength, c11, c12, phi_values, psi_values, symmetry)
             
                 # ---- Run unconstrained minimization ---- #
                 result = minimize(objective, initial_guess, args=arguments, method='BFGS')
             
                 if result.success:
-                    st.write("success")
-                    """
                     opt_params = result.x
                     st.success("Refinement successful!")
-                    st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, σ₁₁ = {opt_params[2]:.3f}, σ₂₂ = {opt_params[3]:.3f}, σ₃₃ = {opt_params[4]:.3f}, Intensity scale = {opt_params[5]:.2f}")
-            
+                    st.write(f"Optimized parameters: a = {opt_params[0]:.5f}, c44 = {opt_params[1]:.3f}, t = {opt_params[2]:.3f}, intensities = {opt_params[3:]:.3f}")
+                    """
                     # Generate final simulated pattern
                     strain_sim_params = (
                         opt_params[0], wavelength, c11, c12, opt_params[1],
