@@ -609,7 +609,7 @@ if uploaded_file:
                 else:
                     intensities_refined = intensities
 
-                update_refined_intensities(refined_intensities, selected_indices)
+                update_refined_intensities(intensities_refined, selected_indices)
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
