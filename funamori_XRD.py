@@ -426,16 +426,6 @@ if uploaded_file:
                         key=f"intensity_{i}",
                         label_visibility="collapsed"
                     )
-                    """
-                    st.session_state[f"intensity_{i}"] = st.number_input(
-                        "Intensity",
-                        min_value=0.0,
-                        value=st.session_state[f"intensity_{i}"],
-                        step=1.0,
-                        key=f"intensity_{i}",
-                        label_visibility="collapsed"
-                    )
-                    """
             
                 if selected:
                     selected_hkls.append(hkl)
