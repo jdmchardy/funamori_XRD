@@ -342,7 +342,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
         key = f"intensity_{i}"
-        st.session_state.intensites[key] = val
+        st.session_state.intensities[key] = val
 
 #### Main App logic -----------------------------------------------------
     
