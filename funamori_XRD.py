@@ -342,8 +342,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
         key = f"intensity_{i}"
-        st.session_state[key] = val
-
+        st.session_state.intensites[key] = val
 
 #### Main App logic -----------------------------------------------------
     
@@ -407,26 +406,30 @@ if uploaded_file:
             selected_hkls = []
             intensities = []
             selected_indices = []
-            intensity_dict = {}
+            peak_intensity_default = {}
+            intensity_boxes = {}
         
             for i, hkl in enumerate(hkl_list):
                 # Find matching row to get intensity
                 h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                 default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
 
-                # Initialize state for peak intensity
-                if f"intensity_{i}" not in st.session_state:
-                    st.session_state[f"intensity_{i}"] = default_intensity
-            
-                cols = st.columns([2, 2, 8])
+                peak_intensity_default[f"intensity_{i}"] = default_intensity
+
+            # Initialize state for peak intensity
+            if "intensities" not in st.session_state:
+                st.session_state.intensities = peak_intensity_default
+
+            for i, hkl in enumerate(hkl_list):
+                cols = st.columns([2, 2, 8])    
                 with cols[0]:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
-                    intensity_dict[f"intensity_{i}"]= st.number_input(
+                    intensity_boxes[f"intensity_{i}"] = st.number_input(
                         "Intensity",
                         min_value=0.0,
-                        value=st.session_state[f"intensity_{i}"],
+                        value=st.session_state.intensities[f"intensity_{i}"],
                         step=1.0,
                         key=f"intensity_{i}",
                         label_visibility="collapsed"
@@ -435,7 +438,7 @@ if uploaded_file:
                 if selected:
                     selected_hkls.append(hkl)
                     selected_indices.append(i)  # Save which index was selected
-                    intensities.append(st.session_state[f"intensity_{i}"])
+                    intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
