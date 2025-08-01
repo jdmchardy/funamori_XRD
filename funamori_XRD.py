@@ -339,6 +339,11 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
     weighted_residuals = residuals * (1 / (y_exp_common + 1))
     return np.sum(weighted_residuals**2)
 
+def update_refined_intensities(refined_intensities, selected_indices):
+    for val, i in zip(refined_intensities, selected_indices):
+        key = f"intensity_{i}"
+        st.session_state[key] = val
+
 
 #### Main App logic -----------------------------------------------------
     
@@ -604,9 +609,7 @@ if uploaded_file:
                 else:
                     intensities_refined = intensities
 
-                # refined_intensities only corresponds to selected_hkls / selected_indices
-                #for ref_val, idx in zip(intensities_refined, selected_indices):
-                    #st.session_state[f"intensity_{idx}"] = ref_val
+                update_refined_intensities(refined_intensities, selected_indices)
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
