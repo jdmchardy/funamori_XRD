@@ -289,9 +289,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
 
     #Extend the parameter bounds for the intensities if they are being refined
     if param_flags["peak_intensity"]:
-        param_bounds.extend([(0, 100)] * len(intensities))
-    st.write(len(intensities))
-    st.write(param_bounds)
+        param_bounds.extend([(0, 500)] * len(intensities))
         
     result = minimize(
         cost_function,
