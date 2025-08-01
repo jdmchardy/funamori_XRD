@@ -421,6 +421,12 @@ if uploaded_file:
                 if selected:
                     selected_hkls.append(hkl)
                     intensities.append(intensity)
+            
+            if "intensities" not in st.session_state:
+                st.session_state.intensities = list(intensities)
+
+            # Initialize intensities in st.session_state
+            st.session_state.intensities = intensities
 
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
@@ -593,6 +599,9 @@ if uploaded_file:
                     intensities_refined = result.x[idx:]
                 else:
                     intensities_refined = intensities
+
+                #Update intensities with refined results
+                st.session_state.intensities = list(intensities_refined)
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
