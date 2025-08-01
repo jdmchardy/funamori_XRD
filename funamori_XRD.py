@@ -407,28 +407,28 @@ if uploaded_file:
                 h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                 default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
 
-            # Initialize state for peak intensity
-            if f"intensity_{i}" not in st.session_state:
-                st.session_state[f"intensity_{i}"] = default_intensity
-        
-            cols = st.columns([2, 2, 8])
-            with cols[0]:
-                label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
-                selected = st.checkbox(label, value=True, key=f"chk_{i}")
-            with cols[1]:
-                st.session_state[f"intensity_{i}"] = st.number_input(
-                    "Intensity",
-                    min_value=0.0,
-                    value=st.session_state[f"intensity_{i}"],
-                    step=1.0,
-                    key=f"intensity_{i}",
-                    label_visibility="collapsed"
-                )
-        
-            if selected:
-                selected_hkls.append(hkl)
-                selected_indices.append(i)  # Save which index was selected
-                intensities.append(st.session_state[f"intensity_{i}"])
+                # Initialize state for peak intensity
+                if f"intensity_{i}" not in st.session_state:
+                    st.session_state[f"intensity_{i}"] = default_intensity
+            
+                cols = st.columns([2, 2, 8])
+                with cols[0]:
+                    label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
+                    selected = st.checkbox(label, value=True, key=f"chk_{i}")
+                with cols[1]:
+                    st.session_state[f"intensity_{i}"] = st.number_input(
+                        "Intensity",
+                        min_value=0.0,
+                        value=st.session_state[f"intensity_{i}"],
+                        step=1.0,
+                        key=f"intensity_{i}",
+                        label_visibility="collapsed"
+                    )
+            
+                if selected:
+                    selected_hkls.append(hkl)
+                    selected_indices.append(i)  # Save which index was selected
+                    intensities.append(st.session_state[f"intensity_{i}"])
 
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
