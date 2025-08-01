@@ -283,7 +283,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
     param_bounds = [bounds[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
     #Extend the parameter bounds for the intensities if they are being refined
-    if param_flags["intensity"]:
+    if param_flags["peak_intensity"]:
         param_bounds.extend([(0, 100)] * len(intensities))
         
     result = minimize(
@@ -308,7 +308,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
     sigma_33_opt = 2*t_opt/3
 
     # Extract or reuse intensities
-    if param_flags["intensity"]:
+    if param_flags["peak_intensity"]:
         intensities_opt = params[idx:]
     else:
         intensities_opt = base_intensities
@@ -584,7 +584,7 @@ if uploaded_file:
                     idx += 1
                 else:
                     t_refined = st.session_state.params["t"]
-                if param_flags["intensity"]:
+                if param_flags["peak_intensity"]:
                     intensities_refined = result.x[idx:]
                 else:
                     intensities_refined = intensities
@@ -592,7 +592,7 @@ if uploaded_file:
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
                 st.markdown(f"- **a** = {a_refined:.4f}, - **c44** = {c44_refined:.2f}, - **t** = {t_refined:.2f}")
-                if param_flags["intensity"]:
+                if param_flags["peak_intensity"]:
                     st.markdown(f"- **intensities** = {intensities_refined:.2f}")
             
                 # Final simulation and plot
