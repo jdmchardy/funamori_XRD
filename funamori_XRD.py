@@ -183,7 +183,7 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     })
     return hkl_label, df, psi_list, strain_33_list
 
-def Generate_XRD(selected_hkls, intensities, strain_sim_params):
+def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     results_dict = {}
     all_dfs = []  # Collect all dfs here
 
@@ -196,8 +196,7 @@ def Generate_XRD(selected_hkls, intensities, strain_sim_params):
     combined_df = pd.concat(all_dfs, ignore_index=True)
 
     # Define constants
-    fwhm = Gaussian_FWHM  # degrees
-    sigma_gauss = fwhm / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
+    sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
     
     # Define common 2-theta range for evaluation
     twotheta_min = combined_df["2th"].min() - 0.3
@@ -271,7 +270,7 @@ def select_parameters_to_refine():
         "peak_intensity": st.checkbox("Refine peak intensities", value=False)
     }
 
-def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     fixed_vals = {"a_val": a_val, "c44": c44, "t": t}
     initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
@@ -294,7 +293,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
     result = minimize(
         cost_function,
         initial_guess,
-        args=(param_flags, fixed_vals, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
+        args=(param_flags, fixed_vals, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
         method='Nelder-Mead',
         bounds=param_bounds,
         options={'maxiter': 1000, 'disp': True}
@@ -302,7 +301,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
 
     return result
 
-def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     idx = 0
     a_val_opt = fixed_vals["a_val"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
     c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
@@ -323,7 +322,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
         sigma_11_opt, sigma_22_opt, sigma_33_opt,
         phi_values, psi_values, symmetry
     )
-    XRD_df = Generate_XRD(selected_hkls, intensities_opt, strain_sim_params)
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
     twoth_sim = XRD_df["2th"]
     intensity_sim = XRD_df["Total Intensity"]
 
@@ -490,7 +489,7 @@ if uploaded_file:
                     psi_values = 0
                     strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
-                    XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                    XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
                     twotheta_grid = XRD_df["2th"]
                     total_pattern = XRD_df["Total Intensity"]
 
@@ -529,7 +528,7 @@ if uploaded_file:
                     sigma_11, sigma_22, sigma_33,
                     phi_values, psi_values, symmetry
                 )
-                XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 
@@ -560,7 +559,7 @@ if uploaded_file:
             phi_values = np.linspace(0, 2 * np.pi, 360)
             psi_values = 0
             result = run_refinement(
-                a_val, c44, t, param_flags, selected_hkls, intensities, 
+                a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
                 )
         
@@ -622,7 +621,7 @@ if uploaded_file:
                     sigma_11_opt, sigma_22_opt, sigma_33_opt,
                     phi_values, psi_values, symmetry
                 )
-                XRD_df = Generate_XRD(selected_hkls, intensities_refined, strain_sim_params)
+                XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 x_min_sim = np.min(twoth_sim)
