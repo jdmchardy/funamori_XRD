@@ -401,6 +401,7 @@ if uploaded_file:
             st.subheader("Select Reflections and Edit Intensities")
             selected_hkls = []
             intensities = []
+            intensity_dict = {}
         
             for i, hkl in enumerate(hkl_list):
                 # Find matching row to get intensity
@@ -416,6 +417,15 @@ if uploaded_file:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
+                    intensity_dict[f"intensity_{i}"]= st.number_input(
+                        "Intensity",
+                        min_value=0.0,
+                        value=st.session_state[f"intensity_{i}"],
+                        step=1.0,
+                        key=f"intensity_{i}",
+                        label_visibility="collapsed"
+                    )
+                    """
                     st.session_state[f"intensity_{i}"] = st.number_input(
                         "Intensity",
                         min_value=0.0,
@@ -424,6 +434,7 @@ if uploaded_file:
                         key=f"intensity_{i}",
                         label_visibility="collapsed"
                     )
+                    """
             
                 if selected:
                     selected_hkls.append(hkl)
