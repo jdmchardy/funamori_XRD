@@ -337,7 +337,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
 
     residuals = y_exp_common - y_sim_common
     weighted_residuals = residuals * (1 / (y_exp_common + 1))
-    return np.sum(weighted_residuals ** 2)
+    return np.sum(weighted_residuals**2)
 
 
 #### Main App logic -----------------------------------------------------
@@ -607,6 +607,9 @@ if uploaded_file:
                 st.markdown(f"- **a** = {a_refined:.4f}, **c44** = {c44_refined:.2f}, **t** = {t_refined:.3f}")
                 for hkl, intensity in zip(selected_hkls,intensities_refined):
                     st.markdown(f"- **Peak intensity: {hkl}** = {intensity:.2f}")
+
+                st.markdown(f"Cost function: {result.fun}")
+                st.markdown(f"Iterations: {result.nit}")
             
                 # Final simulation and plot
                 a_val_opt = st.session_state.params["a_val"]
