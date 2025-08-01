@@ -406,26 +406,29 @@ if uploaded_file:
                 # Find matching row to get intensity
                 h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                 default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
-        
-                # Horizontal layout: checkbox left, intensity right
-                cols = st.columns([2, 2, 8])  # Wider for checkbox label, narrower for intensity
-                with cols[0]:
-                    label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
-                    selected = st.checkbox(label, value=True, key=f"chk_{i}")
-                with cols[1]:
-                    intensity = st.number_input(
-                        "Intensity", min_value=0.0, value=default_intensity, step=1.0, key=f"intensity_{i}", label_visibility="collapsed"
-                    )
-        
-                if selected:
-                    selected_hkls.append(hkl)
-                    intensities.append(intensity)
-            
-            if "intensities" not in st.session_state:
-                st.session_state.intensities = list(intensities)
 
-            # Initialize intensities in st.session_state
-            st.session_state.intensities = intensities
+            # Initialize state for peak intensity
+            if f"intensity_{i}" not in st.session_state:
+                st.session_state[f"intensity_{i}"] = default_intensity
+        
+            cols = st.columns([2, 2, 8])
+            with cols[0]:
+                label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
+                selected = st.checkbox(label, value=True, key=f"chk_{i}")
+            with cols[1]:
+                st.session_state[f"intensity_{i}"] = st.number_input(
+                    "Intensity",
+                    min_value=0.0,
+                    value=st.session_state[f"intensity_{i}"],
+                    step=1.0,
+                    key=f"intensity_{i}",
+                    label_visibility="collapsed"
+                )
+        
+            if selected:
+                selected_hkls.append(hkl)
+                selected_indices.append(i)  # Save which index was selected
+                intensities.append(st.session_state[f"intensity_{i}"])
 
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
@@ -558,11 +561,6 @@ if uploaded_file:
         if st.button("Refine XRD"):
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
-            #Get the last refined peak intensities if a refinement has been run
-            if "refined_intensities" in st.session_state:
-                intensities = st.session_state.refined_intensities
-                st.write("Got updated intensities")
-
             result = run_refinement(
                 a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
@@ -604,8 +602,9 @@ if uploaded_file:
                 else:
                     intensities_refined = intensities
 
-                #Update intensities with refined results
-                st.session_state.refined_intensities = list(intensities_refined)
+                # refined_intensities only corresponds to selected_hkls / selected_indices
+                for ref_val, idx in zip(refined_intensities, selected_indices):
+                    st.session_state[f"intensity_{idx}"] = ref_val
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
