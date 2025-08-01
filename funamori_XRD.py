@@ -427,7 +427,7 @@ if uploaded_file:
             with col1:
                 total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             with col2:
-                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005)
+                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.050, min_value=0.005, step=0.005)
             
             # Determine grid sizes
             psi_steps = int(2 * np.sqrt(total_points))
