@@ -399,7 +399,7 @@ if uploaded_file:
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
                     intensity = st.number_input(
-                        "Intensity", min_value=0.0, value=default_intensity, step=0.1, key=f"intensity_{i}", label_visibility="collapsed"
+                        "Intensity", min_value=0.0, value=default_intensity, step=1.0, key=f"intensity_{i}", label_visibility="collapsed"
                     )
         
                 if selected:
@@ -409,9 +409,9 @@ if uploaded_file:
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
             with col1:
-                total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=1000)
+                total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             with col2:
-                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.01, step=0.01)
+                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005)
             
             # Determine grid sizes
             psi_steps = int(2 * np.sqrt(total_points))
@@ -481,7 +481,8 @@ if uploaded_file:
                     ax.legend()
                 
                     st.pyplot(fig)
-                    
+
+    ### XRD Refinement ----------------------------------------------------------------
     st.subheader("Refine XRD")
 
     uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
@@ -493,7 +494,7 @@ if uploaded_file:
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
 
-        col1, col2 = st.columns([2, 4])
+        col1, col2 = st.columns([2, 2])
         with col1:
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 360)
