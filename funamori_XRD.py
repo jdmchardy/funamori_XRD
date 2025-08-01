@@ -558,6 +558,10 @@ if uploaded_file:
         if st.button("Refine XRD"):
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
+            #Get the last refined peak intensities if a refinement has been run
+            if "intensities" in st.session_state:
+                intensities = st.session_state.intensities
+                st.write("Got updated intensities")
             result = run_refinement(
                 a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
