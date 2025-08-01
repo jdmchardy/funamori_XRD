@@ -279,8 +279,13 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
         "c44": (-100, 200),
         "t": (-10, 10)
     }
+    
     param_bounds = [bounds[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
+    #Extend the parameter bounds for the intensities if they are being refined
+    if param_flags["intensity"]:
+        param_bounds.extend([(0, 100)] * len(intensities))
+        
     result = minimize(
         cost_function,
         initial_guess,
@@ -576,12 +581,19 @@ if uploaded_file:
                     c44_refined = st.session_state.params["c44"]
                 if param_flags["t"]:
                     t_refined = result.x[idx]
+                    idx += 1
                 else:
                     t_refined = st.session_state.params["t"]
+                if param_flags["intensity"]:
+                    intensities_refined = result.x[idx:]
+                else:
+                    intensities_refined = intensities
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
                 st.markdown(f"- **a** = {a_refined:.4f}, - **c44** = {c44_refined:.2f}, - **t** = {t_refined:.2f}")
+                if param_flags["intensity"]:
+                    st.markdown(f"- **intensities** = {intensities_refined:.2f}")
             
                 # Final simulation and plot
                 a_val_opt = st.session_state.params["a_val"]
@@ -596,7 +608,7 @@ if uploaded_file:
                     sigma_11_opt, sigma_22_opt, sigma_33_opt,
                     phi_values, psi_values, symmetry
                 )
-                XRD_df = Generate_XRD(selected_hkls, intensities, strain_sim_params)
+                XRD_df = Generate_XRD(selected_hkls, intensities_refined, strain_sim_params)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 x_min_sim = np.min(twoth_sim)
