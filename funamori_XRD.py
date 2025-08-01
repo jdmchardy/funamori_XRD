@@ -276,7 +276,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
     initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
     # Extend the initial guess for the intensities if they are being refined
-    if params_flags["peak_intensity"]:
+    if param_flags["peak_intensity"]:
         intial_guess.extend(intensities)
     
     bounds = {
