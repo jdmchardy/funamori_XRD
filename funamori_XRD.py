@@ -201,7 +201,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     # Define common 2-theta range for evaluation
     twotheta_min = combined_df["2th"].min() - 0.3
     twotheta_max = combined_df["2th"].max() + 0.3
-    twotheta_grid = np.linspace(twotheta_min, twotheta_max, 2000)
+    twotheta_grid = np.linspace(twotheta_min, twotheta_max, 1000)
     
     # Container to store individual peak curves
     peak_curves = {}
@@ -485,7 +485,7 @@ if uploaded_file:
                         )
             with col2:
                 if st.button("Generate XRD") and selected_hkls:
-                    phi_values = np.linspace(0, 2 * np.pi, 360)
+                    phi_values = np.linspace(0, 2 * np.pi, 72)
                     psi_values = 0
                     strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
@@ -520,7 +520,7 @@ if uploaded_file:
         col1, col2 = st.columns([2, 2])
         with col1:
             if st.button("Overlay XRD"):
-                phi_values = np.linspace(0, 2 * np.pi, 360)
+                phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
                 t = sigma_33 - sigma_11
                 strain_sim_params = (
@@ -556,7 +556,7 @@ if uploaded_file:
             param_flags = select_parameters_to_refine()
 
         if st.button("Refine XRD"):
-            phi_values = np.linspace(0, 2 * np.pi, 360)
+            phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
             result = run_refinement(
                 a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
