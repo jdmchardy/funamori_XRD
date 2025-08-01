@@ -401,6 +401,7 @@ if uploaded_file:
             st.subheader("Select Reflections and Edit Intensities")
             selected_hkls = []
             intensities = []
+            selected_indices = []
             intensity_dict = {}
         
             for i, hkl in enumerate(hkl_list):
