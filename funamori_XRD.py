@@ -615,8 +615,8 @@ if uploaded_file:
                     intensities_refined = intensities
 
                 # refined_intensities only corresponds to selected_hkls / selected_indices
-                for ref_val, idx in zip(intensities_refined, selected_indices):
-                    st.session_state[f"intensity_{idx}"] = ref_val
+                #for ref_val, idx in zip(intensities_refined, selected_indices):
+                    #st.session_state[f"intensity_{idx}"] = ref_val
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
