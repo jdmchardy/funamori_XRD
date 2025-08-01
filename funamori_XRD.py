@@ -292,7 +292,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_v
 
     return result
 
-def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_opt, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     idx = 0
     a_val_opt = fixed_vals["a_val"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
     c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
@@ -301,6 +301,12 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_op
     sigma_11_opt = -t_opt/3
     sigma_22_opt = -t_opt/3
     sigma_33_opt = 2*t_opt/3
+
+    # Extract or reuse intensities
+    if param_flags["intensity"]:
+        intensities_opt = params[idx:]
+    else:
+        intensities_opt = base_intensities
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
@@ -493,6 +499,8 @@ if uploaded_file:
         data = pd.read_csv(io.StringIO("\n".join(data_lines)), delim_whitespace=True, header=None, names=['2th', 'intensity'])
         x_exp = data['2th'].values
         y_exp = data['intensity'].values
+        #Normalise exp data
+        y_exp = y_exp/ np.max(y_exp)*100
 
         col1, col2 = st.columns([2, 2])
         with col1:
@@ -514,7 +522,7 @@ if uploaded_file:
                 x_max_sim = np.max(twoth_sim)
                 mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
                 x_exp_common = x_exp[mask]
-                y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+                y_exp_common = y_exp[mask]
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
         
@@ -595,7 +603,7 @@ if uploaded_file:
                 x_max_sim = np.max(twoth_sim)
                 mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
                 x_exp_common = x_exp[mask]
-                y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+                y_exp_common = y_exp[mask]
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
     
