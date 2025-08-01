@@ -6,6 +6,8 @@ import io
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 
+#### Functions -----------------------------------------------------
+
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
 
@@ -265,7 +267,8 @@ def select_parameters_to_refine():
     return {
         "a_val": st.checkbox("Refine a", value=True),
         "c44": st.checkbox("Refine c44", value=False),
-        "t": st.checkbox("Refine t", value=False)
+        "t": st.checkbox("Refine t", value=False),
+        "peak_intensity": st.checkbox("Refine peak intensities", value=False)
     }
 
 def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
@@ -320,6 +323,9 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, intensities_op
     residuals = y_exp_common - y_sim_common
     weighted_residuals = residuals * (1 / (y_exp_common + 1))
     return np.sum(weighted_residuals ** 2)
+
+
+#### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
 st.title("Funamori Strain (Batch Mode and XRD)")
@@ -600,7 +606,6 @@ if uploaded_file:
 
 
 """
-
 col1,col2 = st.columns([2,4])
 with col1:
     if st.button("Overlay XRD"):
