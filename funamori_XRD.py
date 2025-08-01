@@ -600,7 +600,8 @@ if uploaded_file:
                 st.markdown("### Optimized Parameters")
                 st.markdown(f"- **a** = {a_refined:.4f}, - **c44** = {c44_refined:.2f}, - **t** = {t_refined:.2f}")
                 if param_flags["peak_intensity"]:
-                    st.markdown(f"- **intensities** = {intensities_refined:.2f}")
+                    for intensity in intensities_refined:
+                        st.markdown(f"- **peak_intensity** = {intensity:.2f}")
             
                 # Final simulation and plot
                 a_val_opt = st.session_state.params["a_val"]
