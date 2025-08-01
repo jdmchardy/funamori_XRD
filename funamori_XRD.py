@@ -330,7 +330,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
     x_max_sim = np.max(twoth_sim)
     mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
     x_exp_common = x_exp[mask]
-    y_exp_common = y_exp[mask] / np.max(y_exp[mask]) * 100
+    y_exp_common = y_exp[mask]
 
     interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
     y_sim_common = interp_sim(x_exp_common)
