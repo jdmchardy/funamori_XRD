@@ -559,9 +559,10 @@ if uploaded_file:
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
             #Get the last refined peak intensities if a refinement has been run
-            if "intensities" in st.session_state:
-                intensities = st.session_state.intensities
+            if "refined_intensities" in st.session_state:
+                intensities = st.session_state.refined_intensities
                 st.write("Got updated intensities")
+
             result = run_refinement(
                 a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
@@ -604,7 +605,7 @@ if uploaded_file:
                     intensities_refined = intensities
 
                 #Update intensities with refined results
-                st.session_state.intensities = list(intensities_refined)
+                st.session_state.refined_intensities = list(intensities_refined)
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
