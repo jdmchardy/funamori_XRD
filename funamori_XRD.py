@@ -440,6 +440,8 @@ if uploaded_file:
                     selected_indices.append(i)  # Save which index was selected
                     intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
+            st.session_state.params.intensities(intensity_boxes)
+
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
             with col1:
