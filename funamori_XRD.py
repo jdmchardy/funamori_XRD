@@ -296,7 +296,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         args=(param_flags, fixed_vals, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
         method='Nelder-Mead',
         bounds=param_bounds,
-        options={'maxiter': 1000, 'disp': True}
+        options={'maxiter': 2500, 'disp': True}
     )
 
     return result
