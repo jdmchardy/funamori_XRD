@@ -201,8 +201,8 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
     
     # Define common 2-theta range for evaluation
-    twotheta_min = combined_df["2th"].min() - 0.3
-    twotheta_max = combined_df["2th"].max() + 0.3
+    twotheta_min = combined_df["2th"].min() - 1
+    twotheta_max = combined_df["2th"].max() + 1
     twotheta_grid = np.linspace(twotheta_min, twotheta_max, 1000)
     
     # Container to store individual peak curves
@@ -318,9 +318,11 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
     XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
     twoth_sim = XRD_df["2th"].values
 
-    # Use overlap between simulation and experiment to define interpolation range and fix this for subsequent refinement
-    x_min_sim = np.min(twoth_sim)
-    x_max_sim = np.max(twoth_sim)
+    # Use overlap between simulation and experiment to define interpolation range 
+    #Fix this for subsequent refinement
+    #We tweak the range here to be slightly less than that returned by the simulation
+    x_min_sim = np.min(twoth_sim) + 0.5
+    x_max_sim = np.max(twoth_sim) - 0.5
     mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
     x_exp_common = x_exp[mask]
     y_exp_common = y_exp[mask]
