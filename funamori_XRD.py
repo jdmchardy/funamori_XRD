@@ -272,36 +272,6 @@ def select_parameters_to_refine():
     }
 
 def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
-    fixed_vals = {"a_val": a_val, "c44": c44, "t": t}
-    
-    """
-    initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
-
-    # Extend the initial guess for the intensities if they are being refined
-    if param_flags["peak_intensity"]:
-        initial_guess.extend(intensities)
-    
-    bounds = {
-        "a_val": (0.5 * a_val, 1.5 * a_val),
-        "c44": (-100, 200),
-        "t": (-10, 10)
-    }
-    
-    param_bounds = [bounds[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
-
-    #Extend the parameter bounds for the intensities if they are being refined
-    if param_flags["peak_intensity"]:
-        param_bounds.extend([(0, 500)] * len(intensities))
-
-    result = minimize(
-        cost_function,
-        initial_guess,
-        args=(param_flags, fixed_vals, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
-        method='Nelder-Mead',
-        bounds=param_bounds,
-        options={'maxiter': 2500, 'disp': True}
-    )
-    """
     
     #New logic for lmfit -----------------------------
     params = Parameters()
@@ -337,7 +307,6 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
 
     return result
 
-#def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
 def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
 
     #New logic for lmfit ------------------------
@@ -351,23 +320,6 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
 
     intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
     #---------------------------------------------
-    
-    """
-    idx = 0
-    a_val_opt = fixed_vals["a_val"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
-    c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
-    t_opt     = fixed_vals["t"] if not param_flags["t"] else params[idx]; idx += int(param_flags["t"])
-
-    sigma_11_opt = -t_opt/3
-    sigma_22_opt = -t_opt/3
-    sigma_33_opt = 2*t_opt/3
-
-    # Extract or reuse intensities
-    if param_flags["peak_intensity"]:
-        intensities_opt = params[idx:]
-    else:
-        intensities_opt = base_intensities
-    """
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
@@ -389,7 +341,7 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
 
     residuals = y_exp_common - y_sim_common
     weighted_residuals = residuals * (1 / (y_exp_common + 1))
-    #return np.sum(weighted_residuals**2)
+    
     return weighted_residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
