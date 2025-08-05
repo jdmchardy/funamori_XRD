@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 from scipy.interpolate import interp1d
-from scipy.optimize import minimize
+#from scipy.optimize import minimize
+from lmfit import Parameters, minimize
 
 #### Functions -----------------------------------------------------
 
@@ -272,6 +273,8 @@ def select_parameters_to_refine():
 
 def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     fixed_vals = {"a_val": a_val, "c44": c44, "t": t}
+    
+    """
     initial_guess = [fixed_vals[key] for key in ["a_val", "c44", "t"] if param_flags[key]]
 
     # Extend the initial guess for the intensities if they are being refined
@@ -289,7 +292,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
     #Extend the parameter bounds for the intensities if they are being refined
     if param_flags["peak_intensity"]:
         param_bounds.extend([(0, 500)] * len(intensities))
-        
+
     result = minimize(
         cost_function,
         initial_guess,
@@ -298,10 +301,57 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         bounds=param_bounds,
         options={'maxiter': 2500, 'disp': True}
     )
+    """
+    
+    #New logic for lmfit -----------------------------
+    params = Parameters()
+    if param_flags["a_val"]:
+        params.add("a_val", value=a_val, min=0.5 * a_val, max=1.5 * a_val)
+    else:
+        params.add("a_val", value=a_val, vary=False)
+    
+    if param_flags["c44"]:
+        params.add("c44", value=c44, min=-100, max=200)
+    else:
+        params.add("c44", value=c44, vary=False)
+    
+    if param_flags["t"]:
+        params.add("t", value=t, min=-10, max=10)
+    else:
+        params.add("t", value=t, vary=False)
+    
+    if param_flags["peak_intensity"]:
+        for i, inten in enumerate(intensities):
+            params.add(f"intensity_{i}", value=inten, min=0, max=500)
+    else:
+        for i, inten in enumerate(intensities):
+            params.add(f"intensity_{i}", value=inten, vary=False)
+
+    result = minimize(
+        cost_function,
+        params,
+        args=(param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
+        method='nelder'
+    )
+    #-------------------------------------------------
 
     return result
 
 def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+
+    #New logic for lmfit ------------------------
+    a_val_opt = params["a_val"].value
+    c44_opt = params["c44"].value
+    t_opt = params["t"].value
+
+    sigma_11_opt = -t_opt/3
+    sigma_22_opt = -t_opt/3
+    sigma_33_opt = 2*t_opt/3
+
+    intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+    #---------------------------------------------
+    
+    """
     idx = 0
     a_val_opt = fixed_vals["a_val"] if not param_flags["a_val"] else params[idx]; idx += int(param_flags["a_val"])
     c44_opt   = fixed_vals["c44"] if not param_flags["c44"] else params[idx]; idx += int(param_flags["c44"])
@@ -316,6 +366,7 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
         intensities_opt = params[idx:]
     else:
         intensities_opt = base_intensities
+    """
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
@@ -337,7 +388,8 @@ def cost_function(params, param_flags, fixed_vals, selected_hkls, base_intensiti
 
     residuals = y_exp_common - y_sim_common
     weighted_residuals = residuals * (1 / (y_exp_common + 1))
-    return np.sum(weighted_residuals**2)
+    #return np.sum(weighted_residuals**2)
+    return weighted_residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
@@ -580,6 +632,7 @@ if uploaded_file:
         
             if result.success:
                 st.success("Refinement successful!")
+                """
                 # Update session state with new values
                 idx = 0
                 if param_flags["a_val"]:
@@ -615,6 +668,29 @@ if uploaded_file:
                     intensities_refined = intensities
 
                 update_refined_intensities(intensities_refined, selected_indices)
+                """
+                #Updated logic for lmfit ----------------------------------------
+                # Extract refined values from result.params
+                a_refined = result.params["a_val"].value
+                c44_refined = result.params["c44"].value
+                t_refined = result.params["t"].value
+
+                # Update session state
+                st.session_state.params["a_val"] = a_refined
+                st.session_state.params["c44"] = c44_refined
+                st.session_state.params["t"] = t_refined
+
+                # Handle refined intensities
+                if param_flags["peak_intensity"]:
+                    intensities_refined = [result.params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+                else:
+                    intensities_refined = intensities
+        
+                update_refined_intensities(intensities_refined, selected_indices)
+
+                #------------------------------------------------------
+
+        
             
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
