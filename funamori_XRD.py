@@ -585,43 +585,6 @@ if uploaded_file:
         
             if result.success:
                 st.success("Refinement successful!")
-                """
-                # Update session state with new values
-                idx = 0
-                if param_flags["a_val"]:
-                    st.session_state.params["a_val"] = result.x[idx]
-                    idx += 1
-                if param_flags["c44"]:
-                    st.session_state.params["c44"] = result.x[idx]
-                    idx += 1
-                if param_flags["t"]:
-                    st.session_state.params["t"] = result.x[idx]
-
-                # Extract refined values
-                idx = 0
-                if param_flags["a_val"]:
-                    a_refined = result.x[idx]
-                    idx += 1
-                else:
-                    a_refined = st.session_state.params["a_val"]
-            
-                if param_flags["c44"]:
-                    c44_refined = result.x[idx]
-                    idx += 1
-                else:
-                    c44_refined = st.session_state.params["c44"]
-                if param_flags["t"]:
-                    t_refined = result.x[idx]
-                    idx += 1
-                else:
-                    t_refined = st.session_state.params["t"]
-                if param_flags["peak_intensity"]:
-                    intensities_refined = result.x[idx:]
-                else:
-                    intensities_refined = intensities
-
-                update_refined_intensities(intensities_refined, selected_indices)
-                """
                 #Updated logic for lmfit ----------------------------------------
                 # Extract refined values from result.params
                 a_refined = result.params["a_val"].value
@@ -643,8 +606,6 @@ if uploaded_file:
 
                 #------------------------------------------------------
 
-        
-            
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
                 st.markdown(f"- **a** = {a_refined:.4f}, **c44** = {c44_refined:.2f}, **t** = {t_refined:.3f}")
