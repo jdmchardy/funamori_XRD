@@ -613,16 +613,6 @@ if uploaded_file:
                 # Display in Streamlit
                 st.markdown("### Fit Report")
                 st.code(report_str)
-
-                """
-                # Print refined parameters
-                st.markdown("### Optimized Parameters")
-                st.markdown(f"- **a** = {a_refined:.4f}, **c44** = {c44_refined:.2f}, **t** = {t_refined:.3f}")
-                for hkl, intensity in zip(selected_hkls,intensities_refined):
-                    st.markdown(f"- **Peak intensity: {hkl}** = {intensity:.2f}")
-                """
-                st.markdown(f"Cost function: {result.fun}")
-                st.markdown(f"Iterations: {result.nit}")
             
                 # Final simulation and plot
                 a_val_opt = st.session_state.params["a_val"]
