@@ -6,7 +6,7 @@ import io
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from lmfit import Parameters, minimize
-from lmfit.printfuncs import report_fit
+from lmfit import fit_report
 
 #### Functions -----------------------------------------------------
 
