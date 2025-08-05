@@ -298,12 +298,43 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         for i, inten in enumerate(intensities):
             params.add(f"intensity_{i}", value=inten, vary=False)
 
-    result = minimize(
-        cost_function,
-        params,
-        args=(param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
-        method='least_squares'
+    # --- First pass of refinement to determine common domain ---
+    # Use current parameter values
+    a_val_opt = params["a_val"].value
+    c44_opt = params["c44"].value
+    t_opt = params["t"].value
+    sigma_11 = -t_opt / 3
+    sigma_22 = -t_opt / 3
+    sigma_33 = 2 * t_opt / 3
+    intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+
+    strain_sim_params = (
+        a_val_opt, wavelength, c11, c12, c44_opt,
+        sigma_11, sigma_22, sigma_33,
+        phi_values, psi_values, symmetry
     )
+
+    # Run Generate_XRD once
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
+    twoth_sim = XRD_df["2th"].values
+
+    # Use overlap between simulation and experiment to define interpolation range and fix this for subsequent refinement
+    x_min_sim = np.min(twoth_sim)
+    x_max_sim = np.max(twoth_sim)
+    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+    x_exp_common = x_exp[mask]
+    y_exp_common = y_exp[mask]
+
+    # --- Wrapped cost function that implements this fixed domain ---
+    def wrapped_cost_function(params):
+        return cost_function(
+            params, param_flags, selected_hkls, Gaussian_FWHM,
+            phi_values, psi_values, wavelength, c11, c12, symmetry,
+            x_exp_common, y_exp_common
+        )
+
+    # Run optimization
+    result = minimize(wrapped_cost_function, params, method="least_squares")
     #-------------------------------------------------
 
     return result
@@ -330,12 +361,6 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
     twoth_sim = XRD_df["2th"]
     intensity_sim = XRD_df["Total Intensity"]
-
-    x_min_sim = np.min(twoth_sim)
-    x_max_sim = np.max(twoth_sim)
-    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
-    x_exp_common = x_exp[mask]
-    y_exp_common = y_exp[mask]
 
     interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
     y_sim_common = interp_sim(x_exp_common)
