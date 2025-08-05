@@ -341,9 +341,10 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     y_sim_common = interp_sim(x_exp_common)
 
     residuals = y_exp_common - y_sim_common
-    weighted_residuals = residuals * (1 / (y_exp_common + 1))
+    #weighted_residuals = residuals * (1 / (y_exp_common + 1))
     
-    return weighted_residuals
+    #return weighted_residuals
+    return residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
