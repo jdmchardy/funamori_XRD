@@ -341,9 +341,9 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     y_sim_common = interp_sim(x_exp_common)
 
     residuals = np.asarray(y_exp_common - y_sim_common)
-    st.write(np.len(residuals))
-    st.write(np.len(y_exp_common))
-    st.write(np.len(y_sim_common))
+    st.write(len(residuals))
+    st.write(len(y_exp_common))
+    st.write(len(y_sim_common))
     #weighted_residuals = residuals * (1 / (y_exp_common + 1))
     
     #return weighted_residuals
