@@ -339,7 +339,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
 
     return result
 
-def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common):
 
     #New logic for lmfit ------------------------
     a_val_opt = params["a_val"].value
