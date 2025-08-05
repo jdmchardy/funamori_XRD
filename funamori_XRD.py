@@ -302,7 +302,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         cost_function,
         params,
         args=(param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp),
-        method='nelder'
+        method='least_squares'
     )
     #-------------------------------------------------
 
