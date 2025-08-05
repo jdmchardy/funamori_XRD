@@ -6,6 +6,7 @@ import io
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from lmfit import Parameters, minimize
+from lmfit.printfuncs import report_fit
 
 #### Functions -----------------------------------------------------
 
@@ -606,11 +607,20 @@ if uploaded_file:
 
                 #------------------------------------------------------
 
+                # Generate the fit report string
+                report_str = fit_report(result)
+                
+                # Display in Streamlit
+                st.markdown("### Fit Report")
+                st.code(report_str)
+
+                """
                 # Print refined parameters
                 st.markdown("### Optimized Parameters")
                 st.markdown(f"- **a** = {a_refined:.4f}, **c44** = {c44_refined:.2f}, **t** = {t_refined:.3f}")
                 for hkl, intensity in zip(selected_hkls,intensities_refined):
                     st.markdown(f"- **Peak intensity: {hkl}** = {intensity:.2f}")
+                """
                 st.markdown(f"Cost function: {result.fun}")
                 st.markdown(f"Iterations: {result.nit}")
             
