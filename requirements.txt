@@ -4,3 +4,4 @@ matplotlib
 pandas
 xlsxwriter
 scipy
+lmfit
