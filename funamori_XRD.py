@@ -346,11 +346,11 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     st.write(len(y_sim_common))
     st.write(len(residuals))
 
-    weighted_residuals = residuals * (1 / (y_exp_common + 1))
-    st.write(len(weighted_residuals))
+    #weighted_residuals = residuals * (1 / (y_exp_common + 1))
+    #st.write(len(weighted_residuals))
     
-    return weighted_residuals
-    #return residuals
+    #return weighted_residuals
+    return residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
