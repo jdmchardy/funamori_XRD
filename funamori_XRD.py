@@ -344,24 +344,15 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
             two_th = 0
         hkl_peak_centers = np.append(hkl_peak_centers, two_th)
 
-    # Sort to be safe
-    hkl_peak_centers = np.sort(hkl_peak_centers)
-
-    # Define bin edges as halfway points between centers
-    #bin_edges = []
-    #for i in range(len(hkl_peak_centers) - 1):
-    #    edge = 0.5 * (peak_centers[i] + peak_centers[i + 1])
-    #    bin_edges.append(edge)
-    #bin_edges = [x_exp_common[0] - 0.1] + bin_edges + [x_exp_common[-1] + 0.1]
-
-        
+    #Get the residual bin indices using these centers
+    bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
 
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(params):
         return cost_function(
             params, param_flags, selected_hkls, Gaussian_FWHM,
             phi_values, psi_values, wavelength, c11, c12, symmetry,
-            x_exp_common, y_exp_common
+            x_exp_common, y_exp_common, bin_indices
         )
 
     # Run optimization
@@ -370,7 +361,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
 
     return result
 
-def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common):
+def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common, bin_indices):
 
     a_val_opt = params["a_val"].value
     c44_opt = params["c44"].value
@@ -396,16 +387,50 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
 
     residuals = np.asarray(y_exp_common - y_sim_common)
 
-    #weighted_residuals = residuals * (1 / (y_exp_common + 1))
-    #st.write(len(weighted_residuals))
-    
-    #return weighted_residuals
-    return residuals
+    # Peak position binned normalization of residuals
+    norm_residuals = []
+    for idx_range in bin_indices:
+        if len(idx_range) == 0:
+            continue  # skip empty bins
+        res_bin = residuals[idx_range]
+        y_bin = y_exp_common[idx_range]
+
+        norm = np.max(np.abs(y_bin)) if np.max(np.abs(y_bin)) != 0 else 1
+        norm_residuals.append(res_bin / norm)
+
+    #Combine bins into a single array of weighted residuals
+    weighted_residuals = np.concatenate(norm_residuals)
+    return weighted_residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
     for val, i in zip(refined_intensities, selected_indices):
         key = f"intensity_{i}"
         st.session_state.intensities[key] = val
+
+def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
+    """
+    Compute index ranges (bins) around each peak center in x_exp_common.
+    
+    Parameters:
+        x_exp_common (np.ndarray): Experimental 2θ values, common domain.
+        peak_centers (List[float]): Estimated peak centers (from HKLs).
+        window_width (float): Total width of the window (e.g., 0.2 for ±0.1).
+        
+    Returns:
+        List of slice objects (or index arrays) to use for residual slicing.
+    """
+    
+    hkl_peak_centers = np.sort(hkl_peak_centers)
+    
+    bin_indices = []
+    for center in hkl_peak_centers:
+        low = center - window_width / 2
+        high = center + window_width / 2
+        mask = (x_exp_common >= low) * (x_exp_common <= high)
+        indices = np.where(mask)[0]
+        if len(indices) > 0:
+            bin_indices.append(indices)
+    return bin_indices
 
 #### Main App logic -----------------------------------------------------
     
