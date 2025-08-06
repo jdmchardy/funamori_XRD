@@ -489,7 +489,7 @@ def generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaus
             x_exp_common, y_exp_common, bin_indices
         )
     posterior = minimize(wrapped_cost_function, 
-                         method='emcee', nan_policy='omit', burn=50, steps=300, thin=5, nwalkers=50,
+                         method='emcee', nan_policy='omit', burn=10, steps=100, thin=1, nwalkers=10,
                      params=fit_result.params, is_weighted=False, progress=False)
     return posterior
 
