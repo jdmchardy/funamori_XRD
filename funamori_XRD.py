@@ -797,7 +797,12 @@ if uploaded_file:
                 if result.success:
                     st.write("result success")
                     posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
-                    emcee_plot = corner.corner(posterior.flatchain, labels=posterior.var_names,
-                           truths=list(posterior.params.valuesdict().values()))
+                    fig = plt.figure()  # ensures previous figure is cleared
+                    emcee_plot = corner.corner(
+                        posterior.flatchain,
+                        labels=posterior.var_names,
+                        truths=list(posterior.params.valuesdict().values()),
+                        fig=fig  # draw into new fig
+                    )
                     st.write("Computed")
                     st.pyplot(emcee_plot)
