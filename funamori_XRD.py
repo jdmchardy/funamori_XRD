@@ -401,6 +401,7 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
 
     #Combine bins into a single array of weighted residuals
     weighted_residuals = np.concatenate(norm_residuals)
+    st.write(len(weighted_residuals))
     return weighted_residuals
 
 def update_refined_intensities(refined_intensities, selected_indices):
@@ -425,10 +426,8 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
     
     bin_indices = []
     for center in hkl_peak_centers:
-        low = center - window_width 
-        high = center + window_width 
-        st.write(low)
-        st.write(high)
+        low = center - 1.5*window_width 
+        high = center + 1.5*window_width 
         mask = (x_exp_common >= low) * (x_exp_common <= high)
         indices = np.where(mask)[0]
         if len(indices) > 0:
