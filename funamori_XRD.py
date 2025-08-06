@@ -789,11 +789,11 @@ if uploaded_file:
 
         #Next display a button to compute the posterior probability distribution
         if st.button("Compute Posterior probability distribution"):
-            st.write("Button pressed")
+            phi_values = np.linspace(0, 2 * np.pi, 72)
+            psi_values = 0
 
             if "refinement_result" in st.session_state:
                 result = st.session_state["refinement_result"]
-                st.write("Reuslt in locals")
                 if result.success:
                     st.write("result success")
                     posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
