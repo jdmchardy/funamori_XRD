@@ -425,8 +425,10 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
     
     bin_indices = []
     for center in hkl_peak_centers:
-        low = center - window_width / 2
-        high = center + window_width / 2
+        low = center - window_width 
+        high = center + window_width 
+        st.write(low)
+        st.write(high)
         mask = (x_exp_common >= low) * (x_exp_common <= high)
         indices = np.where(mask)[0]
         if len(indices) > 0:
