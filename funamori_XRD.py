@@ -795,14 +795,15 @@ if uploaded_file:
             if "refinement_result" in st.session_state:
                 result = st.session_state["refinement_result"]
                 if result.success:
-                    st.write("result success")
+                    plt.close("all")
                     posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
-                    fig = plt.figure()  # ensures previous figure is cleared
+                    st.write("Posterior shape:", posterior.flatchain.shape)  # should be (N_samples, K)
+                    st.write("Labels:", posterior.var_names)
+                    st.write("Truths:", list(posterior.params.valuesdict().values()))
                     emcee_plot = corner.corner(
                         posterior.flatchain,
                         labels=posterior.var_names,
-                        truths=list(posterior.params.valuesdict().values()),
-                        fig=fig  # draw into new fig
+                        truths=list(posterior.params.valuesdict().values())
                     )
                     st.write("Computed")
                     st.pyplot(emcee_plot)
