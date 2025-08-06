@@ -7,7 +7,6 @@ from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from lmfit import Parameters, minimize, fit_report
 import corner
-import tqdm
 
 #### Functions -----------------------------------------------------
 
