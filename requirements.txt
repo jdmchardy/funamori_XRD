@@ -7,4 +7,3 @@ scipy
 lmfit
 corner
 emcee>=3.0
-tqdm
