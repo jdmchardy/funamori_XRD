@@ -788,6 +788,7 @@ if uploaded_file:
 
             #Next display a button to compute the posterior probability distribution
         if st.button("Compute Posterior probability distribution"):
+            st.write("Button pressed")
 
             if "result" in locals():
                 st.write("Reuslt in locals")
