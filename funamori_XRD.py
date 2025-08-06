@@ -789,7 +789,7 @@ if uploaded_file:
             #Next display a button to compute the posterior probability distribution
         if st.button("Compute Posterior probability distribution"):
 
-            if "result" in locals:
+            if "result" in locals():
                 if result.success:
                     posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
                     emcee_plot = corner.corner(posterior.flatchain, labels=posterior.var_names,
