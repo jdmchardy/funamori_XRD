@@ -346,6 +346,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
 
     #Get the residual bin indices using these centers
     bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
+    st.write(bin_indices)
 
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(params):
