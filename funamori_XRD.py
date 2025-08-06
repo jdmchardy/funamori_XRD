@@ -356,7 +356,8 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         )
 
     # Run optimization
-    result = minimize(wrapped_cost_function, params, method="least_squares")
+    #result = minimize(wrapped_cost_function, params, method="least_squares")
+    result = minimize(wrapped_cost_function, params, method="differential_evolution")
     #-------------------------------------------------
 
     return result
