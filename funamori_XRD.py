@@ -227,6 +227,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
     })
+    
     return total_df
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
@@ -298,8 +299,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         for i, inten in enumerate(intensities):
             params.add(f"intensity_{i}", value=inten, vary=False)
 
-    # --- First pass of refinement to determine common domain ---
-    # Use current parameter values
+    # --- First pass of refinement to determine common 2th domain ---
     a_val_opt = params["a_val"].value
     c44_opt = params["c44"].value
     t_opt = params["t"].value
@@ -314,18 +314,47 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         phi_values, psi_values, symmetry
     )
 
-    # Run Generate_XRD once
+    # Run Generate_XRD once to get the simulation range
     XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
     twoth_sim = XRD_df["2th"].values
 
     # Use overlap between simulation and experiment to define interpolation range 
     #Fix this for subsequent refinement
-    #We tweak the range here to be slightly less than that returned by the simulation
+    #We tweak the range here to be slightly less than that returned by the simulation 
+    #to eliminate NaN values in evaluating the interpolated data
     x_min_sim = np.min(twoth_sim) + 0.5
     x_max_sim = np.max(twoth_sim) - 0.5
     mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
     x_exp_common = x_exp[mask]
     y_exp_common = y_exp[mask]
+
+    #Here we also determine the x_indices definining the binning around each peak for residual weighting
+    #First we need the 2th center positions of each hkl reflection included
+    hkl_peak_centers = []
+    for hkl in selected_hkls:
+        h, k, l = hkl
+        #Compute d0 and 2th
+        if symmetry == 'cubic':
+            d0 = a_val_opt / np.linalg.norm([h, k, l])
+            #Compute 2ths
+            sin_th = wavelength / (2 * d0)
+            two_th = 2 * np.degrees(np.arcsin(sin_th))
+        else:
+            st.write("No support for {} symmetries".format(symmetry))
+            two_th = 0
+        hkl_peak_centers = np.append(hkl_peak_centers, two_th)
+
+    # Sort to be safe
+    hkl_peak_centers = np.sort(hkl_peak_centers)
+
+    # Define bin edges as halfway points between centers
+    #bin_edges = []
+    #for i in range(len(hkl_peak_centers) - 1):
+    #    edge = 0.5 * (peak_centers[i] + peak_centers[i + 1])
+    #    bin_edges.append(edge)
+    #bin_edges = [x_exp_common[0] - 0.1] + bin_edges + [x_exp_common[-1] + 0.1]
+
+        
 
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(params):
@@ -343,7 +372,6 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
 
 def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common):
 
-    #New logic for lmfit ------------------------
     a_val_opt = params["a_val"].value
     c44_opt = params["c44"].value
     t_opt = params["t"].value
@@ -353,7 +381,6 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     sigma_33_opt = 2*t_opt/3
 
     intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
-    #---------------------------------------------
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
