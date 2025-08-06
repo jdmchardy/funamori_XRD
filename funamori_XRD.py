@@ -5,8 +5,8 @@ import pandas as pd
 import io
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
-from lmfit import Parameters, minimize
-from lmfit import fit_report
+from lmfit import Parameters, minimize, fit_report
+import corner
 
 #### Functions -----------------------------------------------------
 
@@ -432,6 +432,67 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
             bin_indices.append(indices)
     return bin_indices
 
+def generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+
+     # --- First pass of refinement to determine common 2th domain ---
+    a_val_opt = fit_result.params["a_val"].value
+    c44_opt = fit_result.params["c44"].value
+    t_opt = fit_result.params["t"].value
+    sigma_11 = -t_opt / 3
+    sigma_22 = -t_opt / 3
+    sigma_33 = 2 * t_opt / 3
+    intensities_opt = [fit_result.params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+
+    strain_sim_params = (
+        a_val_opt, wavelength, c11, c12, c44_opt,
+        sigma_11, sigma_22, sigma_33,
+        phi_values, psi_values, symmetry
+    )
+
+    # Run Generate_XRD once to get the simulation range
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
+    twoth_sim = XRD_df["2th"].values
+
+    # Use overlap between simulation and experiment to define interpolation range 
+    #Fix this for subsequent refinement
+    #We tweak the range here to be slightly less than that returned by the simulation 
+    #to eliminate NaN values in evaluating the interpolated data
+    x_min_sim = np.min(twoth_sim) + 0.5
+    x_max_sim = np.max(twoth_sim) - 0.5
+    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+    x_exp_common = x_exp[mask]
+    y_exp_common = y_exp[mask]
+
+    #Here we also determine the x_indices definining the binning around each peak for residual weighting
+    #First we need the 2th center positions of each hkl reflection included
+    hkl_peak_centers = []
+    for hkl in selected_hkls:
+        h, k, l = hkl
+        #Compute d0 and 2th
+        if symmetry == 'cubic':
+            d0 = a_val_opt / np.linalg.norm([h, k, l])
+            #Compute 2ths
+            sin_th = wavelength / (2 * d0)
+            two_th = 2 * np.degrees(np.arcsin(sin_th))
+        else:
+            st.write("No support for {} symmetries".format(symmetry))
+            two_th = 0
+        hkl_peak_centers = np.append(hkl_peak_centers, two_th)
+
+    #Get the residual bin indices using these centers
+    bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
+    
+    def wrapped_cost_function(params):
+    return cost_function(
+        params, param_flags, selected_hkls, Gaussian_FWHM,
+        phi_values, psi_values, wavelength, c11, c12, symmetry,
+        x_exp_common, y_exp_common, bin_indices
+    )
+    posterior = minimize(wrapped_cost_funtion, 
+                         method='emcee', nan_policy='omit', burn=300, steps=1000, thin=20,
+                     params=fit_result.params, is_weighted=False, progress=False)
+    return posterior
+
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
@@ -721,5 +782,14 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
     
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+
+                #Next display a button to compute the posterior probability distribution
+                if st.button("Compute Posterior probability distribution"):
+
+                    posterior = generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
+                    emcee_plot = corner.corner(posterior.flatchain, labels=posterior.var_names,
+                           truths=list(posterior.params.valuesdict().values()))
+
+                    st.pyplot(emcee_plot)
             else:
                 st.error("Refinement failed.")
