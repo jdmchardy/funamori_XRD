@@ -783,13 +783,15 @@ if uploaded_file:
     
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
 
-                #Next display a button to compute the posterior probability distribution
-                if st.button("Compute Posterior probability distribution"):
-
-                    posterior = generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
-                    emcee_plot = corner.corner(posterior.flatchain, labels=posterior.var_names,
-                           truths=list(posterior.params.valuesdict().values()))
-
-                    st.pyplot(emcee_plot)
             else:
                 st.error("Refinement failed.")
+
+            #Next display a button to compute the posterior probability distribution
+        if result.success:
+            if st.button("Compute Posterior probability distribution"):
+
+                posterior = generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
+                emcee_plot = corner.corner(posterior.flatchain, labels=posterior.var_names,
+                       truths=list(posterior.params.valuesdict().values()))
+
+                st.pyplot(emcee_plot)
