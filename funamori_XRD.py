@@ -797,13 +797,15 @@ if uploaded_file:
                 if result.success:
                     plt.close("all")
                     posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
-                    st.write("Posterior shape:", posterior.flatchain.shape)  # should be (N_samples, K)
-                    st.write("Labels:", posterior.var_names)
-                    st.write("Truths:", list(posterior.params.valuesdict().values()))
+                    # Match the sampled parameters only
+                    truths = [
+                        posterior.params["a_val"].value,
+                        posterior.params["intensity_0"].value,
+                        posterior.params["__lnsigma"].value,
+                    ]
                     emcee_plot = corner.corner(
                         posterior.flatchain,
                         labels=posterior.var_names,
-                        truths=list(posterior.params.valuesdict().values())
+                        truths=truths
                     )
-                    st.write("Computed")
                     st.pyplot(emcee_plot)
