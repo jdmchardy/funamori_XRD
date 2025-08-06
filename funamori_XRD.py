@@ -726,6 +726,7 @@ if uploaded_file:
                 a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
                 )
+            st.session_state["refinement_result"] = result
         
             if result.success:
                 st.success("Refinement successful!")
@@ -786,11 +787,12 @@ if uploaded_file:
             else:
                 st.error("Refinement failed.")
 
-            #Next display a button to compute the posterior probability distribution
+        #Next display a button to compute the posterior probability distribution
         if st.button("Compute Posterior probability distribution"):
             st.write("Button pressed")
 
-            if "result" in locals():
+            if "refinement_result" in st.session_state:
+                result = st.session_state["refinement_result"]
                 st.write("Reuslt in locals")
                 if result.success:
                     st.write("result success")
