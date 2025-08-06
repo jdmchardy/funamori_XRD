@@ -7,6 +7,7 @@ from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from lmfit import Parameters, minimize, fit_report
 import corner
+import tqdm
 
 #### Functions -----------------------------------------------------
 
@@ -490,7 +491,7 @@ def generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaus
         )
     posterior = minimize(wrapped_cost_function, 
                          method='emcee', nan_policy='omit', burn=10, steps=100, thin=1, nwalkers=10,
-                     params=fit_result.params, is_weighted=False, progress=False)
+                     params=fit_result.params, is_weighted=False, progress=True)
     return posterior
 
 #### Main App logic -----------------------------------------------------
