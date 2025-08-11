@@ -616,26 +616,32 @@ if uploaded_file:
                     for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
                         hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
+                        #Insert a placeholder column for the average strain at each psi
+                        df["Mean strain"] = np.nan
+                        #Initialise a list of the mean strains
+                        mean_strain_list = []
                         #Compute the average strains and append to df
                         for psi in np.unique(psi_list):
                             #Obtain all the strains at this particular psi
                             mask = psi_list == psi
-                            st.write(len(mask))
-                            st.write(len(strain_33_list))
                             strains = strain_33_list[mask]
-                            st.write(len(strains))
                             mean_strain = np.mean(strains)
-                            st.write("Mean strain: {}".format(mean_strain))
-                        
-                        
+                            #Append to list
+                            mean_stain_list.append(mean_strain)
+                            #Update the mean strain column at the correct psi values
+                            df.loc["psi (degrees)" = psi, ["Mean strain"]] = mean_strain
                         results_dict[hkl_label] = df
     
                         scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
+                        #Plot the mean strain curve
+                        unique_psi = np.unique(psi_list)
+                        #Plot the mean curve
+                        ax.plot(unique_psi, mean_strain_list, color="blue", lw=0.8, label="mean strain")
                         ax.set_xlabel("ψ (degrees)")
                         ax.set_ylabel("ε′₃₃")
                         ax.set_xlim(0,90)
                         ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
-    
+                        ax.legend()
                     st.pyplot(fig)
             
                     if results_dict != {}:
