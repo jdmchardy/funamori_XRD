@@ -830,7 +830,7 @@ if uploaded_file:
 
         #Next display a button to compute the posterior probability distribution
         st.subheader("Probe fit surface")
-            col1, col2, col3 = st.columns(3)
+        col1, col2, col3 = st.columns(3)
             with col1:
                 steps = st.number_input("Total steps", value=200, min_value=10, step=10)
                 walkers = st.number_input("Total walkers", value=50, min_value=10, step=10)
