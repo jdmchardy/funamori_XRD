@@ -273,7 +273,7 @@ def select_parameters_to_refine():
         "peak_intensity": st.checkbox("Refine peak intensities", value=False)
     }
 
-def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     
     #New logic for lmfit -----------------------------
     params = Parameters()
@@ -293,10 +293,10 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         params.add("t", value=t, vary=False)
     
     if param_flags["peak_intensity"]:
-        for i, inten in enumerate(intensities):
+        for i, inten in zip(selected_indices, intensities):
             params.add(f"intensity_{i}", value=inten, min=0, max=400)
     else:
-        for i, inten in enumerate(intensities):
+        for i, inten in zip(selected_indices, intensities):
             params.add(f"intensity_{i}", value=inten, vary=False)
 
     # --- First pass of refinement to determine common 2th domain ---
@@ -306,7 +306,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
     sigma_11 = -t_opt / 3
     sigma_22 = -t_opt / 3
     sigma_33 = 2 * t_opt / 3
-    intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+    intensities_opt = [params[f"intensity_{i}"].value for i in selected_indices]
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
@@ -432,7 +432,7 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
             bin_indices.append(indices)
     return bin_indices
 
-def generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def generate_posterior(fit_result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
 
      # --- First pass of refinement to determine common 2th domain ---
     a_val_opt = fit_result.params["a_val"].value
@@ -441,7 +441,7 @@ def generate_posterior(fit_result, param_flags, selected_hkls, intensities, Gaus
     sigma_11 = -t_opt / 3
     sigma_22 = -t_opt / 3
     sigma_33 = 2 * t_opt / 3
-    intensities_opt = [fit_result.params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+    intensities_opt = [fit_result.params[f"intensity_{i}"].value for i in selected_indices]
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
@@ -764,7 +764,7 @@ if uploaded_file:
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
             result = run_refinement(
-                a_val_refine, c44_refine, t_refine, param_flags, selected_hkls, intensities, Gaussian_FWHM,
+                a_val_refine, c44_refine, t_refine, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
                 )
             st.session_state["refinement_result"] = result
@@ -784,7 +784,7 @@ if uploaded_file:
 
                 # Handle refined intensities
                 if param_flags["peak_intensity"]:
-                    intensities_refined = [result.params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+                    intensities_refined = [result.params[f"intensity_{i}"].value for i in selected_indices]
                 else:
                     intensities_refined = intensities
         
@@ -837,7 +837,7 @@ if uploaded_file:
                 result = st.session_state["refinement_result"]
                 if result.success:
                     plt.close("all")
-                    posterior = generate_posterior(result, param_flags, selected_hkls, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
+                    posterior = generate_posterior(result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
                     # Match the sampled parameters only
                     truths = [
                         posterior.params["a_val"].value,
