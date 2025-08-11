@@ -831,11 +831,11 @@ if uploaded_file:
         #Next display a button to compute the posterior probability distribution
         st.subheader("Probe fit surface")
         col1, col2, col3 = st.columns(3)
-            with col1:
-                steps = st.number_input("Total steps", value=200, min_value=10, step=10)
-                walkers = st.number_input("Total walkers", value=50, min_value=10, step=10)
-                burn = st.number_input("Burn points", value=20, min_value=5, step=5)
-                thin = st.number_input("Thinning", value=1, min_value=1, step=1)
+        with col1:
+            steps = st.number_input("Total steps", value=200, min_value=10, step=10)
+            walkers = st.number_input("Total walkers", value=50, min_value=10, step=10)
+            burn = st.number_input("Burn points", value=20, min_value=5, step=5)
+            thin = st.number_input("Thinning", value=1, min_value=1, step=1)
         if st.button("Compute Posterior probability distribution"):
             phi_values = np.linspace(0, 2 * np.pi, 36)
             psi_values = 0
