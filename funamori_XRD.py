@@ -706,7 +706,7 @@ if uploaded_file:
                         ax.set_ylabel("ε′₃₃")
                         #ax.set_xlim(-180,180)
                         ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
-                        ax.tight_layout()
+                        plt.tight_layout()
                     st.pyplot(fig)
     ### XRD Refinement ----------------------------------------------------------------
     st.subheader("Refine XRD")
