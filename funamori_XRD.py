@@ -615,6 +615,18 @@ if uploaded_file:
     
                     for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
                         hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+
+                        #Compute the average strains and append to df
+                        for psi in np.unique(psi_list):
+                            st.write(psi)
+                            #Obtain all the strains at this particular psi
+                            mask = psi_list == psi
+                            st.write(mask)
+                            strains = strain_33_list[mask]
+                            mean_strain = np.mean(strains)
+                            st.write("Mean strain: {}".format(mean_strain))
+                        
+                        
                         results_dict[hkl_label] = df
     
                         scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
