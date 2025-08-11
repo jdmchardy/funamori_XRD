@@ -844,7 +844,7 @@ if uploaded_file:
                 result = st.session_state["refinement_result"]
                 if result.success:
                     plt.close("all")
-                    posterior = generate_posterior(steps, walkers, burn, thin result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
+                    posterior = generate_posterior(steps, walkers, burn, thin, result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
                     # Match the sampled parameters only
                     truths = [
                         posterior.params["a_val"].value,
