@@ -484,7 +484,7 @@ def generate_posterior(fit_result, param_flags, selected_hkls, selected_indices,
     
     def wrapped_cost_function(params):
         return cost_function(
-            params, param_flags, selected_hkls, Gaussian_FWHM,
+            params, param_flags, selected_hkls, selected_indices, Gaussian_FWHM,
             phi_values, psi_values, wavelength, c11, c12, symmetry,
             x_exp_common, y_exp_common, bin_indices
         )
