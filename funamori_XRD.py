@@ -694,7 +694,7 @@ if uploaded_file:
                     if len(selected_hkls) == 1:
                         axs = [axs]
 
-                    for ax, hkl in zip(axs, selected_hkls):
+                    for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
                         phi_values = np.linspace(0, 2 * np.pi, phi_steps)
                         psi_values = [selected_psi]
                         #Get the aximuth and strain values for the selected psi
