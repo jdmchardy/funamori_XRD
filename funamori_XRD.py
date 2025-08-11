@@ -598,7 +598,7 @@ if uploaded_file:
             with col2:
                 Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             with col3:
-                selected_psi = st.number_input("Psi slice", value=54.7, min_value=0.0, step=5.0, format="%.4f")
+                selected_psi = st.number_input("Psi slice", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
             
             # Determine grid sizes
             psi_steps = int(2 * np.sqrt(total_points))
