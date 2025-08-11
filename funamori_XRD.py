@@ -432,7 +432,7 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
             bin_indices.append(indices)
     return bin_indices
 
-def generate_posterior(fit_result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
 
      # --- First pass of refinement to determine common 2th domain ---
     a_val_opt = fit_result.params["a_val"].value
@@ -489,7 +489,7 @@ def generate_posterior(fit_result, param_flags, selected_hkls, selected_indices,
             x_exp_common, y_exp_common, bin_indices
         )
     posterior = minimize(wrapped_cost_function, 
-                         method='emcee', nan_policy='omit', burn=20, steps=100, thin=1, nwalkers=20,
+                         method='emcee', nan_policy='omit', burn=burn, steps=steps, thin=thin, nwalkers=walkers,
                          params=fit_result.params, is_weighted=False, progress=False)
     return posterior
 
@@ -829,6 +829,13 @@ if uploaded_file:
                 st.error("Refinement failed.")
 
         #Next display a button to compute the posterior probability distribution
+        st.subheader("Probe fit surface")
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                steps = st.number_input("Total steps", value=200, min_value=10, step=10)
+                walkers = st.number_input("Total walkers", value=50, min_value=10, step=10)
+                burn = st.number_input("Burn points", value=20, min_value=5, step=5)
+                thin = st.number_input("Thinning", value=1, min_value=1, step=1)
         if st.button("Compute Posterior probability distribution"):
             phi_values = np.linspace(0, 2 * np.pi, 36)
             psi_values = 0
@@ -837,7 +844,7 @@ if uploaded_file:
                 result = st.session_state["refinement_result"]
                 if result.success:
                     plt.close("all")
-                    posterior = generate_posterior(result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
+                    posterior = generate_posterior(steps, walkers, burn, thin result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
                     # Match the sampled parameters only
                     truths = [
                         posterior.params["a_val"].value,
