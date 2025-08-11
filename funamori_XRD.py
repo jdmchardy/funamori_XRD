@@ -703,7 +703,7 @@ if uploaded_file:
                         scatter = ax.scatter(phi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
                         ax.set_xlabel("phi (degrees)")
                         ax.set_ylabel("ε′₃₃")
-                        ax.set_xlim(-180,180)
+                        #ax.set_xlim(-180,180)
                         ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
                     st.pyplot(fig)
     ### XRD Refinement ----------------------------------------------------------------
