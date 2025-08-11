@@ -627,7 +627,7 @@ if uploaded_file:
                             strains = strain_33_list[mask]
                             mean_strain = np.mean(strains)
                             #Append to list
-                            mean_stain_list.append(mean_strain)
+                            mean_strain_list.append(mean_strain)
                             #Update the mean strain column at the correct psi values
                             df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
                         results_dict[hkl_label] = df
