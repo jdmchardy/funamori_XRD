@@ -629,7 +629,7 @@ if uploaded_file:
                             #Append to list
                             mean_stain_list.append(mean_strain)
                             #Update the mean strain column at the correct psi values
-                            df.loc[df["psi (degrees)"] = psi, ["Mean strain"]] = mean_strain
+                            df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
                         results_dict[hkl_label] = df
     
                         scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
