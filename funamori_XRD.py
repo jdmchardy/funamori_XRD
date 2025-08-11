@@ -288,7 +288,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, intensities, Gauss
         params.add("c44", value=c44, vary=False)
     
     if param_flags["t"]:
-        params.add("t", value=t, min=-10, max=10)
+        params.add("t", value=t, min=-20, max=20)
     else:
         params.add("t", value=t, vary=False)
     
