@@ -699,6 +699,7 @@ if uploaded_file:
                         psi_values = [selected_psi]
                         #Get the aximuth and strain values for the selected psi
                         hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                        st.write(df)
                         phi_list = df["phi (degrees)"]
                         scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
                         ax.set_xlabel("phi (degrees)")
