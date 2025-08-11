@@ -597,6 +597,8 @@ if uploaded_file:
                 total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             with col2:
                 Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
+            with col3:
+                selected_psi = st.number_input("Psi slice", value=54.7, min_value=0, step=5.0, format="%.1f")
             
             # Determine grid sizes
             psi_steps = int(2 * np.sqrt(total_points))
@@ -686,6 +688,24 @@ if uploaded_file:
                 
                     st.pyplot(fig)
 
+            with col3:
+                if st.button("Plot axial cake") and selected_hkls:
+                    fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
+                    if len(selected_hkls) == 1:
+                        axs = [axs]
+
+                    for ax, hkl in zip(axs, selected_hkls):
+                        phi_values = np.linspace(0, 2 * np.pi, phi_steps)
+                        psi_values = [selected_psi]
+                        #Get the aximuth and strain values for the selected psi
+                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                        phi_list = df["phi (degrees)"]
+                        scatter = ax.scatter(phi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
+                        ax.set_xlabel("phi (degrees)")
+                        ax.set_ylabel("ε′₃₃")
+                        ax.set_xlim(-180,180)
+                        ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
+                    st.pyplot(fig)
     ### XRD Refinement ----------------------------------------------------------------
     st.subheader("Refine XRD")
 
