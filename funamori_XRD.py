@@ -644,7 +644,7 @@ if uploaded_file:
                         ax.legend()
                     
                     htmlfig = mpld3.fig_to_html(fig)
-                    st.components.v1.html(htmlfig, height=500)
+                    st.components.v1.html(htmlfig, height=50)
                     #st.pyplot(fig)
             
                     if results_dict != {}:
