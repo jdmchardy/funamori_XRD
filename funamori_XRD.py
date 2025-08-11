@@ -618,11 +618,12 @@ if uploaded_file:
 
                         #Compute the average strains and append to df
                         for psi in np.unique(psi_list):
-                            st.write(psi)
                             #Obtain all the strains at this particular psi
                             mask = psi_list == psi
-                            st.write(mask)
+                            st.write(len(mask))
+                            st.write(len(strain_33_list))
                             strains = strain_33_list[mask]
+                            st.write(len(strains))
                             mean_strain = np.mean(strains)
                             st.write("Mean strain: {}".format(mean_strain))
                         
