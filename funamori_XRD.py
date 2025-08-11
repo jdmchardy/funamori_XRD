@@ -1,6 +1,6 @@
 import streamlit as st
 import numpy as np
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt, mpld3
 import pandas as pd
 import io
 from scipy.interpolate import interp1d
@@ -642,7 +642,10 @@ if uploaded_file:
                         ax.set_xlim(0,90)
                         ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
                         ax.legend()
-                    st.pyplot(fig)
+                    
+                    htmlfig = mpld3.fig_to_html(fig)
+                    st.components.v1.html(htmlfig, height=500)
+                    #st.pyplot(fig)
             
                     if results_dict != {}:
                         st.subheader("Download Computed Data")
