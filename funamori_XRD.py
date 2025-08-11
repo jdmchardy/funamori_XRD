@@ -203,7 +203,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     # Define common 2-theta range for evaluation
     twotheta_min = combined_df["2th"].min() - 1
     twotheta_max = combined_df["2th"].max() + 1
-    twotheta_grid = np.linspace(twotheta_min, twotheta_max, 1000)
+    twotheta_grid = np.linspace(twotheta_min, twotheta_max, 500)
     
     # Container to store individual peak curves
     peak_curves = {}
@@ -830,7 +830,7 @@ if uploaded_file:
 
         #Next display a button to compute the posterior probability distribution
         if st.button("Compute Posterior probability distribution"):
-            phi_values = np.linspace(0, 2 * np.pi, 72)
+            phi_values = np.linspace(0, 2 * np.pi, 36)
             psi_values = 0
 
             if "refinement_result" in st.session_state:
