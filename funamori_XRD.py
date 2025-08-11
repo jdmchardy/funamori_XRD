@@ -734,7 +734,7 @@ if uploaded_file:
             }
         col1, col2, col3 = st.columns(3)
         with col1:
-            a_val, c44, t = get_initial_parameters(defaults)
+            a_val_refine, c44_refine, t_refine = get_initial_parameters(defaults)
         with col2:
             param_flags = select_parameters_to_refine()
 
@@ -742,7 +742,7 @@ if uploaded_file:
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
             result = run_refinement(
-                a_val, c44, t, param_flags, selected_hkls, intensities, Gaussian_FWHM,
+                a_val_refine, c44_refine, t_refine, param_flags, selected_hkls, intensities, Gaussian_FWHM,
                 phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
                 )
             st.session_state["refinement_result"] = result
