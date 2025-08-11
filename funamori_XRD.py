@@ -350,7 +350,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, 
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(params):
         return cost_function(
-            params, param_flags, selected_hkls, Gaussian_FWHM,
+            params, param_flags, selected_hkls, selected_indices, Gaussian_FWHM,
             phi_values, psi_values, wavelength, c11, c12, symmetry,
             x_exp_common, y_exp_common, bin_indices
         )
@@ -361,7 +361,7 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, 
 
     return result
 
-def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common, bin_indices):
+def cost_function(params, param_flags, selected_hkls, selected_indices, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common, bin_indices):
 
     a_val_opt = params["a_val"].value
     c44_opt = params["c44"].value
@@ -371,7 +371,7 @@ def cost_function(params, param_flags, selected_hkls, Gaussian_FWHM, phi_values,
     sigma_22_opt = -t_opt/3
     sigma_33_opt = 2*t_opt/3
 
-    intensities_opt = [params[f"intensity_{i}"].value for i in range(len(selected_hkls))]
+    intensities_opt = [params[f"intensity_{i}"].value for i in selected_indices]
 
     strain_sim_params = (
         a_val_opt, wavelength, c11, c12, c44_opt,
