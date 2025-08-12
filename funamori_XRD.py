@@ -707,11 +707,10 @@ if uploaded_file:
                         st.error(f"CSV must contain columns: {', '.join(required_columns)}")
                     else:
                         st.success("CSV loaded successfully!")
-                        st.write("Full DataFrame:", df)
     
                         all_results_df = []  # Will hold DataFrames with parameters + results
 
-                        phi_values = np,linspace(0, 2*np.pi, 72)
+                        phi_values = np.linspace(0, 2*np.pi, 72)
                         psi_values = 0
     
                         for _, row in df.iterrows():
