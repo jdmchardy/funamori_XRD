@@ -740,7 +740,32 @@ if uploaded_file:
                     
                         # Align all result blocks by index and combine
                         results_df = pd.concat(results_blocks, axis=1)
-                
+
+                        #Plot up the data
+                        fig, ax = plt.subplots(figsize=(10, 6))
+
+                        #Get the first y dataset to compute the offset
+                        y_initial = results_df[Intensity_iter1]
+                        y_offset = np.max(y_initial)*0.5
+                        
+                        for idx in range(len(results_blocks)):
+                            x_col = f"2th_iter{idx+1}"
+                            y_col = f"Intensity_iter{idx+1}"
+                            
+                            x = results_df[x_col]
+                            y = results_df[y_col]
+                            
+                            ax.plot(x, y + y_offset, label=f"Iteration {idx+1}")
+                        
+                        ax.set_xlabel("2θ (degrees)")
+                        ax.set_ylabel("Intensity + offset")
+                        ax.set_title("Offset XRD Line Plots on Single Subplot")
+                        ax.legend()
+                        ax.grid(True)
+                        plt.tight_layout()
+                        #Display the plot
+                        st.pyplot(fig)
+                        
                         # Now you have two parts: parameters_df and results_df
                         # Export format: parameters first, then results
                         st.subheader("Download Computed Data")
