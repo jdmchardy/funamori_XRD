@@ -688,6 +688,30 @@ if uploaded_file:
                 
                     st.pyplot(fig)
 
+                batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
+                if batch_upload:
+                    batch_upload.seek(0)  # reset pointer
+                    # Read everything into a DataFrame
+                    df = pd.read_csv(batch_upload)
+                
+                    # Convert numerical columns where possible
+                    for col in df.columns:
+                        df[col] = pd.to_numeric(df[col], errors='ignore')
+                
+                    # Extract constants from first row (optional)
+                    constants = df.iloc[0].to_dict()
+                
+                    # Required keys check
+                    required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
+                    if not required_keys.issubset(constants):
+                        st.error(f"CSV must contain: {', '.join(required_keys)}")
+                    else:
+                        st.success("CSV loaded successfully!")
+                        st.write("Constants:", constants)
+                
+                    # Keep the full dataset for further analysis
+                    st.write("Full DataFrame:", df)
+                    
             with col3:
                 if st.button("Plot axial cake") and selected_hkls:
                     fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
