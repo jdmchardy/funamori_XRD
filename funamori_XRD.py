@@ -746,7 +746,8 @@ if uploaded_file:
 
                         #Get the first y dataset to compute the offset
                         y_initial = results_df["Intensity_iter1"]
-                        y_offset = np.max(y_initial)*0.5
+                        y_offset = 0
+                        offset_step = np.max(y_initial)*0.5
                         
                         for idx in range(len(results_blocks)):
                             x_col = f"2th_iter{idx+1}"
@@ -757,7 +758,7 @@ if uploaded_file:
                             
                             ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
                             #Increase the offset
-                            y_offset = y_offset+y_offset
+                            y_offset = y_offset+offset_step
                         
                         ax.set_xlabel("2θ (degrees)")
                         ax.set_ylabel("Intensity (a.u.)")
