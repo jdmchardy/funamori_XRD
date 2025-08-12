@@ -755,13 +755,14 @@ if uploaded_file:
                             x = results_df[x_col]
                             y = results_df[y_col]
                             
-                            ax.plot(x, y + y_offset, label=f"Iteration {idx+1}")
+                            ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
+                            #Increase the offset
+                            y_offset = y_offset+y_offset
                         
                         ax.set_xlabel("2θ (degrees)")
-                        ax.set_ylabel("Intensity + offset")
-                        ax.set_title("Offset XRD Line Plots on Single Subplot")
+                        ax.set_ylabel("Intensity (a.u.)")
+                        ax.set_title("Batch XRD")
                         ax.legend()
-                        ax.grid(True)
                         plt.tight_layout()
                         #Display the plot
                         st.pyplot(fig)
