@@ -709,7 +709,7 @@ if uploaded_file:
                         st.success("CSV loaded successfully!")
     
                         # Store parameters in one DataFrame
-                        parameters_df = df[required_columns].copy()
+                        parameters_df = df[list(required_columns)].copy()
                         # Store results side-by-side
                         results_blocks = []
 
