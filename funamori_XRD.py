@@ -699,7 +699,7 @@ if uploaded_file:
                 
                     # Convert numerical columns where possible
                     for col in df.columns:
-                        df[col] = pd.to_numeric(df[col], errors='ignore')
+                        df[col] = pd.to_numeric(df[col])
                 
                     # Required columns check
                     required_columns = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
