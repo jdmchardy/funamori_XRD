@@ -745,7 +745,7 @@ if uploaded_file:
                         fig, ax = plt.subplots(figsize=(10, 6))
 
                         #Get the first y dataset to compute the offset
-                        y_initial = results_df[Intensity_iter1]
+                        y_initial = results_df["Intensity_iter1"]
                         y_offset = np.max(y_initial)*0.5
                         
                         for idx in range(len(results_blocks)):
