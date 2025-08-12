@@ -709,14 +709,14 @@ if uploaded_file:
                         st.success("CSV loaded successfully!")
     
                         # Store parameters in one DataFrame
-                            parameters_df = df[required_columns].copy()
+                        parameters_df = df[required_columns].copy()
                         # Store results side-by-side
                         results_blocks = []
 
                         phi_values = np.linspace(0, 2*np.pi, 72)
                         psi_values = 0
     
-                        for _, row in df.iterrows():
+                        for idx, row in df.iterrows():
                             # Extract row parameters for strain_sim_params
                             strain_sim_params = (
                                 row['a'], row['wavelength'], row['C11'], row['C12'], row['C44'],
@@ -725,7 +725,7 @@ if uploaded_file:
                             )
                 
                             # Run Generate_XRD for this row
-                            xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim) 
+                            xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params) 
         
                             # Rename columns so each block is unique
                             xrd_df = xrd_df.rename(columns={
@@ -735,34 +735,40 @@ if uploaded_file:
                 
                             results_blocks.append(xrd_df)
                     
-                            # Align all result blocks by index and combine
-                            results_df = pd.concat(results_blocks, axis=1)
-                    
-                            # Now you have two parts: parameters_df and results_df
-                            # Export format: parameters first, then results
-                            st.subheader("Download Computed Data")
-                            output_buffer = io.BytesIO()
-                            with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-                                parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
-                                results_df.to_excel(writer, sheet_name="Results", index=False)
+                        # Align all result blocks by index and combine
+                        results_df = pd.concat(results_blocks, axis=1)
+                
+                        # Now you have two parts: parameters_df and results_df
+                        # Export format: parameters first, then results
+                        st.subheader("Download Computed Data")
+                        output_buffer = io.BytesIO()
+                        with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                            parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
+                            results_df.to_excel(writer, sheet_name="Results", index=False)
 
-                                # auto-width adjustment
-                                worksheet = writer.sheets[sheet_name]
-                                for i, col in enumerate(df.columns):
-                                    max_width = max(results_df[col].astype(str).map(len).max(), len(col)) + 2
-                                    worksheet.set_column(i, i, max_width)
+                            # Auto-width adjustment for Parameters sheet
+                            worksheet_params = writer.sheets["Parameters"]
+                            for i, col in enumerate(parameters_df.columns):
+                                max_width = max(parameters_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                                worksheet_params.set_column(i, i, max_width)
 
-                            output_buffer.seek(0)
-                        
-                            st.download_button(
-                                label="📥 Download Batch XRD as Excel (.xlsx)",
-                                data=output_buffer,
-                                file_name="XRD_results.xlsx",
-                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                            )
+                            # Auto-width adjustment for "Results" sheet
+                            worksheet = writer.sheets["Results"]
+                            for i, col in enumerate(results_df.columns):
+                                max_width = max(results_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                                worksheet.set_column(i, i, max_width)
+
+                        output_buffer.seek(0)
                     
-                            #st.write("Parameters", parameters_df)
-                            #st.write("Results", results_df)
+                        st.download_button(
+                            label="📥 Download Batch XRD as Excel (.xlsx)",
+                            data=output_buffer,
+                            file_name="XRD_results.xlsx",
+                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                
+                        #st.write("Parameters", parameters_df)
+                        #st.write("Results", results_df)
 
                     
             with col3:
