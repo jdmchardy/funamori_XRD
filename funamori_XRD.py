@@ -763,7 +763,6 @@ if uploaded_file:
                         ax.set_xlabel("2θ (degrees)")
                         ax.set_ylabel("Intensity (a.u.)")
                         ax.set_title("Batch XRD")
-                        ax.legend()
                         plt.tight_layout()
                         #Display the plot
                         st.pyplot(fig)
