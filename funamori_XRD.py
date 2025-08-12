@@ -708,7 +708,10 @@ if uploaded_file:
                     else:
                         st.success("CSV loaded successfully!")
     
-                        all_results_df = []  # Will hold DataFrames with parameters + results
+                        # Store parameters in one DataFrame
+                            parameters_df = df[required_columns].copy()
+                        # Store results side-by-side
+                        results_blocks = []
 
                         phi_values = np.linspace(0, 2*np.pi, 72)
                         psi_values = 0
@@ -722,23 +725,45 @@ if uploaded_file:
                             )
                 
                             # Run Generate_XRD for this row
-                            result_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                            xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim) 
+        
+                            # Rename columns so each block is unique
+                            xrd_df = xrd_df.rename(columns={
+                                "2th": f"2th_iter{idx+1}",
+                                "Total Intensity": f"Intensity_iter{idx+1}"
+                            }).reset_index(drop=True)
                 
-                            # Add identifying parameters as columns in the result
-                            for col_name, val in zip(required_columns, strain_sim_params):
-                                result_df[col_name] = val
-                
-                            # Append this result to list
-                            all_results_df.append(result_df)
-                
-                        # Combine all results into one DataFrame
-                        final_results_df = pd.concat(all_results_df, ignore_index=True)
-                
-                        # Display & make available for export
-                        st.write(final_results_df)
-                
-                        # Example export
-                        # final_results_df.to_csv("xrd_results.csv", index=False)
+                            results_blocks.append(xrd_df)
+                    
+                            # Align all result blocks by index and combine
+                            results_df = pd.concat(results_blocks, axis=1)
+                    
+                            # Now you have two parts: parameters_df and results_df
+                            # Export format: parameters first, then results
+                            st.subheader("Download Computed Data")
+                            output_buffer = io.BytesIO()
+                            with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                                parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
+                                results_df.to_excel(writer, sheet_name="Results", index=False)
+
+                                # auto-width adjustment
+                                worksheet = writer.sheets[sheet_name]
+                                for i, col in enumerate(df.columns):
+                                    max_width = max(results_df[col].astype(str).map(len).max(), len(col)) + 2
+                                    worksheet.set_column(i, i, max_width)
+
+                            output_buffer.seek(0)
+                        
+                            st.download_button(
+                                label="📥 Download Batch XRD as Excel (.xlsx)",
+                                data=output_buffer,
+                                file_name="XRD_results.xlsx",
+                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                            )
+                    
+                            #st.write("Parameters", parameters_df)
+                            #st.write("Results", results_df)
+
                     
             with col3:
                 if st.button("Plot axial cake") and selected_hkls:
