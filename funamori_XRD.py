@@ -86,11 +86,14 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     #Check if phi_values are given or if it must be calculated for XRD generation
     if isinstance(psi_values, int):
         if psi_values==0:
-            d0 = a_val / np.linalg.norm([h, k, l])
-            sin_theta0 = wavelength / (2 * d0)
-            theta0 = np.arcsin(sin_theta0)
-            #Compute the psi_value assuming compression axis aligned with X-rays
-            psi_values = np.asarray([np.pi/2 - theta0])
+            if symmetry == "cubic":
+                d0 = a_val / np.linalg.norm([h, k, l])
+                sin_theta0 = wavelength / (2 * d0)
+                theta0 = np.arcsin(sin_theta0)
+                #Compute the psi_value assuming compression axis aligned with X-rays
+                psi_values = np.asarray([np.pi/2 - theta0])
+            else:
+                st.write("Support not yet provided for {} symmetry".format(symmetry))
     else:
         # Assume phi_values and psi_values are 1D numpy arrays
         psi_values = np.asarray(psi_values)
@@ -698,19 +701,45 @@ if uploaded_file:
                     for col in df.columns:
                         df[col] = pd.to_numeric(df[col], errors='ignore')
                 
-                    # Extract constants from first row (optional)
-                    constants = df.iloc[0].to_dict()
-                
-                    # Required keys check
-                    required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
-                    if not required_keys.issubset(constants):
-                        st.error(f"CSV must contain: {', '.join(required_keys)}")
+                    # Required columns check
+                    required_columns = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
+                    if not required_columns.issubset(df.columns):
+                        st.error(f"CSV must contain columns: {', '.join(required_columns)}")
                     else:
                         st.success("CSV loaded successfully!")
-                        st.write("Constants:", constants)
+                        st.write("Full DataFrame:", df)
+    
+                        all_results_df = []  # Will hold DataFrames with parameters + results
+
+                        phi_values = np,linspace(0, 2*np.pi, 72)
+                        psi_values = 0
+    
+                        for _, row in df.iterrows():
+                            # Extract row parameters for strain_sim_params
+                            strain_sim_params = (
+                                row['a'], row['wavelength'], row['C11'], row['C12'], row['C44'],
+                                row['sig11'], row['sig22'], row['sig33'],
+                                phi_values, psi_values, row['symmetry']
+                            )
                 
-                    # Keep the full dataset for further analysis
-                    st.write("Full DataFrame:", df)
+                            # Run Generate_XRD for this row
+                            result_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                
+                            # Add identifying parameters as columns in the result
+                            for col_name, val in zip(required_columns, strain_sim_params):
+                                result_df[col_name] = val
+                
+                            # Append this result to list
+                            all_results_df.append(result_df)
+                
+                        # Combine all results into one DataFrame
+                        final_results_df = pd.concat(all_results_df, ignore_index=True)
+                
+                        # Display & make available for export
+                        st.write(final_results_df)
+                
+                        # Example export
+                        # final_results_df.to_csv("xrd_results.csv", index=False)
                     
             with col3:
                 if st.button("Plot axial cake") and selected_hkls:
