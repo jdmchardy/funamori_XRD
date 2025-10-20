@@ -529,20 +529,8 @@ if uploaded_file:
         with col2:
             st.subheader("Select Reflections and Edit Intensities")
             
-        col1, col2, col3, col4 = st.columns([2,2,2,5])
+        col1, col2, col3, col4 = st.columns([5,2,2,2])
         with col1:
-            a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
-            wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
-            symmetry = st.text_input("Symmetry", value=constants['symmetry'])
-        with col2:
-            c11 = st.number_input("C11", value=constants['C11'])
-            c12 = st.number_input("C12", value=constants['C12'])
-            c44 = st.number_input("C44", value=constants['C44'])
-        with col3:
-            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
-            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
-            sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
-        with col4:
             # Parse HKL section including intensity
             hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
             if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
@@ -591,7 +579,19 @@ if uploaded_file:
                         intensities.append(st.session_state.intensities[f"intensity_{i}"])
     
                 st.session_state.intensities.update(intensity_boxes)
-
+        with col2:
+            a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
+            wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
+            symmetry = st.text_input("Symmetry", value=constants['symmetry'])
+        with col3:
+            c11 = st.number_input("C11", value=constants['C11'])
+            c12 = st.number_input("C12", value=constants['C12'])
+            c44 = st.number_input("C44", value=constants['C44'])
+        with col3:
+            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
+            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
+            sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
+        
         st.subheader("Computation Settings")
         col1, col2, col3 = st.columns(3)
         with col1:
