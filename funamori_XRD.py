@@ -523,13 +523,13 @@ if uploaded_file:
     if not required_keys.issubset(constants):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
     else:
-        col1,col2 = st.columns([4,6])
+        col1,col2 = st.columns([3,6])
         with col1:
             st.subheader("Select Reflections and Edit Intensities")
         with col2:
             st.subheader("Material Constants")
             
-        col1, col2, col3, col4 = st.columns([4,2,2,2])
+        col1, col2, col3, col4 = st.columns([3,2,2,2])
         with col1:
             # Parse HKL section including intensity
             hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
@@ -587,7 +587,7 @@ if uploaded_file:
             c11 = st.number_input("C11", value=constants['C11'])
             c12 = st.number_input("C12", value=constants['C12'])
             c44 = st.number_input("C44", value=constants['C44'])
-        with col3:
+        with col4:
             sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
             sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
             sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
