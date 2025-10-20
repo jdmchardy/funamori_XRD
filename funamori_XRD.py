@@ -708,8 +708,22 @@ if uploaded_file:
                 ax.set_ylabel("Intensity (a.u.)")
                 ax.set_title("Simulated XRD Pattern")
                 ax.legend()
-            
                 st.pyplot(fig)
+
+                #Prepare .xy file
+                # .xy format is two columns, 2th and intensity
+                output_buffer = io.StringIO()
+                for tth, intensity in zip(twotheta_grid, total_pattern):
+                    output_buffer.write(f"{tth:.5f} {intensity:.5f}\n")
+                
+                # Move cursor to start for reading
+                output_buffer.seek(0)
+                st.download_button(
+                    label="📥 Download simulated xy data (.xy)",
+                    data=output_buffer.getvalue(),
+                    file_name="Simulated_XRD.xy",
+                    mime="text/plain"
+                )
 
             batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
             if batch_upload:
