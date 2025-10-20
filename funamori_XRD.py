@@ -525,7 +525,7 @@ if uploaded_file:
     else:
         st.subheader("Material Constants")
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4 = st.columns([2,2,2,5])
         with col1:
             a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
             wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
