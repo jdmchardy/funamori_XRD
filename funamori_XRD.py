@@ -523,8 +523,12 @@ if uploaded_file:
     if not required_keys.issubset(constants):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
     else:
-        st.subheader("Material Constants")
-
+        col1,col2 = st.columns([6,5])
+        with col1:
+            st.subheader("Material Constants")
+        with col2:
+            st.subheader("Select Reflections and Edit Intensities")
+            
         col1, col2, col3, col4 = st.columns([2,2,2,5])
         with col1:
             a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
@@ -549,7 +553,6 @@ if uploaded_file:
             
                 hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
             
-                st.subheader("Select Reflections and Edit Intensities")
                 selected_hkls = []
                 intensities = []
                 selected_indices = []
