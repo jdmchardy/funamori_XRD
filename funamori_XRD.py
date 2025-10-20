@@ -499,10 +499,10 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
-st.title("Funamori Strain (Batch Mode and XRD)")
+st.title("XRD Strain Simulator (with Batch Mode)")
 
-st.subheader("Upload CSV Input File")
-uploaded_file = st.file_uploader("Upload CSV file with parameters and multiple hkl reflections", type=["csv"])
+st.subheader("Upload hkl.csv Input File")
+uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
 
 if uploaded_file:
     content = uploaded_file.getvalue().decode("utf-8")
