@@ -603,7 +603,7 @@ if uploaded_file:
         phi_steps = int(np.sqrt(total_points) / 2)
         results_dict = {}  # Store results per HKL reflection
 
-        col1, col2 = st.columns(2)
+        col1, col2 = st.columns([1,2])
         with col1:
             st.subheader("Execute calculations")
         with col2:
