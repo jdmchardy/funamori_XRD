@@ -822,7 +822,7 @@ if uploaded_file:
 
             
     ### XRD Refinement ----------------------------------------------------------------
-    st.subheader("Refine XRD")
+    st.subheader("Refine Parameters to XRD")
 
     uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
 
