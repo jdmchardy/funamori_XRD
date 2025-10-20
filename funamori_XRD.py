@@ -27,9 +27,9 @@ def voigt_to_strain_tensor(e_voigt):
     e11 = e_voigt[..., 0]
     e22 = e_voigt[..., 1]
     e33 = e_voigt[..., 2]
-    e23 = e_voigt[..., 3]
-    e13 = e_voigt[..., 4]
-    e12 = e_voigt[..., 5]
+    e23 = 0.5*e_voigt[..., 3]
+    e13 = 0.5*e_voigt[..., 4]
+    e12 = 0.5*e_voigt[..., 5]
     e_tensor = np.zeros(e_voigt.shape[:-1] + (3, 3))
     e_tensor[..., 0, 0] = e11
     e_tensor[..., 1, 1] = e22
