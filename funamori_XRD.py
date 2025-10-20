@@ -15,13 +15,13 @@ def Gaussian(x, x0, sigma):
 
 def stress_tensor_to_voigt(sigma_tensor):
     # Input shape (..., 3, 3)
-    s11 = sigma_tensor[..., 0, 0]
-    s22 = sigma_tensor[..., 1, 1]
-    s33 = sigma_tensor[..., 2, 2]
-    s23 = sigma_tensor[..., 1, 2]
-    s13 = sigma_tensor[..., 0, 2]
-    s12 = sigma_tensor[..., 0, 1]
-    return np.stack([s11, s22, s33, s23, s13, s12], axis=-1) #Output shape is (..., 6)
+    sig11 = sigma_tensor[..., 0, 0]
+    sig22 = sigma_tensor[..., 1, 1]
+    sig33 = sigma_tensor[..., 2, 2]
+    sig23 = sigma_tensor[..., 1, 2]
+    sig13 = sigma_tensor[..., 0, 2]
+    sig12 = sigma_tensor[..., 0, 1]
+    return np.stack([sig11, sig22, sig33, sig23, sig13, sig12], axis=-1) #Output shape is (..., 6)
 
 def voigt_to_strain_tensor(e_voigt):
     e11 = e_voigt[..., 0]
