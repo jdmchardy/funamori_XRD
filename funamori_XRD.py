@@ -525,7 +525,7 @@ if uploaded_file:
     else:
         col1,col2 = st.columns([3,6])
         with col1:
-            st.subheader("Select Reflections and Edit Intensities")
+            st.subheader("Reflections and Intensities")
         with col2:
             st.subheader("Material Constants")
             
