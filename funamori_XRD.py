@@ -13,6 +13,32 @@ import corner
 def Gaussian(x, x0, sigma):
     return np.exp(-0.5 * ((x - x0) / sigma) ** 2)
 
+def stress_tensor_to_voigt(sigma_tensor):
+    # Input shape (..., 3, 3)
+    s11 = sigma_tensor[..., 0, 0]
+    s22 = sigma_tensor[..., 1, 1]
+    s33 = sigma_tensor[..., 2, 2]
+    s23 = sigma_tensor[..., 1, 2]
+    s13 = sigma_tensor[..., 0, 2]
+    s12 = sigma_tensor[..., 0, 1]
+    return np.stack([s11, s22, s33, s23, s13, s12], axis=-1) #Output shape is (..., 6)
+
+def voigt_to_strain_tensor(e_voigt):
+    e11 = e_voigt[..., 0]
+    e22 = e_voigt[..., 1]
+    e33 = e_voigt[..., 2]
+    e23 = e_voigt[..., 3]
+    e13 = e_voigt[..., 4]
+    e12 = e_voigt[..., 5]
+    e_tensor = np.zeros(e_voigt.shape[:-1] + (3, 3))
+    e_tensor[..., 0, 0] = e11
+    e_tensor[..., 1, 1] = e22
+    e_tensor[..., 2, 2] = e33
+    e_tensor[..., 1, 2] = e_tensor[..., 2, 1] = e23
+    e_tensor[..., 0, 2] = e_tensor[..., 2, 0] = e13
+    e_tensor[..., 0, 1] = e_tensor[..., 1, 0] = e12
+    return e_tensor
+
 def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
     """
     Evaluates strain_33 component for given hkl reflection.
@@ -81,8 +107,7 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
         [0, sigma_22, 0],
         [0, 0, sigma_33]
     ])
-
-    #Method avoids looping and implements numpy broadcasting for speed
+    
     #Check if phi_values are given or if it must be calculated for XRD generation
     if isinstance(psi_values, int):
         if psi_values==0:
@@ -128,30 +153,44 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     ])
     
     # Apply rotation: sigma' = A @ sigma @ A.T
+    # This transposes the last two axes of A, swapping the 2 and 3 dimensions, e.g. If A has shape (N, M, 3, 3), then np.transpose(A, (0, 1, 3, 2)) gives shape (N, M, 3, 3), 
+    #equivalent of computing A.T for each element of the batch
     sigma_prime = A @ sigma @ np.transpose(A, (0, 1, 3, 2))
     
     # Apply B transform: sigma'' = B @ sigma' @ B.T
     sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
-    
+
+    #Convert sigma tensor to voigt form [N,M,3,3] to [N,M,6]
+    sigma_double_prime_voigt = stress_tensor_to_voigt(sigma_double_prime)  
+
+    # Compute strain in Voigt form: ε'' = S ⋅ σ''
+    # einsum performs: ε''_xyi = S_ij * σ''_xyj
+    epsilon_double_prime_voigt = np.einsum('ij,xyj->xyi', elastic_compliance, sigma_double_prime_voigt)
+
+    #Convert from Voigt to full strain tensor
+    ε_double_prime = voigt_to_strain_tensor(epsilon_double_prime_voigt)
+
+    """
+    #Previous approach for cubic symmetry
     # Strain tensor ε
     ε = np.zeros_like(sigma_double_prime)
-    
     ε[..., 0, 0] = elastic_compliance[0, 0] * sigma_double_prime[..., 0, 0] + elastic_compliance[0, 1] * (sigma_double_prime[..., 1, 1] + sigma_double_prime[..., 2, 2])
     ε[..., 1, 1] = elastic_compliance[0, 0] * sigma_double_prime[..., 1, 1] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 2, 2])
     ε[..., 2, 2] = elastic_compliance[0, 0] * sigma_double_prime[..., 2, 2] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 1, 1])
     ε[..., 0, 1] = ε[..., 1, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 1]
     ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
     ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
+    """
     
-    # ε'_33
+    # Get ε'_33 component
     b13, b23, b33 = B[0, 2], B[1, 2], B[2, 2]
-    strain_prime_33 = (
-        b13**2 * ε[..., 0, 0] +
-        b23**2 * ε[..., 1, 1] +
-        b33**2 * ε[..., 2, 2] +
-        2 * b13 * b23 * ε[..., 0, 1] +
-        2 * b13 * b33 * ε[..., 0, 2] +
-        2 * b23 * b33 * ε[..., 1, 2]
+    strain_33_prime = (
+        b13**2 * ε_double_prime[..., 0, 0] +
+        b23**2 * ε_double_prime[..., 1, 1] +
+        b33**2 * ε_double_prime[..., 2, 2] +
+        2 * b13 * b23 * ε_double_prime[..., 0, 1] +
+        2 * b13 * b33 * ε_double_prime[..., 0, 2] +
+        2 * b23 * b33 * ε_double_prime[..., 1, 2]
     )
     
     # Convert psi and phi grid to degrees for output
@@ -159,7 +198,7 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     phi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[0])
     psi_list = psi_deg_grid.ravel()
     phi_list = phi_deg_grid.ravel()
-    strain_33_list = strain_prime_33.ravel()
+    strain_33_list = strain_33_prime.ravel()
 
     #Compute d0 and 2th
     if symmetry == 'cubic':
