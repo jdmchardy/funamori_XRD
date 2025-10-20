@@ -525,7 +525,7 @@ if uploaded_file:
     else:
         st.subheader("Material Constants")
 
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1:
             a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
             wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
@@ -538,56 +538,56 @@ if uploaded_file:
             sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
             sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
             sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
-    
-        # Parse HKL section including intensity
-        hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
-        if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
-            st.error("HKL section must have columns: h, k, l, intensity")
-        else:
-            # Ensure intensity is numeric
-            hkl_df['intensity'] = pd.to_numeric(hkl_df['intensity'], errors='coerce').fillna(1.0)
-        
-            hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
-        
-            st.subheader("Select Reflections and Edit Intensities")
-            selected_hkls = []
-            intensities = []
-            selected_indices = []
-            peak_intensity_default = {}
-            intensity_boxes = {}
-        
-            for i, hkl in enumerate(hkl_list):
-                # Find matching row to get intensity
-                h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
-                default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
-
-                peak_intensity_default[f"intensity_{i}"] = default_intensity
-
-            # Initialize state for peak intensity
-            if "intensities" not in st.session_state:
-                st.session_state.intensities = peak_intensity_default
-
-            for i, hkl in enumerate(hkl_list):
-                cols = st.columns([2, 2, 8])    
-                with cols[0]:
-                    label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
-                    selected = st.checkbox(label, value=True, key=f"chk_{i}")
-                with cols[1]:
-                    intensity_boxes[f"intensity_{i}"] = st.number_input(
-                        "Intensity",
-                        min_value=0.0,
-                        value=st.session_state.intensities[f"intensity_{i}"],
-                        step=1.0,
-                        key=f"intensity_{i}",
-                        label_visibility="collapsed"
-                    )
+        with col4:
+            # Parse HKL section including intensity
+            hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
+            if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
+                st.error("HKL section must have columns: h, k, l, intensity")
+            else:
+                # Ensure intensity is numeric
+                hkl_df['intensity'] = pd.to_numeric(hkl_df['intensity'], errors='coerce').fillna(1.0)
             
-                if selected:
-                    selected_hkls.append(hkl)
-                    selected_indices.append(i)  # Save which index was selected
-                    intensities.append(st.session_state.intensities[f"intensity_{i}"])
-
-            st.session_state.intensities.update(intensity_boxes)
+                hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
+            
+                st.subheader("Select Reflections and Edit Intensities")
+                selected_hkls = []
+                intensities = []
+                selected_indices = []
+                peak_intensity_default = {}
+                intensity_boxes = {}
+            
+                for i, hkl in enumerate(hkl_list):
+                    # Find matching row to get intensity
+                    h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
+                    default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
+    
+                    peak_intensity_default[f"intensity_{i}"] = default_intensity
+    
+                # Initialize state for peak intensity
+                if "intensities" not in st.session_state:
+                    st.session_state.intensities = peak_intensity_default
+    
+                for i, hkl in enumerate(hkl_list):
+                    cols = st.columns([2, 2, 8])    
+                    with cols[0]:
+                        label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
+                        selected = st.checkbox(label, value=True, key=f"chk_{i}")
+                    with cols[1]:
+                        intensity_boxes[f"intensity_{i}"] = st.number_input(
+                            "Intensity",
+                            min_value=0.0,
+                            value=st.session_state.intensities[f"intensity_{i}"],
+                            step=1.0,
+                            key=f"intensity_{i}",
+                            label_visibility="collapsed"
+                        )
+                
+                    if selected:
+                        selected_hkls.append(hkl)
+                        selected_indices.append(i)  # Save which index was selected
+                        intensities.append(st.session_state.intensities[f"intensity_{i}"])
+    
+                st.session_state.intensities.update(intensity_boxes)
 
             st.subheader("Computation Settings")
             col1, col2, col3 = st.columns(3)
