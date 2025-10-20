@@ -91,15 +91,36 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     N = np.sqrt(K**2 + L**2)
     M = np.sqrt(H**2 + K**2 + L**2)
 
-    # Elastic constants matrix
-    elastic = np.array([
-        [c11, c12, c12, 0, 0, 0],
-        [c12, c11, c12, 0, 0, 0],
-        [c12, c12, c11, 0, 0, 0],
-        [0, 0, 0, c44, 0, 0],
-        [0, 0, 0, 0, c44, 0],
-        [0, 0, 0, 0, 0, c44]
-    ])
+    if symmetry == "cubic":
+        # Elastic constants matrix
+        elastic = np.array([
+            [c11, c12, c12, 0, 0, 0],
+            [c12, c11, c12, 0, 0, 0],
+            [c12, c12, c11, 0, 0, 0],
+            [0, 0, 0, c44, 0, 0],
+            [0, 0, 0, 0, c44, 0],
+            [0, 0, 0, 0, 0, c44]
+        ])
+    elif symmetry == "hexagonal":
+        elastic = np.array([
+            [c11, c12, c13, 0, 0, 0],
+            [c12, c11, c12, 0, 0, 0],
+            [c13, c12, c33, 0, 0, 0],
+            [0, 0, 0, c44, 0, 0],
+            [0, 0, 0, 0, c44, 0],
+            [0, 0, 0, 0, 0, 2*(c11-c12)]
+        ])
+    elif symmetry == "tetragonal_A":
+        elastic = np.array([
+            [c11, c12, c13, 0, 0, 0],
+            [c12, c11, c12, 0, 0, 0],
+            [c13, c12, c33, 0, 0, 0],
+            [0, 0, 0, c44, 0, 0],
+            [0, 0, 0, 0, c44, 0],
+            [0, 0, 0, 0, 0, c66]
+        ])
+    else:
+        st.write("Error! {} symmetry not supported".format(symmetry))
     elastic_compliance = np.linalg.inv(elastic)
     
     sigma = np.array([
@@ -160,18 +181,8 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     # Apply B transform: sigma'' = B @ sigma' @ B.T
     sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
 
-    #Convert sigma tensor to voigt form [N,M,3,3] to [N,M,6]
-    sigma_double_prime_voigt = stress_tensor_to_voigt(sigma_double_prime)  
-
-    # Compute strain in Voigt form: ε'' = S ⋅ σ''
-    # einsum performs: ε''_xyi = S_ij * σ''_xyj
-    epsilon_double_prime_voigt = np.einsum('ij,xyj->xyi', elastic_compliance, sigma_double_prime_voigt)
-
-    #Convert from Voigt to full strain tensor
-    ε_double_prime = voigt_to_strain_tensor(epsilon_double_prime_voigt)
-
     """
-    #Previous approach for cubic symmetry
+    #Previous approach for cubic symmetry has now been generalised for any matrices
     # Strain tensor ε
     ε = np.zeros_like(sigma_double_prime)
     ε[..., 0, 0] = elastic_compliance[0, 0] * sigma_double_prime[..., 0, 0] + elastic_compliance[0, 1] * (sigma_double_prime[..., 1, 1] + sigma_double_prime[..., 2, 2])
@@ -181,6 +192,16 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
     ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
     """
+
+    #Convert sigma tensor to voigt form [N,M,3,3] to [N,M,6]
+    sigma_double_prime_voigt = stress_tensor_to_voigt(sigma_double_prime)  
+
+    # Compute strain in Voigt form: ε'' = S ⋅ σ''
+    # einsum performs: ε''_xyi = S_ij * σ''_xyj
+    epsilon_double_prime_voigt = np.einsum('ij,xyj->xyi', elastic_compliance, sigma_double_prime_voigt)
+
+    #Convert from Voigt to full strain tensor
+    ε_double_prime = voigt_to_strain_tensor(epsilon_double_prime_voigt)
     
     # Get ε'_33 component
     b13, b23, b33 = B[0, 2], B[1, 2], B[2, 2]
