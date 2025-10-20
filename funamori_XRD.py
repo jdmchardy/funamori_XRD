@@ -592,232 +592,232 @@ if uploaded_file:
     
                 st.session_state.intensities.update(intensity_boxes)
 
-            st.subheader("Computation Settings")
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
-            with col2:
-                Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
-            with col3:
-                selected_psi = st.number_input("Psi slice", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
-            
-            # Determine grid sizes
-            psi_steps = int(2 * np.sqrt(total_points))
-            phi_steps = int(np.sqrt(total_points) / 2)
-
-            results_dict = {}  # Store results per HKL reflection
-            col1, col2, col3 = st.columns(3)
-            with col1:
-                if st.button("Compute Strains") and selected_hkls:
-                    fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
-                    if len(selected_hkls) == 1:
-                        axs = [axs]
-    
-                    phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                    psi_values = np.linspace(0, np.pi/2, psi_steps)
-    
-                    for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
-
-                        #Insert a placeholder column for the average strain at each psi
-                        df["Mean strain"] = np.nan
-                        #Initialise a list of the mean strains
-                        mean_strain_list = []
-                        #Compute the average strains and append to df
-                        for psi in np.unique(psi_list):
-                            #Obtain all the strains at this particular psi
-                            mask = psi_list == psi
-                            strains = strain_33_list[mask]
-                            mean_strain = np.mean(strains)
-                            #Append to list
-                            mean_strain_list.append(mean_strain)
-                            #Update the mean strain column at the correct psi values
-                            df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
-                        results_dict[hkl_label] = df
-    
-                        scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
-                        #Plot the mean strain curve
-                        unique_psi = np.unique(psi_list)
-                        #Plot the mean curve
-                        ax.plot(unique_psi, mean_strain_list, color="blue", lw=0.8, label="mean strain")
-                        ax.set_xlabel("ψ (degrees)")
-                        ax.set_ylabel("ε′₃₃")
-                        ax.set_xlim(0,90)
-                        ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
-                        ax.legend()
-                    st.pyplot(fig)
-            
-                    if results_dict != {}:
-                        st.subheader("Download Computed Data")
-                        output_buffer = io.BytesIO()
-                        with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-                            for hkl_label, df in results_dict.items():
-                                sheet_name = f"hkl_{hkl_label}"
-                                df.to_excel(writer, sheet_name=sheet_name, index=False)
-                    
-                                # auto-width adjustment
-                                worksheet = writer.sheets[sheet_name]
-                                for i, col in enumerate(df.columns):
-                                    max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
-                                    worksheet.set_column(i, i, max_width)
-                    
-                        output_buffer.seek(0)
-                    
-                        st.download_button(
-                            label="📥 Download Results as Excel (.xlsx)",
-                            data=output_buffer,
-                            file_name="strain_results.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
-            with col2:
-                if st.button("Generate XRD") and selected_hkls:
-                    phi_values = np.linspace(0, 2 * np.pi, 72)
-                    psi_values = 0
-                    strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
-
-                    XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
-                    twotheta_grid = XRD_df["2th"]
-                    total_pattern = XRD_df["Total Intensity"]
-
-                    # Plotting the total pattern
-                    fig, ax = plt.subplots(figsize=(8, 4))
-                    ax.plot(twotheta_grid, total_pattern, label="Simulated XRD", lw=0.5, color="black")
-                    ax.set_xlabel("2θ (deg)")
-                    ax.set_ylabel("Intensity (a.u.)")
-                    ax.set_title("Simulated XRD Pattern")
-                    ax.legend()
-                
-                    st.pyplot(fig)
-
-                batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
-                if batch_upload:
-                    batch_upload.seek(0)  # reset pointer
-                    # Read everything into a DataFrame
-                    df = pd.read_csv(batch_upload)
-                
-                    # Convert numerical columns where possible
-                    for col in df.columns:
-                        try:
-                            df[col] = pd.to_numeric(df[col])
-                        except:
-                            pass
-                
-                    # Required columns check
-                    required_columns = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
-                    if not required_columns.issubset(df.columns):
-                        st.error(f"CSV must contain columns: {', '.join(required_columns)}")
-                    else:
-                        st.success("CSV loaded successfully!")
-    
-                        # Store parameters in one DataFrame
-                        parameters_df = df[list(required_columns)].copy()
-                        # Store results side-by-side
-                        results_blocks = []
-
-                        phi_values = np.linspace(0, 2*np.pi, 72)
-                        psi_values = 0
-    
-                        for idx, row in df.iterrows():
-                            # Extract row parameters for strain_sim_params
-                            strain_sim_params = (
-                                row['a'], row['wavelength'], row['C11'], row['C12'], row['C44'],
-                                row['sig11'], row['sig22'], row['sig33'],
-                                phi_values, psi_values, row['symmetry']
-                            )
-                
-                            # Run Generate_XRD for this row
-                            xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params) 
+        st.subheader("Computation Settings")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
+        with col2:
+            Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
+        with col3:
+            selected_psi = st.number_input("Psi slice", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         
-                            # Rename columns so each block is unique
-                            xrd_df = xrd_df.rename(columns={
-                                "2th": f"2th_iter{idx+1}",
-                                "Total Intensity": f"Intensity_iter{idx+1}"
-                            }).reset_index(drop=True)
+        # Determine grid sizes
+        psi_steps = int(2 * np.sqrt(total_points))
+        phi_steps = int(np.sqrt(total_points) / 2)
+
+        results_dict = {}  # Store results per HKL reflection
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Compute Strains") and selected_hkls:
+                fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
+                if len(selected_hkls) == 1:
+                    axs = [axs]
+
+                phi_values = np.linspace(0, 2 * np.pi, phi_steps)
+                psi_values = np.linspace(0, np.pi/2, psi_steps)
+
+                for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+
+                    #Insert a placeholder column for the average strain at each psi
+                    df["Mean strain"] = np.nan
+                    #Initialise a list of the mean strains
+                    mean_strain_list = []
+                    #Compute the average strains and append to df
+                    for psi in np.unique(psi_list):
+                        #Obtain all the strains at this particular psi
+                        mask = psi_list == psi
+                        strains = strain_33_list[mask]
+                        mean_strain = np.mean(strains)
+                        #Append to list
+                        mean_strain_list.append(mean_strain)
+                        #Update the mean strain column at the correct psi values
+                        df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
+                    results_dict[hkl_label] = df
+
+                    scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
+                    #Plot the mean strain curve
+                    unique_psi = np.unique(psi_list)
+                    #Plot the mean curve
+                    ax.plot(unique_psi, mean_strain_list, color="blue", lw=0.8, label="mean strain")
+                    ax.set_xlabel("ψ (degrees)")
+                    ax.set_ylabel("ε′₃₃")
+                    ax.set_xlim(0,90)
+                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
+                    ax.legend()
+                st.pyplot(fig)
+        
+                if results_dict != {}:
+                    st.subheader("Download Computed Data")
+                    output_buffer = io.BytesIO()
+                    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                        for hkl_label, df in results_dict.items():
+                            sheet_name = f"hkl_{hkl_label}"
+                            df.to_excel(writer, sheet_name=sheet_name, index=False)
                 
-                            results_blocks.append(xrd_df)
-                    
-                        # Align all result blocks by index and combine
-                        results_df = pd.concat(results_blocks, axis=1)
-
-                        #Plot up the data
-                        fig, ax = plt.subplots(figsize=(10, 6))
-
-                        #Get the first y dataset to compute the offset
-                        y_initial = results_df["Intensity_iter1"]
-                        y_offset = 0
-                        offset_step = np.max(y_initial)*0.5
-                        
-                        for idx in range(len(results_blocks)):
-                            x_col = f"2th_iter{idx+1}"
-                            y_col = f"Intensity_iter{idx+1}"
-                            
-                            x = results_df[x_col]
-                            y = results_df[y_col]
-                            
-                            ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
-                            #Increase the offset
-                            y_offset = y_offset+offset_step
-                        
-                        ax.set_xlabel("2θ (degrees)")
-                        ax.set_ylabel("Intensity (a.u.)")
-                        ax.set_title("Batch XRD")
-                        plt.tight_layout()
-                        #Display the plot
-                        st.pyplot(fig)
-                        
-                        # Now you have two parts: parameters_df and results_df
-                        # Export format: parameters first, then results
-                        st.subheader("Download Computed Data")
-                        output_buffer = io.BytesIO()
-                        with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-                            parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
-                            results_df.to_excel(writer, sheet_name="Results", index=False)
-
-                            # Auto-width adjustment for Parameters sheet
-                            worksheet_params = writer.sheets["Parameters"]
-                            for i, col in enumerate(parameters_df.columns):
-                                max_width = max(parameters_df[col].astype(str).map(len).max(), len(str(col))) + 2
-                                worksheet_params.set_column(i, i, max_width)
-
-                            # Auto-width adjustment for "Results" sheet
-                            worksheet = writer.sheets["Results"]
-                            for i, col in enumerate(results_df.columns):
-                                max_width = max(results_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                            # auto-width adjustment
+                            worksheet = writer.sheets[sheet_name]
+                            for i, col in enumerate(df.columns):
+                                max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
                                 worksheet.set_column(i, i, max_width)
-
-                        output_buffer.seek(0)
-                    
-                        st.download_button(
-                            label="📥 Download Batch XRD as Excel (.xlsx)",
-                            data=output_buffer,
-                            file_name="XRD_results.xlsx",
-                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                        )
                 
-                        #st.write("Parameters", parameters_df)
-                        #st.write("Results", results_df)
+                    output_buffer.seek(0)
+                
+                    st.download_button(
+                        label="📥 Download Results as Excel (.xlsx)",
+                        data=output_buffer,
+                        file_name="strain_results.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+        with col2:
+            if st.button("Generate XRD") and selected_hkls:
+                phi_values = np.linspace(0, 2 * np.pi, 72)
+                psi_values = 0
+                strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
 
+                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                twotheta_grid = XRD_df["2th"]
+                total_pattern = XRD_df["Total Intensity"]
+
+                # Plotting the total pattern
+                fig, ax = plt.subplots(figsize=(8, 4))
+                ax.plot(twotheta_grid, total_pattern, label="Simulated XRD", lw=0.5, color="black")
+                ax.set_xlabel("2θ (deg)")
+                ax.set_ylabel("Intensity (a.u.)")
+                ax.set_title("Simulated XRD Pattern")
+                ax.legend()
+            
+                st.pyplot(fig)
+
+            batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
+            if batch_upload:
+                batch_upload.seek(0)  # reset pointer
+                # Read everything into a DataFrame
+                df = pd.read_csv(batch_upload)
+            
+                # Convert numerical columns where possible
+                for col in df.columns:
+                    try:
+                        df[col] = pd.to_numeric(df[col])
+                    except:
+                        pass
+            
+                # Required columns check
+                required_columns = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
+                if not required_columns.issubset(df.columns):
+                    st.error(f"CSV must contain columns: {', '.join(required_columns)}")
+                else:
+                    st.success("CSV loaded successfully!")
+
+                    # Store parameters in one DataFrame
+                    parameters_df = df[list(required_columns)].copy()
+                    # Store results side-by-side
+                    results_blocks = []
+
+                    phi_values = np.linspace(0, 2*np.pi, 72)
+                    psi_values = 0
+
+                    for idx, row in df.iterrows():
+                        # Extract row parameters for strain_sim_params
+                        strain_sim_params = (
+                            row['a'], row['wavelength'], row['C11'], row['C12'], row['C44'],
+                            row['sig11'], row['sig22'], row['sig33'],
+                            phi_values, psi_values, row['symmetry']
+                        )
+            
+                        # Run Generate_XRD for this row
+                        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params) 
+    
+                        # Rename columns so each block is unique
+                        xrd_df = xrd_df.rename(columns={
+                            "2th": f"2th_iter{idx+1}",
+                            "Total Intensity": f"Intensity_iter{idx+1}"
+                        }).reset_index(drop=True)
+            
+                        results_blocks.append(xrd_df)
+                
+                    # Align all result blocks by index and combine
+                    results_df = pd.concat(results_blocks, axis=1)
+
+                    #Plot up the data
+                    fig, ax = plt.subplots(figsize=(10, 6))
+
+                    #Get the first y dataset to compute the offset
+                    y_initial = results_df["Intensity_iter1"]
+                    y_offset = 0
+                    offset_step = np.max(y_initial)*0.5
                     
-            with col3:
-                if st.button("Plot axial cake") and selected_hkls:
-                    fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
-                    if len(selected_hkls) == 1:
-                        axs = [axs]
-
-                    for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                        phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                        selected_psi_rads = np.radians(selected_psi)
-                        psi_values = [selected_psi_rads]
-                        #Get the aximuth and strain values for the selected psi
-                        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
-                        phi_list = df["phi (degrees)"]
-                        scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
-                        ax.set_xlabel("phi (degrees)")
-                        ax.set_ylabel("ε′₃₃")
-                        #ax.set_xlim(-180,180)
-                        ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
-                        plt.tight_layout()
+                    for idx in range(len(results_blocks)):
+                        x_col = f"2th_iter{idx+1}"
+                        y_col = f"Intensity_iter{idx+1}"
+                        
+                        x = results_df[x_col]
+                        y = results_df[y_col]
+                        
+                        ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
+                        #Increase the offset
+                        y_offset = y_offset+offset_step
+                    
+                    ax.set_xlabel("2θ (degrees)")
+                    ax.set_ylabel("Intensity (a.u.)")
+                    ax.set_title("Batch XRD")
+                    plt.tight_layout()
+                    #Display the plot
                     st.pyplot(fig)
+                    
+                    # Now you have two parts: parameters_df and results_df
+                    # Export format: parameters first, then results
+                    st.subheader("Download Computed Data")
+                    output_buffer = io.BytesIO()
+                    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                        parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
+                        results_df.to_excel(writer, sheet_name="Results", index=False)
+
+                        # Auto-width adjustment for Parameters sheet
+                        worksheet_params = writer.sheets["Parameters"]
+                        for i, col in enumerate(parameters_df.columns):
+                            max_width = max(parameters_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                            worksheet_params.set_column(i, i, max_width)
+
+                        # Auto-width adjustment for "Results" sheet
+                        worksheet = writer.sheets["Results"]
+                        for i, col in enumerate(results_df.columns):
+                            max_width = max(results_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                            worksheet.set_column(i, i, max_width)
+
+                    output_buffer.seek(0)
+                
+                    st.download_button(
+                        label="📥 Download Batch XRD as Excel (.xlsx)",
+                        data=output_buffer,
+                        file_name="XRD_results.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+            
+                    #st.write("Parameters", parameters_df)
+                    #st.write("Results", results_df)
+
+                
+        with col3:
+            if st.button("Plot axial cake") and selected_hkls:
+                fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
+                if len(selected_hkls) == 1:
+                    axs = [axs]
+
+                for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
+                    phi_values = np.linspace(0, 2 * np.pi, phi_steps)
+                    selected_psi_rads = np.radians(selected_psi)
+                    psi_values = [selected_psi_rads]
+                    #Get the aximuth and strain values for the selected psi
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                    phi_list = df["phi (degrees)"]
+                    scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
+                    ax.set_xlabel("phi (degrees)")
+                    ax.set_ylabel("ε′₃₃")
+                    #ax.set_xlim(-180,180)
+                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
+                    plt.tight_layout()
+                st.pyplot(fig)
     ### XRD Refinement ----------------------------------------------------------------
     st.subheader("Refine XRD")
 
