@@ -528,22 +528,17 @@ if uploaded_file:
         col1, col2, col3 = st.columns(3)
         with col1:
             a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
-        with col2:
             wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
-        with col3:
             symmetry = st.text_input("Symmetry", value=constants['symmetry'])
-
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            c11 = st.number_input("C11", value=constants['C11'])
-            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
         with col2:
+            c11 = st.number_input("C11", value=constants['C11'])
             c12 = st.number_input("C12", value=constants['C12'])
-            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
-        with col3:
             c44 = st.number_input("C44", value=constants['C44'])
+        with col3:
+            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
+            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
             sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
-
+    
         # Parse HKL section including intensity
         hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
         if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
