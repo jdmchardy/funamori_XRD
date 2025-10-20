@@ -568,7 +568,7 @@ if uploaded_file:
                     st.session_state.intensities = peak_intensity_default
     
                 for i, hkl in enumerate(hkl_list):
-                    cols = st.columns([2, 2, 8])    
+                    cols = st.columns([2, 2, 2])    
                     with cols[0]:
                         label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                         selected = st.checkbox(label, value=True, key=f"chk_{i}")
