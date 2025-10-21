@@ -666,13 +666,14 @@ if uploaded_file:
 
             st.session_state.intensities.update(intensity_boxes)
         with col2:
+            lattice_params = {}
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
-            a_val = st.number_input("Lattice parameter a (Å)", value=metadata['a'], step=0.01, format="%.4f")
-            b_val = st.number_input("Lattice parameter b (Å)", value=metadata['b'], step=0.01, format="%.4f")
-            c_val = st.number_input("Lattice parameter c (Å)", value=metadata['c'], step=0.01, format="%.4f")
-            alpha = st.number_input("alpha (deg)", value=metadata['alpha'], step=0.1, format="%.4f")
-            beta = st.number_input("beta (deg)", value=metadata['beta'], step=0.1, format="%.4f")
-            gamma = st.number_input("gamma (deg)", value=metadata['gamma'], step=0.1, format="%.4f")
+            lattice_params["a_val"] = st.number_input("Lattice parameter a (Å)", value=metadata['a'], step=0.01, format="%.4f")
+            lattice_params["b_val"] = st.number_input("Lattice parameter b (Å)", value=metadata['b'], step=0.01, format="%.4f")
+            lattice_params["c_val"] = st.number_input("Lattice parameter c (Å)", value=metadata['c'], step=0.01, format="%.4f")
+            lattice_params["alpha"] = st.number_input("alpha (deg)", value=metadata['alpha'], step=0.1, format="%.4f")
+            lattice_params["beta"] = st.number_input("beta (deg)", value=metadata['beta'], step=0.1, format="%.4f")
+            lattice_params["gamma"] = st.number_input("gamma (deg)", value=metadata['gamma'], step=0.1, format="%.4f")
             wavelength = st.number_input("Wavelength (Å)", value=metadata['wavelength'], step=0.01, format="%.4f")
             
             st.subheader("Computation Settings")
@@ -682,9 +683,10 @@ if uploaded_file:
         with col3:
             # Dynamically build the list of Cij keys present in metadata
             C_keys = [key for key in metadata.keys() if key.startswith('C')]
+            cijs = {}
             for key in C_keys:
                 var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
-                globals()[var_name] = st.number_input(key, value=metadata[key])
+                cijs[var_name] = st.number_input(key, value=metadata[key])
         with col4:
             sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'])
             sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'])
