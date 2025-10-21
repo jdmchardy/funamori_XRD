@@ -584,12 +584,15 @@ if uploaded_file:
                     metadata[key.strip()] = val.strip()
         else:
             data_lines.append(line)
+
+    symmetry = metadata["symmetry"]
+    st.write(symmetry)
     #Check the correct data has been included for the respective symmetry
     if symmetry == "cubic":
         required_keys = {'a','b','c','alpha', 'beta', 'gamma', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33'}
     else:
         required_keys = {}
-    if not required_keys.issubset(constants):
+    if not required_keys.issubset(metadata):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
         st.stop()
         
@@ -632,41 +635,44 @@ if uploaded_file:
                 
                     peak_intensity_default[f"intensity_{i}"] = default_intensity
                 
-                # Initialize state for peak intensity
-                if "intensities" not in st.session_state:
-                    st.session_state.intensities = peak_intensity_default
-    
-                for i, hkl in enumerate(hkl_list):
-                    cols = st.columns([2, 2, 2])    
-                    with cols[0]:
-                        label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
-                        selected = st.checkbox(label, value=True, key=f"chk_{i}")
-                    with cols[1]:
-                        intensity_boxes[f"intensity_{i}"] = st.number_input(
-                            "Intensity",
-                            min_value=0.0,
-                            value=st.session_state.intensities[f"intensity_{i}"],
-                            step=1.0,
-                            key=f"intensity_{i}",
-                            label_visibility="collapsed"
-                        )
-                
-                    if selected:
-                        selected_hkls.append(hkl)
-                        selected_indices.append(i)  # Save which index was selected
-                        intensities.append(st.session_state.intensities[f"intensity_{i}"])
-    
-                st.session_state.intensities.update(intensity_boxes)
+            # Initialize state for peak intensity
+            if "intensities" not in st.session_state:
+                st.session_state.intensities = peak_intensity_default
+
+            for i, hkl in enumerate(hkl_list):
+                cols = st.columns([2, 2, 2])    
+                with cols[0]:
+                    label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
+                    selected = st.checkbox(label, value=True, key=f"chk_{i}")
+                with cols[1]:
+                    intensity_boxes[f"intensity_{i}"] = st.number_input(
+                        "Intensity",
+                        min_value=0.0,
+                        value=st.session_state.intensities[f"intensity_{i}"],
+                        step=1.0,
+                        key=f"intensity_{i}",
+                        label_visibility="collapsed"
+                    )
+            if selected:
+                selected_hkls.append(hkl)
+                selected_indices.append(i)  # Save which index was selected
+                intensities.append(st.session_state.intensities[f"intensity_{i}"])
+
+            st.session_state.intensities.update(intensity_boxes)
         with col2:
-            a_val = st.number_input("Lattice parameter a (Å)", value=constants['a'], step=0.01, format="%.4f")
-            wavelength = st.number_input("Wavelength (Å)", value=constants['wavelength'], step=0.01, format="%.4f")
-            symmetry = st.text_input("Symmetry", value=constants['symmetry'])
+            symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
+            a_val = st.number_input("Lattice parameter a (Å)", value=metadata['a'], step=0.01, format="%.4f")
+            b_val = st.number_input("Lattice parameter b (Å)", value=metadata['b'], step=0.01, format="%.4f")
+            c_val = st.number_input("Lattice parameter c (Å)", value=metadata['c'], step=0.01, format="%.4f")
+            alpha = st.number_input("alpha (deg)", value=metadata['alpha'], step=0.1, format="%.4f")
+            beta = st.number_input("beta (deg)", value=metadata['beta'], step=0.1, format="%.4f")
+            gamma = st.number_input("gamma (deg)", value=metadata['gamma'], step=0.1, format="%.4f")
+            wavelength = st.number_input("Wavelength (Å)", value=metadata['wavelength'], step=0.01, format="%.4f")
             
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
-            
         with col3:
             c11 = st.number_input("C11", value=constants['C11'])
             c12 = st.number_input("C12", value=constants['C12'])
