@@ -674,9 +674,14 @@ if uploaded_file:
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
-            c11 = st.number_input("C11", value=metadata['C11'])
-            c12 = st.number_input("C12", value=metadata['C12'])
-            c44 = st.number_input("C44", value=metadata['C44'])
+            try:
+                c11 = st.number_input("C11", value=metadata['C11'])
+            try:
+                c12 = st.number_input("C12", value=metadata['C12'])
+            try:
+                c13 = st.number_input("C13", value=metadata['C13'])
+            try:
+                c44 = st.number_input("C44", value=metadata['C44'])
         with col4:
             sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'])
             sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'])
