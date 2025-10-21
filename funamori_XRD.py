@@ -659,10 +659,10 @@ if uploaded_file:
                         key=f"intensity_{i}",
                         label_visibility="collapsed"
                     )
-            if selected:
-                selected_hkls.append(hkl)
-                selected_indices.append(i)  # Save which index was selected
-                intensities.append(st.session_state.intensities[f"intensity_{i}"])
+                if selected:
+                    selected_hkls.append(hkl)
+                    selected_indices.append(i)  # Save which index was selected
+                    intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
             st.session_state.intensities.update(intensity_boxes)
         with col2:
