@@ -567,7 +567,6 @@ if uploaded_file:
     # --- Read and split file ---
     content = uploaded_file.getvalue().decode("utf-8")
     lines = content.strip().splitlines()
-
     # --- Separate metadata and data lines ---
     metadata = {}
     data_lines = []
@@ -630,9 +629,9 @@ if uploaded_file:
                     # Find matching row to get intensity
                     h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                     default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
-    
+                
                     peak_intensity_default[f"intensity_{i}"] = default_intensity
-
+                
                 # Initialize state for peak intensity
                 if "intensities" not in st.session_state:
                     st.session_state.intensities = peak_intensity_default
