@@ -632,7 +632,7 @@ if uploaded_file:
                     default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
     
                     peak_intensity_default[f"intensity_{i}"] = default_intensity
-    
+
                 # Initialize state for peak intensity
                 if "intensities" not in st.session_state:
                     st.session_state.intensities = peak_intensity_default
