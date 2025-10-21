@@ -678,7 +678,7 @@ if uploaded_file:
             C_keys = [key for key in metadata.keys() if key.startswith('C')]
             for key in C_keys:
                 var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
-                globals()[var_name] = st.number_input(key, value=default_value)
+                globals()[var_name] = st.number_input(key, value=metadata[key])
         with col4:
             sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'])
             sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'])
