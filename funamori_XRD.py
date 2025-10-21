@@ -592,9 +592,9 @@ if uploaded_file:
         required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
     elif symmetry == "hexagonal":
         required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33'}
-    elif symmetry = "tetragonal_A":
+    elif symmetry == "tetragonal_A":
         required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33'}
-    elif symmetry = "tetragonal_B":
+    elif symmetry == "tetragonal_B":
         required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33'}
     else:
         st.error(f"{} symmetry is not yet supported".format(symmetry))
