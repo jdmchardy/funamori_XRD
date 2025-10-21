@@ -697,7 +697,7 @@ if uploaded_file:
                         df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
                     results_dict[hkl_label] = df
 
-                    scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
+                    scatter = ax.scatter(psi_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
                     #Plot the mean strain curve
                     unique_psi = np.unique(psi_list)
                     #Plot the mean curve
