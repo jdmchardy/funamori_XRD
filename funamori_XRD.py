@@ -674,13 +674,13 @@ if uploaded_file:
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
-            c11 = st.number_input("C11", value=constants['C11'])
-            c12 = st.number_input("C12", value=constants['C12'])
-            c44 = st.number_input("C44", value=constants['C44'])
+            c11 = st.number_input("C11", value=metadata['C11'])
+            c12 = st.number_input("C12", value=metadata['C12'])
+            c44 = st.number_input("C44", value=metadata['C44'])
         with col4:
-            sigma_11 = st.number_input("σ₁₁", value=constants['sig11'])
-            sigma_22 = st.number_input("σ₂₂", value=constants['sig22'])
-            sigma_33 = st.number_input("σ₃₃", value=constants['sig33'])
+            sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'])
+            sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'])
+            sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'])
         
         # Determine grid sizes
         psi_steps = int(2 * np.sqrt(total_points))
