@@ -586,7 +586,6 @@ if uploaded_file:
             data_lines.append(line)
 
     symmetry = metadata["symmetry"]
-    st.write(symmetry)
     #Check the correct data has been included for the respective symmetry
     if symmetry == "cubic":
         required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
