@@ -564,49 +564,69 @@ st.subheader("Upload hkl.csv Input File")
 uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
 
 if uploaded_file:
+    # --- Read and split file ---
     content = uploaded_file.getvalue().decode("utf-8")
     lines = content.strip().splitlines()
 
-    # Parse constants from first row
-    constants_header = lines[0].split(',')
-    raw_values = lines[1].split(',')
-    # Dynamically convert values with proper types
-    constants = {}
-    for key, val in zip(constants_header, raw_values):
-        try:
-            constants[key] = float(val)
-        except ValueError:
-            constants[key] = val.strip()
-
-    required_keys = {'a', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33', 'symmetry'}
+    # --- Separate metadata and data lines ---
+    metadata = {}
+    data_lines = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        if line.startswith('#'):
+            # Extract metadata lines of form "# key: value"
+            if ':' in line:
+                key, val = line[1:].split(':', 1)
+                try:
+                    metadata[key.strip()] = float(val)
+                except:
+                    metadata[key.strip()] = val.strip()
+        else:
+            data_lines.append(line)
+    #Check the correct data has been included for the respective symmetry
+    if symmetry == "cubic":
+        required_keys = {'a','b','c','alpha', 'beta', 'gamma', 'wavelength', 'C11', 'C12', 'C44', 'sig11', 'sig22', 'sig33'}
+    else:
+        required_keys = {}
     if not required_keys.issubset(constants):
         st.error(f"CSV must contain: {', '.join(required_keys)}")
+        st.stop()
+        
+    # --- Parse HKL + intensity section ---
+    try:
+        hkl_df = pd.read_csv(io.StringIO("\n".join(data_lines)))
+    except Exception as e:
+        st.error(f"Error reading HKL section: {e}")
+        st.stop()
+    # Validate required columns
+    required_cols = {'h', 'k', 'l', 'intensity'}
+    if not required_cols.issubset(hkl_df.columns):
+        st.error(f"HKL section must have columns: {', '.join(required_cols)}")
+        st.stop()
     else:
+        # Ensure numeric conversion
+        hkl_df[['h', 'k', 'l']] = hkl_df[['h', 'k', 'l']].apply(pd.to_numeric, errors='coerce').fillna(0).astype(int)
+        hkl_df['intensity'] = pd.to_numeric(hkl_df['intensity'], errors='coerce').fillna(1.0)
+        hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
+        
+        #Initialise lists/dictionaries
+        selected_hkls = []
+        intensities = []
+        selected_indices = []
+        peak_intensity_default = {}
+        intensity_boxes = {}
+
         col1,col2 = st.columns([3,6])
         with col1:
             st.subheader("Reflections and Intensities")
         with col2:
             st.subheader("Material Constants")
-            
+    
         col1, col2, col3, col4 = st.columns([3,2,2,2])
         with col1:
-            # Parse HKL section including intensity
-            hkl_df = pd.read_csv(io.StringIO("\n".join(lines[2:])))
-            if not {'h', 'k', 'l', 'intensity'}.issubset(hkl_df.columns):
-                st.error("HKL section must have columns: h, k, l, intensity")
-            else:
-                # Ensure intensity is numeric
-                hkl_df['intensity'] = pd.to_numeric(hkl_df['intensity'], errors='coerce').fillna(1.0)
-            
-                hkl_list = hkl_df[['h', 'k', 'l']].drop_duplicates().values.tolist()
-            
-                selected_hkls = []
-                intensities = []
-                selected_indices = []
-                peak_intensity_default = {}
-                intensity_boxes = {}
-            
-                for i, hkl in enumerate(hkl_list):
+            for i, hkl in enumerate(hkl_list):
                     # Find matching row to get intensity
                     h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                     default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
