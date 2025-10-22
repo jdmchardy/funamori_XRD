@@ -183,7 +183,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
             elif symmetry == "hexagonal":
                 d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
             elif symmetry == "tetragonal_A":
-                d0 = np.sqrt(((h**2+k**2)*c**2+a**2*l**2)/(a**2*c**2))
+                d0 = np.sqrt((a**2*c**2)/((h**2+k**2)*c**2+a**2*l**2))
             else:
                 st.write("Support not yet provided for {} symmetry".format(symmetry))
             sin_theta0 = wavelength / (2 * d0)
@@ -275,7 +275,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     elif symmetry == "hexagonal":
         d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
     elif symmetry == "tetragonal_A":
-        d0 = np.sqrt(((h**2+k**2)*c**2+a**2*l**2)/(a**2*c**2))
+        d0 = np.sqrt((a**2*c**2)/((h**2+k**2)*c**2+a**2*l**2))
     else:
         st.write("No support for {} symmetries".format(symmetry))
         d0 = 0
