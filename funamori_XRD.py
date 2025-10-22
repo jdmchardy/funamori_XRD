@@ -179,7 +179,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     if isinstance(psi_values, int):
         if psi_values==0:
             if symmetry == "cubic":
-                d0 = a_val / np.linalg.norm([h, k, l])
+                d0 = a / np.linalg.norm([h, k, l])
             elif symmetry == "hexagonal":
                 d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
             elif symmetry == "tetragonal_A":
