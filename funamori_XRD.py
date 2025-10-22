@@ -231,7 +231,6 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     # Apply B transform: sigma'' = B @ sigma' @ B.T
     sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
 
-    
     #Previous approach for cubic symmetry has now been generalised for any matrices
     # Strain tensor ε
     #ε = np.zeros_like(sigma_double_prime)
@@ -272,16 +271,24 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
 
     #Compute d0 and 2th
     if symmetry == 'cubic':
-        d0 = a_val / np.linalg.norm([h, k, l])
+        d0 = a / np.linalg.norm([h, k, l])
+    elif symmetry == "hexagonal":
+        d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
+    elif symmetry == "tetragonal_A":
+        d0 = np.sqrt(((h**2+k**2)*c**2+a**2*l**2)/(a**2*c**2))
+    else:
+        st.write("No support for {} symmetries".format(symmetry))
+        d0 = 0
+
+    if d0 == 0:
+        d_strain = 0
+        two_th = 0
+    else:
         #Compute strains
         d_strain = d0*(1+strain_33_list)
         #Compute 2ths
         sin_th = wavelength / (2 * d_strain)
         two_th = 2 * np.degrees(np.arcsin(sin_th))
-    else:
-        st.write("No support for {} symmetries".format(symmetry))
-        d_strain = 0
-        two_th = 0
 
     hkl_label = f"{int(h)}{int(k)}{int(l)}"
     df = pd.DataFrame({
