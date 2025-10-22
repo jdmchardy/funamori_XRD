@@ -39,26 +39,37 @@ def voigt_to_strain_tensor(e_voigt):
     e_tensor[..., 0, 1] = e_tensor[..., 1, 0] = e12
     return e_tensor
 
-def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
+def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, phi_values, psi_values):
     """
+    compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
     Evaluates strain_33 component for given hkl reflection.
     
     Parameters
     ----------
+    symmetry : str
+        Crystal symmetry
     hkl : tuple
         Miller indices (h, k, l)
-    a_val : float
-        Lattice parameter
+    lattice_params : dict
+        Lattice parameter dictionary
+        "a" : float (Ang)
+        "b" : float (Ang)
+        "c" : float (Ang)
+        "alpha" : float (deg)
+        "beta" : float (deg)
+        "gamma" : float (deg)
     wavelength : float
         X-ray wavelength
-    c11, c12, c44 : float
+    cij_params : dict
         Elastic constants
+        Can be extended to arbitrary length as required
+        c11 : float (GPa)
+        c12 : float (GPa)
+        c44 : float (GPa)        
     phi_values : np.array
         Array of phi values in radians
     psi_values : np.array or scalar
         Array of psi values in radians (or 0 to auto-calculate)
-    symmetry : str
-        Crystal symmetry
     sigma_11, sigma_22, sigma_33 : float
         Stress tensor components (default assumes uniaxial stress)
     intensity : float
@@ -91,7 +102,19 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
     N = np.sqrt(K**2 + L**2)
     M = np.sqrt(H**2 + K**2 + L**2)
 
+    #Unpack the lattice parameters
+    a = lattice_params.get("a")
+    b = lattice_params.get("b")
+    c = lattice_params.get("c")
+    alpha = lattice_params.get("gamma")
+    beta = lattice_params.get("beta")
+    gamma = lattice_params.get("gamma")
+
     if symmetry == "cubic":
+        #Unpack the elastic constants
+        c11 = cij_params.get("c11")
+        c12 = cij_params.get("c12")
+        c44 = cij_params.get("c44")
         # Elastic constants matrix
         elastic = np.array([
             [c11, c12, c12, 0, 0, 0],
@@ -102,6 +125,12 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
             [0, 0, 0, 0, 0, c44]
         ])
     elif symmetry == "hexagonal":
+        #Unpack the elastic constants
+        c11 = cij_params.get("c11")
+        c12 = cij_params.get("c12")
+        c13 = cij_params.get("c13")
+        c33 = cij_params.get("c33")
+        c44 = cij_params.get("c44")
         elastic = np.array([
             [c11, c12, c13, 0, 0, 0],
             [c12, c11, c12, 0, 0, 0],
@@ -111,10 +140,17 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
             [0, 0, 0, 0, 0, 2*(c11-c12)]
         ])
     elif symmetry == "tetragonal_A":
+        #Unpack the elastic constants
+        c11 = cij_params.get("c11")
+        c12 = cij_params.get("c12")
+        c13 = cij_params.get("c13")
+        c33 = cij_params.get("c33")
+        c44 = cij_params.get("c44")
+        c66 = cij_params.get("c66")
         elastic = np.array([
             [c11, c12, c13, 0, 0, 0],
-            [c12, c11, c12, 0, 0, 0],
-            [c13, c12, c33, 0, 0, 0],
+            [c12, c11, c13, 0, 0, 0],
+            [c13, c13, c33, 0, 0, 0],
             [0, 0, 0, c44, 0, 0],
             [0, 0, 0, 0, c44, 0],
             [0, 0, 0, 0, 0, c66]
@@ -134,12 +170,16 @@ def compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, s
         if psi_values==0:
             if symmetry == "cubic":
                 d0 = a_val / np.linalg.norm([h, k, l])
-                sin_theta0 = wavelength / (2 * d0)
-                theta0 = np.arcsin(sin_theta0)
-                #Compute the psi_value assuming compression axis aligned with X-rays
-                psi_values = np.asarray([np.pi/2 - theta0])
+            elif symmetry == "hexagonal":
+                d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
+            elif symmetry == "tetragonal_A":
+                d0 = np.sqrt(((h**2+k**2)*c**2+a**2*l**2)/(a**2*c**2))
             else:
                 st.write("Support not yet provided for {} symmetry".format(symmetry))
+            sin_theta0 = wavelength / (2 * d0)
+            theta0 = np.arcsin(sin_theta0)
+            #Compute the psi_value assuming compression axis aligned with X-rays
+            psi_values = np.asarray([np.pi/2 - theta0])
     else:
         # Assume phi_values and psi_values are 1D numpy arrays
         psi_values = np.asarray(psi_values)
@@ -713,7 +753,7 @@ if uploaded_file:
                 psi_values = np.linspace(0, np.pi/2, psi_steps)
 
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
 
                     #Insert a placeholder column for the average strain at each psi
                     df["Mean strain"] = np.nan
