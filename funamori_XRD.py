@@ -846,7 +846,7 @@ if uploaded_file:
             if st.button("Generate XRD") and selected_hkls:
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
-                strain_sim_params = (a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
 
                 XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
                 twotheta_grid = XRD_df["2th"]
