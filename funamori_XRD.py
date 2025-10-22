@@ -92,9 +92,9 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     """
 
     #Unpack the lattice parameters
-    a = lattice_params.get("a")
-    b = lattice_params.get("b")
-    c = lattice_params.get("c")
+    a = lattice_params.get("a_val")
+    b = lattice_params.get("b_val")
+    c = lattice_params.get("c_val")
     alpha = lattice_params.get("alpha")
     beta = lattice_params.get("beta")
     gamma = lattice_params.get("gamma")
