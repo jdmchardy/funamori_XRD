@@ -91,17 +91,6 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     strain_33_list : list
     """
 
-    h, k, l = hkl
-    if h == 0: h = 0.00000001
-    if k == 0: k = 0.00000001
-    if l == 0: l = 0.00000001
-    # Normalize
-    H = h / a_val
-    K = k / a_val
-    L = l / a_val
-    N = np.sqrt(K**2 + L**2)
-    M = np.sqrt(H**2 + K**2 + L**2)
-
     #Unpack the lattice parameters
     a = lattice_params.get("a")
     b = lattice_params.get("b")
@@ -110,7 +99,16 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     beta = lattice_params.get("beta")
     gamma = lattice_params.get("gamma")
 
+    h, k, l = hkl
+    if h == 0: h = 0.00000001
+    if k == 0: k = 0.00000001
+    if l == 0: l = 0.00000001
+
     if symmetry == "cubic":
+        # Normalize
+        H = h / a
+        K = k / a
+        L = l / a
         #Unpack the elastic constants
         c11 = cij_params.get("c11")
         c12 = cij_params.get("c12")
@@ -125,6 +123,10 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
             [0, 0, 0, 0, 0, c44]
         ])
     elif symmetry == "hexagonal":
+        # Normalize
+        H = h / a
+        K = (h+2k) / (np.sqrt(3)*a)
+        L = l / c
         #Unpack the elastic constants
         c11 = cij_params.get("c11")
         c12 = cij_params.get("c12")
@@ -140,6 +142,10 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
             [0, 0, 0, 0, 0, 2*(c11-c12)]
         ])
     elif symmetry == "tetragonal_A":
+        # Normalize
+        H = h / a
+        K = k / a
+        L = l / c
         #Unpack the elastic constants
         c11 = cij_params.get("c11")
         c12 = cij_params.get("c12")
@@ -158,6 +164,10 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     else:
         st.write("Error! {} symmetry not supported".format(symmetry))
     elastic_compliance = np.linalg.inv(elastic)
+
+    #Compute N and M from normalised hkls
+    N = np.sqrt(K**2 + L**2)
+    M = np.sqrt(H**2 + K**2 + L**2)
     
     sigma = np.array([
         [sigma_11, 0, 0],
