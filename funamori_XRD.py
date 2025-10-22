@@ -39,7 +39,7 @@ def voigt_to_strain_tensor(e_voigt):
     e_tensor[..., 0, 1] = e_tensor[..., 1, 0] = e12
     return e_tensor
 
-def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, phi_values, psi_values):
+def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, phi_values, psi_values):
     """
     compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
     Evaluates strain_33 component for given hkl reflection.
@@ -165,7 +165,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
         st.write("Error! {} symmetry not supported".format(symmetry))
     elastic_compliance = np.linalg.inv(elastic)
 
-    #Compute N and M from normalised hkls
+    # N and M from normalised hkls
     N = np.sqrt(K**2 + L**2)
     M = np.sqrt(H**2 + K**2 + L**2)
     
@@ -188,7 +188,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
                 st.write("Support not yet provided for {} symmetry".format(symmetry))
             sin_theta0 = wavelength / (2 * d0)
             theta0 = np.arcsin(sin_theta0)
-            #Compute the psi_value assuming compression axis aligned with X-rays
+            # the psi_value assuming compression axis aligned with X-rays
             psi_values = np.asarray([np.pi/2 - theta0])
     else:
         # Assume phi_values and psi_values are 1D numpy arrays
@@ -244,7 +244,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     #Convert sigma tensor to voigt form [N,M,3,3] to [N,M,6]
     sigma_double_prime_voigt = stress_tensor_to_voigt(sigma_double_prime)  
 
-    # Compute strain in Voigt form: ε'' = S ⋅ σ''
+    #  strain in Voigt form: ε'' = S ⋅ σ''
     # einsum performs: ε''_xyi = S_ij * σ''_xyj
     epsilon_double_prime_voigt = np.einsum('ij,xyj->xyi', elastic_compliance, sigma_double_prime_voigt)
 
@@ -269,7 +269,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     phi_list = phi_deg_grid.ravel()
     strain_33_list = strain_33_prime.ravel()
 
-    #Compute d0 and 2th
+    # d0 and 2th
     if symmetry == 'cubic':
         d0 = a / np.linalg.norm([h, k, l])
     elif symmetry == "hexagonal":
@@ -284,9 +284,9 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
         d_strain = 0
         two_th = 0
     else:
-        #Compute strains
+        # strains
         d_strain = d0*(1+strain_33_list)
-        #Compute 2ths
+        # 2ths
         sin_th = wavelength / (2 * d_strain)
         two_th = 2 * np.degrees(np.arcsin(sin_th))
 
@@ -770,7 +770,7 @@ if uploaded_file:
                 psi_values = np.linspace(0, np.pi/2, psi_steps)
 
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
 
                     #Insert a placeholder column for the average strain at each psi
                     df["Mean strain"] = np.nan
@@ -833,7 +833,7 @@ if uploaded_file:
                     selected_psi_rads = np.radians(selected_psi)
                     psi_values = [selected_psi_rads]
                     #Get the aximuth and strain values for the selected psi
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
                     phi_list = df["phi (degrees)"]
                     scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
                     ax.set_xlabel("phi (degrees)")
