@@ -125,7 +125,7 @@ def compute_strain(symmetry, hkl, intensity, lattice_params, wavelength, cij_par
     elif symmetry == "hexagonal":
         # Normalize
         H = h / a
-        K = (h+2k) / (np.sqrt(3)*a)
+        K = (h+2*k) / (np.sqrt(3)*a)
         L = l / c
         #Unpack the elastic constants
         c11 = cij_params.get("c11")
