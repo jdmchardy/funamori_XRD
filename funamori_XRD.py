@@ -942,8 +942,8 @@ if uploaded_file:
                         st.write(lat_params)
                         #Get the cij_params
                         cij_params = {
-                            col: row[col]
-                            for col.lower() in df.columns
+                            col.lower(): row[col]
+                            for col in df.columns
                             if col.upper().startswith("C") and col[1:].isdigit()
                         }
                         st.write(cij_params)
