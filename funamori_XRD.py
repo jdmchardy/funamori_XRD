@@ -230,16 +230,6 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     # Apply B transform: sigma'' = B @ sigma' @ B.T
     sigma_double_prime = B @ sigma_prime @ B.T  # shape: [n_phi, n_psi, 3, 3]
 
-    #Previous approach for cubic symmetry has now been generalised for any matrices
-    # Strain tensor ε
-    #ε = np.zeros_like(sigma_double_prime)
-    #ε[..., 0, 0] = elastic_compliance[0, 0] * sigma_double_prime[..., 0, 0] + elastic_compliance[0, 1] * (sigma_double_prime[..., 1, 1] + sigma_double_prime[..., 2, 2])
-    #ε[..., 1, 1] = elastic_compliance[0, 0] * sigma_double_prime[..., 1, 1] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 2, 2])
-    #ε[..., 2, 2] = elastic_compliance[0, 0] * sigma_double_prime[..., 2, 2] + elastic_compliance[0, 1] * (sigma_double_prime[..., 0, 0] + sigma_double_prime[..., 1, 1])
-    #ε[..., 0, 1] = ε[..., 1, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 1]
-    #ε[..., 0, 2] = ε[..., 2, 0] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 0, 2]
-    #ε[..., 1, 2] = ε[..., 2, 1] = 0.5 * elastic_compliance[3, 3] * sigma_double_prime[..., 1, 2]
-
     #Convert sigma tensor to voigt form [N,M,3,3] to [N,M,6]
     sigma_double_prime_voigt = stress_tensor_to_voigt(sigma_double_prime)  
 
@@ -735,7 +725,7 @@ if uploaded_file:
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
-            selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
+            #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
             # Dynamically build the list of Cij keys present in metadata
             C_keys = [key for key in metadata.keys() if key.startswith('C')]
@@ -826,18 +816,16 @@ if uploaded_file:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
-
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
                     phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                    selected_psi_rads = np.radians(selected_psi)
-                    psi_values = [selected_psi_rads]
-                    #Get the aximuth and strain values for the selected psi
+                    #Pass psi_values of zero so that its calculated correctly for each respective hkl
+                    psi_values = 0
+                    #Get the azimuth and strain values for the selected psi
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
                     phi_list = df["phi (degrees)"]
                     scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
                     ax.set_xlabel("phi (degrees)")
                     ax.set_ylabel("ε′₃₃")
-                    #ax.set_xlim(-180,180)
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
                     plt.tight_layout()
                 st.pyplot(fig)
