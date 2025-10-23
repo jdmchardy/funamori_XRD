@@ -903,130 +903,130 @@ if uploaded_file:
                     except:
                         pass
 
-                    # Store parameters in one DataFrame
-                    parameters_df = df.copy()
-                    # Store results side-by-side
-                    results_blocks = []
+                # Store parameters in one DataFrame
+                parameters_df = df.copy()
+                # Store results side-by-side
+                results_blocks = []
 
-                    phi_values = np.linspace(0, 2*np.pi, 72)
-                    psi_values = 0
+                phi_values = np.linspace(0, 2*np.pi, 72)
+                psi_values = 0
 
-                    for idx, row in df.iterrows():
-                        #Check the required columns are given for the respective symmetry
-                        symmetry = row["symmetry"]
-                        if symmetry == "cubic":
-                            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
-                        elif symmetry == "hexagonal":
-                            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33'}
-                        elif symmetry == "tetragonal_A":
-                            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33'}
-                        elif symmetry == "tetragonal_B":
-                            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33'}
-                        else:
-                            st.error("{} symmetry is not yet supported".format(symmetry))
-                            required_keys = {}
-                        if not required_keys.issubset(df.columns):
-                            st.error(f"CSV must contain: {', '.join(required_keys)}")
-                            st.stop()
-                        # Extract row parameters for strain_sim_params
-                        #Get the lattice parameters
-                        # Extract lattice parameters
-                        lat_params = {
-                            "a_val": row["a"],
-                            "b_val": row["b"],
-                            "c_val": row["c"],
-                            "alpha": row["alpha"],
-                            "beta": row["beta"],
-                            "gamma": row["gamma"],
-                        }
-                        #Get the cij_params
-                        cij_params = {
-                            col.lower(): row[col]
-                            for col in df.columns
-                            if col.upper().startswith("C") and col[1:].isdigit()
-                        }
-                        # Combine into strain_sim_params
-                        strain_sim_params = (
-                            row["symmetry"],
-                            lat_params,
-                            row["wavelength"],
-                            cij_params,
-                            row["sig11"],
-                            row["sig22"],
-                            row["sig33"],
-                            phi_values,
-                            psi_values,
-                        )
-                        # Run Generate_XRD for this row
-                        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
-                        # Rename columns so each block is unique
-                        xrd_df = xrd_df.rename(columns={
-                            "2th": f"2th_iter{idx+1}",
-                            "Total Intensity": f"Intensity_iter{idx+1}"
-                        }).reset_index(drop=True)
-            
-                        results_blocks.append(xrd_df)
-                
-                    # Align all result blocks by index and combine
-                    results_df = pd.concat(results_blocks, axis=1)
-
-                    #Plot up the data
-                    fig, ax = plt.subplots(figsize=(10, 6))
-
-                    #Get the first y dataset to compute the offset
-                    y_initial = results_df["Intensity_iter1"]
-                    y_offset = 0
-                    offset_step = np.max(y_initial)*0.5
-                    
-                    for idx in range(len(results_blocks)):
-                        x_col = f"2th_iter{idx+1}"
-                        y_col = f"Intensity_iter{idx+1}"
-                        
-                        x = results_df[x_col]
-                        y = results_df[y_col]
-                        
-                        ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
-                        #Increase the offset
-                        y_offset = y_offset+offset_step
-                    
-                    ax.set_xlabel("2θ (degrees)")
-                    ax.set_ylabel("Intensity (a.u.)")
-                    ax.set_title("Batch XRD")
-                    plt.tight_layout()
-                    #Display the plot
-                    st.pyplot(fig)
-                    
-                    # Now you have two parts: parameters_df and results_df
-                    # Export format: parameters first, then results
-                    st.subheader("Download Computed Data")
-                    output_buffer = io.BytesIO()
-                    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
-                        parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
-                        results_df.to_excel(writer, sheet_name="Results", index=False)
-
-                        # Auto-width adjustment for Parameters sheet
-                        worksheet_params = writer.sheets["Parameters"]
-                        for i, col in enumerate(parameters_df.columns):
-                            max_width = max(parameters_df[col].astype(str).map(len).max(), len(str(col))) + 2
-                            worksheet_params.set_column(i, i, max_width)
-
-                        # Auto-width adjustment for "Results" sheet
-                        worksheet = writer.sheets["Results"]
-                        for i, col in enumerate(results_df.columns):
-                            max_width = max(results_df[col].astype(str).map(len).max(), len(str(col))) + 2
-                            worksheet.set_column(i, i, max_width)
-
-                    output_buffer.seek(0)
-                
-                    st.download_button(
-                        label="📥 Download Batch XRD as Excel (.xlsx)",
-                        data=output_buffer,
-                        file_name="XRD_results.xlsx",
-                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                for idx, row in df.iterrows():
+                    #Check the required columns are given for the respective symmetry
+                    symmetry = row["symmetry"]
+                    if symmetry == "cubic":
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
+                    elif symmetry == "hexagonal":
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33'}
+                    elif symmetry == "tetragonal_A":
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33'}
+                    elif symmetry == "tetragonal_B":
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33'}
+                    else:
+                        st.error("{} symmetry is not yet supported".format(symmetry))
+                        required_keys = {}
+                    if not required_keys.issubset(df.columns):
+                        st.error(f"CSV must contain: {', '.join(required_keys)}")
+                        st.stop()
+                    # Extract row parameters for strain_sim_params
+                    #Get the lattice parameters
+                    # Extract lattice parameters
+                    lat_params = {
+                        "a_val": row["a"],
+                        "b_val": row["b"],
+                        "c_val": row["c"],
+                        "alpha": row["alpha"],
+                        "beta": row["beta"],
+                        "gamma": row["gamma"],
+                    }
+                    #Get the cij_params
+                    cij_params = {
+                        col.lower(): row[col]
+                        for col in df.columns
+                        if col.upper().startswith("C") and col[1:].isdigit()
+                    }
+                    # Combine into strain_sim_params
+                    strain_sim_params = (
+                        row["symmetry"],
+                        lat_params,
+                        row["wavelength"],
+                        cij_params,
+                        row["sig11"],
+                        row["sig22"],
+                        row["sig33"],
+                        phi_values,
+                        psi_values,
                     )
+                    # Run Generate_XRD for this row
+                    xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                    # Rename columns so each block is unique
+                    xrd_df = xrd_df.rename(columns={
+                        "2th": f"2th_iter{idx+1}",
+                        "Total Intensity": f"Intensity_iter{idx+1}"
+                    }).reset_index(drop=True)
+        
+                    results_blocks.append(xrd_df)
             
-                    #st.write("Parameters", parameters_df)
-                    #st.write("Results", results_df)
+                # Align all result blocks by index and combine
+                results_df = pd.concat(results_blocks, axis=1)
+
+                #Plot up the data
+                fig, ax = plt.subplots(figsize=(10, 6))
+
+                #Get the first y dataset to compute the offset
+                y_initial = results_df["Intensity_iter1"]
+                y_offset = 0
+                offset_step = np.max(y_initial)*0.5
+                
+                for idx in range(len(results_blocks)):
+                    x_col = f"2th_iter{idx+1}"
+                    y_col = f"Intensity_iter{idx+1}"
+                    
+                    x = results_df[x_col]
+                    y = results_df[y_col]
+                    
+                    ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
+                    #Increase the offset
+                    y_offset = y_offset+offset_step
+                
+                ax.set_xlabel("2θ (degrees)")
+                ax.set_ylabel("Intensity (a.u.)")
+                ax.set_title("Batch XRD")
+                plt.tight_layout()
+                #Display the plot
+                st.pyplot(fig)
+                
+                # Now you have two parts: parameters_df and results_df
+                # Export format: parameters first, then results
+                st.subheader("Download Computed Data")
+                output_buffer = io.BytesIO()
+                with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                    parameters_df.to_excel(writer, sheet_name="Parameters", index=False)
+                    results_df.to_excel(writer, sheet_name="Results", index=False)
+
+                    # Auto-width adjustment for Parameters sheet
+                    worksheet_params = writer.sheets["Parameters"]
+                    for i, col in enumerate(parameters_df.columns):
+                        max_width = max(parameters_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                        worksheet_params.set_column(i, i, max_width)
+
+                    # Auto-width adjustment for "Results" sheet
+                    worksheet = writer.sheets["Results"]
+                    for i, col in enumerate(results_df.columns):
+                        max_width = max(results_df[col].astype(str).map(len).max(), len(str(col))) + 2
+                        worksheet.set_column(i, i, max_width)
+
+                output_buffer.seek(0)
+            
+                st.download_button(
+                    label="📥 Download Batch XRD as Excel (.xlsx)",
+                    data=output_buffer,
+                    file_name="XRD_results.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                )
+        
+                #st.write("Parameters", parameters_df)
+                #st.write("Results", results_df)
 
     ### XRD Refinement ----------------------------------------------------------------
     st.subheader("Refine Parameters to XRD")
