@@ -850,7 +850,7 @@ if uploaded_file:
                     output_buffer.seek(0)
                 
                     st.download_button(
-                        label="📥 Download Results as Excel (.xlsx)",
+                        label="📥 Download Cake results as Excel (.xlsx)",
                         data=output_buffer,
                         file_name="cakes_results.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -939,14 +939,12 @@ if uploaded_file:
                             "beta": row["beta"],
                             "gamma": row["gamma"],
                         }
-                        st.write(lat_params)
                         #Get the cij_params
                         cij_params = {
                             col.lower(): row[col]
                             for col in df.columns
                             if col.upper().startswith("C") and col[1:].isdigit()
                         }
-                        st.write(cij_params)
                         # Combine into strain_sim_params
                         strain_sim_params = (
                             row["symmetry"],
