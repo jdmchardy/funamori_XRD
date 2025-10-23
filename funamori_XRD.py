@@ -818,7 +818,7 @@ if uploaded_file:
                     axs = [axs]
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
                     phi_values = np.linspace(0, 2 * np.pi, phi_steps)
-                    #Pass psi_values of zero so that its calculated correctly for each respective hkl
+                    #Pass psi_values of zero so that compute_strains calculates it for each respective hkl
                     psi_values = 0
                     #Get the azimuth and strain values for the selected psi
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
@@ -826,7 +826,7 @@ if uploaded_file:
                     scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
                     ax.set_xlabel("phi (degrees)")
                     ax.set_ylabel("ε′₃₃")
-                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label}) at psi = ({selected_psi})")
+                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
                     plt.tight_layout()
                 st.pyplot(fig)
         with col2:
