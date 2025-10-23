@@ -41,7 +41,6 @@ def voigt_to_strain_tensor(e_voigt):
 
 def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, phi_values, psi_values):
     """
-    compute_strain(hkl, intensity, a_val, wavelength, c11, c12, c44, sigma_11, sigma_22, sigma_33, phi_values, psi_values, symmetry):
     Evaluates strain_33 component for given hkl reflection.
     
     Parameters
