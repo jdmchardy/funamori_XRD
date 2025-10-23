@@ -939,12 +939,14 @@ if uploaded_file:
                             "beta": row["beta"],
                             "gamma": row["gamma"],
                         }
-                        #Get the cji_params
+                        st.write(lat_params)
+                        #Get the cij_params
                         cij_params = {
                             col: row[col]
                             for col in df.columns
                             if col.upper().startswith("C") and col[1:].isdigit()
                         }
+                        st.write(cij_params)
                         # Combine into strain_sim_params
                         strain_sim_params = (
                             row["symmetry"],
