@@ -813,6 +813,7 @@ if uploaded_file:
                     )
             #Code for generating axial cake plots
             if st.button("Plot axial cake") and selected_hkls:
+                results_dict = {}  # Store results per HKL reflection
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
@@ -828,7 +829,32 @@ if uploaded_file:
                     ax.set_ylabel("ε′₃₃")
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
                     plt.tight_layout()
+                    #Add the results to the dictionary
+                    results_dict[hkl_label] = df
                 st.pyplot(fig)
+
+                if results_dict != {}:
+                    st.subheader("Download Computed Data")
+                    output_buffer = io.BytesIO()
+                    with pd.ExcelWriter(output_buffer, engine='xlsxwriter') as writer:
+                        for hkl_label, df in results_dict.items():
+                            sheet_name = f"hkl_{hkl_label}"
+                            df.to_excel(writer, sheet_name=sheet_name, index=False)
+                
+                            # auto-width adjustment
+                            worksheet = writer.sheets[sheet_name]
+                            for i, col in enumerate(df.columns):
+                                max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
+                                worksheet.set_column(i, i, max_width)
+                
+                    output_buffer.seek(0)
+                
+                    st.download_button(
+                        label="📥 Download Results as Excel (.xlsx)",
+                        data=output_buffer,
+                        file_name="strain_results.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
         with col2:
             if st.button("Generate XRD") and selected_hkls:
                 phi_values = np.linspace(0, 2 * np.pi, 72)
