@@ -51,9 +51,9 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         Miller indices (h, k, l)
     lattice_params : dict
         Lattice parameter dictionary
-        "a" : float (Ang)
-        "b" : float (Ang)
-        "c" : float (Ang)
+        "a_val" : float (Ang)
+        "b_val" : float (Ang)
+        "c_val" : float (Ang)
         "alpha" : float (deg)
         "beta" : float (deg)
         "gamma" : float (deg)
@@ -932,9 +932,9 @@ if uploaded_file:
                         #Get the lattice parameters
                         # Extract lattice parameters
                         lat_params = {
-                            "a": row["a"],
-                            "b": row["b"],
-                            "c": row["c"],
+                            "a_val": row["a"],
+                            "b_val": row["b"],
+                            "c_val": row["c"],
                             "alpha": row["alpha"],
                             "beta": row["beta"],
                             "gamma": row["gamma"],
