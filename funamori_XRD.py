@@ -928,9 +928,6 @@ if uploaded_file:
                         if not required_keys.issubset(df.columns):
                             st.error(f"CSV must contain: {', '.join(required_keys)}")
                             st.stop()
-
-                        else:
-                            
                         # Extract row parameters for strain_sim_params
                         #Get the lattice parameters
                         # Extract lattice parameters
@@ -942,14 +939,12 @@ if uploaded_file:
                             "beta": row["beta"],
                             "gamma": row["gamma"],
                         }
-
                         #Get the cji_params
                         cij_params = {
                             col: row[col]
                             for col in df.columns
                             if col.upper().startswith("C") and col[1:].isdigit()
                         }
-                        
                         # Combine into strain_sim_params
                         strain_sim_params = (
                             row["symmetry"],
@@ -962,10 +957,8 @@ if uploaded_file:
                             phi_values,
                             psi_values,
                         )
-            
                         # Run Generate_XRD for this row
-                        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params) 
-    
+                        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
                         # Rename columns so each block is unique
                         xrd_df = xrd_df.rename(columns={
                             "2th": f"2th_iter{idx+1}",
