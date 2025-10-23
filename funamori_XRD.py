@@ -943,7 +943,7 @@ if uploaded_file:
                         #Get the cij_params
                         cij_params = {
                             col: row[col]
-                            for col in df.columns
+                            for col.lower() in df.columns
                             if col.upper().startswith("C") and col[1:].isdigit()
                         }
                         st.write(cij_params)
