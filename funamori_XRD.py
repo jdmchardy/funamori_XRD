@@ -961,6 +961,7 @@ if uploaded_file:
                 axs.set_ylabel("azimuth (degrees)")
                 axs.set_title(f"cake plot")
                 plt.tight_layout()
+                st.pyplot(fig)
 
                 if results_dict != {}:
                     st.subheader("Download Computed Data")
