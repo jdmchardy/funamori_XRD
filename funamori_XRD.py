@@ -173,7 +173,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         [0, sigma_22, 0],
         [0, 0, sigma_33]
     ])
-    
+ 
     #Check if phi_values are given or if it must be calculated for XRD generation
     if isinstance(psi_values, int):
         if psi_values==0:
@@ -187,8 +187,16 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
                 st.write("Support not yet provided for {} symmetry".format(symmetry))
             sin_theta0 = wavelength / (2 * d0)
             theta0 = np.arcsin(sin_theta0)
-            # the psi_value assuming compression axis aligned with X-rays
-            psi_values = np.asarray([np.pi/2 - theta0])
+            #Check if chi value is zero (axial case) or non-zero (radial)
+            if chi == 0: 
+                # return only one psi_value assuming compression axis aligned with X-rays
+                psi_values = np.asarray([np.pi/2 - theta0])
+            else:
+                #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
+                deltas = np.arange(0,360,5)
+                deltas_rad = np.radians(deltas)
+                chi_rad = np.radians(chi)
+                psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
     else:
         # Assume phi_values and psi_values are 1D numpy arrays
         psi_values = np.asarray(psi_values)
