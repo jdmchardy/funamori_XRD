@@ -81,8 +81,10 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     df : pd.DataFrame
         DataFrame with columns:
             - strain_33
-            - psi (degrees)
-            - phi (degrees)
+            - psi (deg)
+            - phi (deg)
+            - delta (deg) (the detector azimuth angle)
+            - chi (deg) (the X-ray to laboratory strain axis (X3 in Funamori) angle)
             - d strain
             - 2theta (deg)
             - intensity
@@ -191,6 +193,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
             if chi == 0: 
                 # return only one psi_value assuming compression axis aligned with X-rays
                 psi_values = np.asarray([np.pi/2 - theta0])
+                deltas = np.arange(0,360,5)
             else:
                 #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
                 deltas = np.arange(0,360,5)
@@ -198,7 +201,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
     else:
-        # Assume phi_values and psi_values are 1D numpy arrays
+        # Assume phi_values and psi_values are 1D numpy arrays. This part is needed for Funamori plots
         psi_values = np.asarray(psi_values)
     phi_values = np.asarray(phi_values)
     
@@ -258,13 +261,32 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         2 * b13 * b33 * ε_double_prime[..., 0, 2] +
         2 * b23 * b33 * ε_double_prime[..., 1, 2]
     )
+
+    # Ensure deltas match the length of flattened psi/phi/strain lists
+    if psi_values.size == 1 and len(deltas) > 1:
+        # Single psi, multiple deltas (axial simulation case) — replicate results for each delta
+        n_phi = len(phi_values)
+        n_delta = len(deltas)
     
+        # Flatten the strain grid (shape [n_phi]) and replicate for each delta
+        strain_33_prime = np.tile(strain_33_prime, (n_delta, 1)).T  # shape (n_phi, n_delta)
+    
+        # Also replicate psi and phi grids so they align with deltas
+        psi_grid = np.full((n_phi, n_delta), psi_values[0])
+        phi_grid = np.tile(phi_values[:, np.newaxis], (1, n_delta))
+    else:
+        # Normal case — psi and phi already form a meshgrid
+        phi_grid, psi_grid = np.meshgrid(phi_values, psi_values, indexing='ij')
+
     # Convert psi and phi grid to degrees for output
-    psi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[1])
-    phi_deg_grid = np.degrees(np.meshgrid(phi_values, psi_values, indexing='ij')[0])
+    psi_deg_grid = np.degrees(psi_grid)
+    phi_deg_grid = np.degrees(phi_grid)
     psi_list = psi_deg_grid.ravel()
     phi_list = phi_deg_grid.ravel()
     strain_33_list = strain_33_prime.ravel()
+
+    # Repeat deltas so every phi/psi pair gets one
+    delta_list = np.tile(deltas, len(phi_values))
 
     # d0 and 2th
     if symmetry == 'cubic':
@@ -289,16 +311,23 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     hkl_label = f"{int(h)}{int(k)}{int(l)}"
     df = pd.DataFrame({
+        "hkl" = hkl_label
         "h": int(h),
         "k": int(k),
         "l": int(l),
         "strain_33": strain_33_list,
         "psi (degrees)": psi_list,
         "phi (degrees)": phi_list,
+        "chi (degrees)": float(chi),
+        "delta (degrees)": delta_list,
         "d strain": d_strain,
         "2th" : two_th,
         "intensity": intensity
     })
+
+    # Group by hkl label and sort by azimuth
+    df = df.sort_values(by=["hkl", "delta (degrees)"], ignore_index=True)
+
     return hkl_label, df, psi_list, strain_33_list
 
 def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
