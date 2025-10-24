@@ -953,6 +953,15 @@ if uploaded_file:
                     results_dict[hkl_label] = df
                 st.pyplot(fig)
 
+                fig, axs = plt.subplots(1, 1, figsize=(8, 5))
+                x = df["2th"]
+                y = df["delta (degrees)"]
+                axs.scatter(x,y, color="black", s=0.2, alpha=0.1)
+                ax.set_xlabel("2th")
+                axs.set_ylabel("azimuth (degrees)")
+                axs.set_title(f"cake plot")
+                plt.tight_layout()
+
                 if results_dict != {}:
                     st.subheader("Download Computed Data")
                     output_buffer = io.BytesIO()
