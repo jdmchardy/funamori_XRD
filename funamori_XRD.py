@@ -941,11 +941,11 @@ if uploaded_file:
                     phi_values = np.linspace(0, 2 * np.pi, phi_steps)
                     #Pass psi_values of zero so that compute_strains calculates it for each respective hkl
                     psi_values = 0
-                    #Get the azimuth and strain values for the selected psi
+                    #Get the azimuth and strain values
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
-                    phi_list = df["phi (degrees)"]
-                    scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
-                    ax.set_xlabel("phi (degrees)")
+                    delta_list = df["delta (degrees)"]
+                    scatter = ax.scatter(delta_list, strain_33_list, color="black", s=2)
+                    ax.set_xlabel("azimuth (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
                     plt.tight_layout()
