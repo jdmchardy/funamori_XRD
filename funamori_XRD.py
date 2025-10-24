@@ -346,6 +346,88 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     
     return total_df
 
+def batch_XRD(batch_upload):
+    batch_upload.seek(0)  # reset pointer
+    # Read everything into a DataFrame
+    df = pd.read_csv(batch_upload)
+
+    # Convert numerical columns where possible
+    for col in df.columns:
+        try:
+            df[col] = pd.to_numeric(df[col])
+        except:
+            pass
+
+    # Store parameters in one DataFrame
+    parameters_df = df.copy()
+    # Store results side-by-side
+    results_blocks = []
+
+    phi_values = np.linspace(0, 2*np.pi, 72)
+    psi_values = 0
+
+    for idx, row in df.iterrows():
+        #Check the required columns are given for the respective symmetry
+        symmetry = row["symmetry"]
+        if symmetry == "cubic":
+            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33','chi'}
+        elif symmetry == "hexagonal":
+            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33','chi'}
+        elif symmetry == "tetragonal_A":
+            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33','chi'}
+        elif symmetry == "tetragonal_B":
+            required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33','chi'}
+        else:
+            st.error("{} symmetry is not yet supported".format(symmetry))
+            required_keys = {}
+        if not required_keys.issubset(df.columns):
+            st.error(f"CSV must contain: {', '.join(required_keys)}")
+            st.stop()
+        # Extract row parameters for strain_sim_params
+        #Get the lattice parameters
+        # Extract lattice parameters
+        lat_params = {
+            "a_val": row["a"],
+            "b_val": row["b"],
+            "c_val": row["c"],
+            "alpha": row["alpha"],
+            "beta": row["beta"],
+            "gamma": row["gamma"],
+        }
+        #Get the cij_params
+        cij_params = {
+            col.lower(): row[col]
+            for col in df.columns
+            if col.upper().startswith("C") and col[1:].isdigit()
+        }
+        # Combine into strain_sim_params
+        strain_sim_params = (
+            row["symmetry"],
+            lat_params,
+            row["wavelength"],
+            cij_params,
+            row["sig11"],
+            row["sig22"],
+            row["sig33"],
+            row["chi"],
+            phi_values,
+            psi_values,
+        )
+        # Run Generate_XRD for this row
+        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+        # Rename columns so each block is unique
+        xrd_df = xrd_df.rename(columns={
+            "2th": f"2th_iter{idx+1}",
+            "Total Intensity": f"Intensity_iter{idx+1}"
+        }).reset_index(drop=True)
+
+        results_blocks.append(xrd_df)
+
+    # Align all result blocks by index and combine
+    results_df = pd.concat(results_blocks, axis=1)
+
+    return parameter_df, results_df
+
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
@@ -901,84 +983,7 @@ if uploaded_file:
             #Make batch processing section
             batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
             if batch_upload:
-                batch_upload.seek(0)  # reset pointer
-                # Read everything into a DataFrame
-                df = pd.read_csv(batch_upload)
-            
-                # Convert numerical columns where possible
-                for col in df.columns:
-                    try:
-                        df[col] = pd.to_numeric(df[col])
-                    except:
-                        pass
-
-                # Store parameters in one DataFrame
-                parameters_df = df.copy()
-                # Store results side-by-side
-                results_blocks = []
-
-                phi_values = np.linspace(0, 2*np.pi, 72)
-                psi_values = 0
-
-                for idx, row in df.iterrows():
-                    #Check the required columns are given for the respective symmetry
-                    symmetry = row["symmetry"]
-                    if symmetry == "cubic":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33','chi'}
-                    elif symmetry == "hexagonal":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33','chi'}
-                    elif symmetry == "tetragonal_A":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33','chi'}
-                    elif symmetry == "tetragonal_B":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33','chi'}
-                    else:
-                        st.error("{} symmetry is not yet supported".format(symmetry))
-                        required_keys = {}
-                    if not required_keys.issubset(df.columns):
-                        st.error(f"CSV must contain: {', '.join(required_keys)}")
-                        st.stop()
-                    # Extract row parameters for strain_sim_params
-                    #Get the lattice parameters
-                    # Extract lattice parameters
-                    lat_params = {
-                        "a_val": row["a"],
-                        "b_val": row["b"],
-                        "c_val": row["c"],
-                        "alpha": row["alpha"],
-                        "beta": row["beta"],
-                        "gamma": row["gamma"],
-                    }
-                    #Get the cij_params
-                    cij_params = {
-                        col.lower(): row[col]
-                        for col in df.columns
-                        if col.upper().startswith("C") and col[1:].isdigit()
-                    }
-                    # Combine into strain_sim_params
-                    strain_sim_params = (
-                        row["symmetry"],
-                        lat_params,
-                        row["wavelength"],
-                        cij_params,
-                        row["sig11"],
-                        row["sig22"],
-                        row["sig33"],
-                        row["chi"],
-                        phi_values,
-                        psi_values,
-                    )
-                    # Run Generate_XRD for this row
-                    xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
-                    # Rename columns so each block is unique
-                    xrd_df = xrd_df.rename(columns={
-                        "2th": f"2th_iter{idx+1}",
-                        "Total Intensity": f"Intensity_iter{idx+1}"
-                    }).reset_index(drop=True)
-        
-                    results_blocks.append(xrd_df)
-            
-                # Align all result blocks by index and combine
-                results_df = pd.concat(results_blocks, axis=1)
+                parameters_df, results_df = batch_XRD(batch_upload)
 
                 #Plot up the data
                 fig, ax = plt.subplots(figsize=(10, 6))
