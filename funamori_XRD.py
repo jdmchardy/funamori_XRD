@@ -944,7 +944,7 @@ if uploaded_file:
                     #Get the azimuth and strain values
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
                     delta_list = df["delta (degrees)"]
-                    scatter = ax.scatter(delta_list, strain_33_list, color="black", s=2)
+                    scatter = ax.scatter(delta_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
                     ax.set_xlabel("azimuth (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
