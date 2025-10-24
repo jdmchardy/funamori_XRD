@@ -935,6 +935,7 @@ if uploaded_file:
             if st.button("Plot axial cake") and selected_hkls:
                 results_dict = {}  # Store results per HKL reflection
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
+                fig2, axs2 = plt.subplots(1, 1, figsize=(8, 5))
                 if len(selected_hkls) == 1:
                     axs = [axs]
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
@@ -951,17 +952,17 @@ if uploaded_file:
                     plt.tight_layout()
                     #Add the results to the dictionary
                     results_dict[hkl_label] = df
-                st.pyplot(fig)
 
-                fig, axs = plt.subplots(1, 1, figsize=(8, 5))
-                x = df["2th"]
-                y = df["delta (degrees)"]
-                axs.scatter(x,y, color="black", s=0.2, alpha=0.1)
-                ax.set_xlabel("2th")
-                axs.set_ylabel("azimuth (degrees)")
-                axs.set_title(f"cake plot")
-                plt.tight_layout()
+                    #Add data to cake plot
+                    x = df["2th"]
+                    y = df["delta (degrees)"]
+                    axs2.scatter(x,y, color="black", s=0.2, alpha=0.1)
+                    axs2.set_xlabel("2th")
+                    axs2.set_ylabel("azimuth (degrees)")
+                    axs2.set_title(f"cake plot")
+                    plt.tight_layout()
                 st.pyplot(fig)
+                st.pyplot(fig2)
 
                 if results_dict != {}:
                     st.subheader("Download Computed Data")
