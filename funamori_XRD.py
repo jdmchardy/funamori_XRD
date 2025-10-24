@@ -39,7 +39,7 @@ def voigt_to_strain_tensor(e_voigt):
     e_tensor[..., 0, 1] = e_tensor[..., 1, 0] = e12
     return e_tensor
 
-def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, phi_values, psi_values):
+def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_params, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values):
     """
     Evaluates strain_33 component for given hkl reflection.
     
@@ -642,13 +642,13 @@ if uploaded_file:
     symmetry = metadata["symmetry"]
     #Check the correct data has been included for the respective symmetry
     if symmetry == "cubic":
-        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
+        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33','chi',}
     elif symmetry == "hexagonal":
-        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33'}
+        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33','chi'}
     elif symmetry == "tetragonal_A":
-        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33'}
+        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33','chi'}
     elif symmetry == "tetragonal_B":
-        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33'}
+        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33','chi'}
     else:
         st.error("{} symmetry is not yet supported".format(symmetry))
         required_keys = {}
@@ -768,7 +768,7 @@ if uploaded_file:
                 psi_values = np.linspace(0, np.pi/2, psi_steps)
 
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
 
                     #Insert a placeholder column for the average strain at each psi
                     df["Mean strain"] = np.nan
@@ -831,7 +831,7 @@ if uploaded_file:
                     #Pass psi_values of zero so that compute_strains calculates it for each respective hkl
                     psi_values = 0
                     #Get the azimuth and strain values for the selected psi
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
+                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
                     phi_list = df["phi (degrees)"]
                     scatter = ax.scatter(phi_list, strain_33_list, color="black", s=2)
                     ax.set_xlabel("phi (degrees)")
@@ -868,7 +868,7 @@ if uploaded_file:
             if st.button("Generate XRD") and selected_hkls:
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
-                strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, phi_values, psi_values)
+                strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
 
                 XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
                 twotheta_grid = XRD_df["2th"]
@@ -924,13 +924,13 @@ if uploaded_file:
                     #Check the required columns are given for the respective symmetry
                     symmetry = row["symmetry"]
                     if symmetry == "cubic":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33'}
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C12','C44','sig11','sig22','sig33','chi'}
                     elif symmetry == "hexagonal":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33'}
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','sig11','sig22','sig33','chi'}
                     elif symmetry == "tetragonal_A":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33'}
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C44','C66','sig11','sig22','sig33','chi'}
                     elif symmetry == "tetragonal_B":
-                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33'}
+                        required_keys = {'a','b','c','alpha','beta','gamma','wavelength','C11','C33','C12','C13','C16','C44','C66','sig11','sig22','sig33','chi'}
                     else:
                         st.error("{} symmetry is not yet supported".format(symmetry))
                         required_keys = {}
@@ -963,6 +963,7 @@ if uploaded_file:
                         row["sig11"],
                         row["sig22"],
                         row["sig33"],
+                        row["chi"],
                         phi_values,
                         psi_values,
                     )
