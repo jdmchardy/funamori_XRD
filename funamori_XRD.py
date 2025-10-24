@@ -311,7 +311,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     hkl_label = f"{int(h)}{int(k)}{int(l)}"
     df = pd.DataFrame({
-        "hkl" = hkl_label
+        "hkl" : hkl_label
         "h": int(h),
         "k": int(k),
         "l": int(l),
