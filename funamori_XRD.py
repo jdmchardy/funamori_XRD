@@ -281,8 +281,8 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     # Convert psi and phi grid to degrees for output
     psi_deg_grid = np.degrees(psi_grid)
     phi_deg_grid = np.degrees(phi_grid)
-    psi_list = psi_deg_grid.ravel()
-    phi_list = phi_deg_grid.ravel()
+    psi_list = psi_deg_grid.ravel(order='F')
+    phi_list = phi_deg_grid.ravel(order='F')
     strain_33_list = strain_33_prime.ravel()
 
     # Repeat deltas so every phi/psi pair gets one. This way the ordering of the deltas is correct to match up the delta,psi,phi,strain
