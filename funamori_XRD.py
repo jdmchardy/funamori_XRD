@@ -426,7 +426,7 @@ def batch_XRD(batch_upload):
     # Align all result blocks by index and combine
     results_df = pd.concat(results_blocks, axis=1)
 
-    return parameter_df, results_df
+    return parameters_df, results_df
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
