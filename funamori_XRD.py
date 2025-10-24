@@ -426,7 +426,7 @@ def batch_XRD(batch_upload):
     # Align all result blocks by index and combine
     results_df = pd.concat(results_blocks, axis=1)
 
-    return parameters_df, results_df
+    return parameters_df, results_df, results_blocks
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
@@ -983,7 +983,7 @@ if uploaded_file:
             #Make batch processing section
             batch_upload = st.file_uploader("Upload batch XRD parameters", type=["csv"])
             if batch_upload:
-                parameters_df, results_df = batch_XRD(batch_upload)
+                parameters_df, results_df, results_blocks = batch_XRD(batch_upload)
 
                 #Plot up the data
                 fig, ax = plt.subplots(figsize=(10, 6))
