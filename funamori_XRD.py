@@ -721,6 +721,7 @@ if uploaded_file:
             lattice_params["beta"] = st.number_input("beta (deg)", value=metadata['beta'], step=0.1, format="%.4f")
             lattice_params["gamma"] = st.number_input("gamma (deg)", value=metadata['gamma'], step=0.1, format="%.4f")
             wavelength = st.number_input("Wavelength (Å)", value=metadata['wavelength'], step=0.01, format="%.4f")
+            chi = st.number_input("Chi angle (deg)", value=metadata['chi'], step=0.01, format="%.4f")
             
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
@@ -734,9 +735,9 @@ if uploaded_file:
                 var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
                 cijs[var_name] = st.number_input(key, value=metadata[key])
         with col4:
-            sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'])
-            sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'])
-            sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'])
+            sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'], step=0.1, format="%.3f")
+            sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'], step=0.1, format="%.3f")
+            sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'], step=0.1, format="%.3f")
         
         # Determine grid sizes
         psi_steps = int(2 * np.sqrt(total_points))
