@@ -906,7 +906,7 @@ if uploaded_file:
                     mean_strain_list = []
                     for psi in np.unique(psi_list):
                         #Obtain all the strains at this particular psi
-                        mask = df["psi_list"] == psi
+                        mask = df["psi (degrees)"] == psi
                         strains = strain_33_list[mask]
                         mean_strain = df["Mean strain"][mask][0]
                         st.write(mean_strain)
