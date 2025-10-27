@@ -911,8 +911,6 @@ if uploaded_file:
                         mean_strain = df["Mean strain"][mask].iloc[0]
                         #Append to list
                         mean_strain_list.append(mean_strain)
-                    
-                    #Plot the mean curve
                     ax.plot(unique_psi, mean_strain_list, color="blue", lw=0.8, label="mean strain")
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
@@ -958,12 +956,25 @@ if uploaded_file:
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
                     delta_list = df["delta (degrees)"]
                     scatter = ax.scatter(delta_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
+                    #Add the results to the dictionary
+                    results_dict[hkl_label] = df
+
+                    #Plot the mean strain curve
+                    unique_delta = np.unique(delta_list)
+                    mean_strain_list = []
+                    for delta in np.unique(delta_list):
+                        #Obtain all the strains at this particular psi
+                        mask = df["delta (degrees)"] == delta
+                        strains = strain_33_list[mask]
+                        mean_strain = df["Mean strain"][mask].iloc[0]
+                        #Append to list
+                        mean_strain_list.append(mean_strain)
+                    ax.plot(unique_delta, mean_strain_list, color="blue", lw=0.8, label="mean strain")
                     ax.set_xlabel("azimuth (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
                     plt.tight_layout()
-                    #Add the results to the dictionary
-                    results_dict[hkl_label] = df
+                    ax.legend()
 
                     #Add data to cake plot
                     x = df["2th"]
