@@ -908,7 +908,7 @@ if uploaded_file:
                         #Obtain all the strains at this particular psi
                         mask = df["psi (degrees)"] == psi
                         strains = strain_33_list[mask]
-                        mean_strain = df["Mean strain"][mask][0]
+                        mean_strain = df["Mean strain"][mask].iloc[0]
                         st.write(mean_strain)
                         #Append to list
                         mean_strain_list.append(mean_strain)
