@@ -717,7 +717,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(lm_params):
         return cost_function(lm_params, refine_flags, selected_hkls, selected_indices, Gaussian_FWHM,
-            phi_values, psi_values, wavelength, c11, c12, symmetry,
+            phi_values, psi_values, wavelength, symmetry,
             x_exp_common, y_exp_common, bin_indices, Funamori_broadening, global_lattice_params=lattice_params, global_cijs=cijs
         )
 
