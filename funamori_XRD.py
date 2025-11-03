@@ -605,7 +605,7 @@ def get_initial_parameters(defaults):
 
     
     for key, default_val in p_dict.items():
-        col1, col2, col3 = st.columns([2, 1, 4])
+        col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
             params[key] = st.number_input(
                 key,
