@@ -385,12 +385,14 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
                 two_theta = row["2th"].values
                 gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
                 total_gauss += gaussian_peak
+                scale = len(group)
         else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
             two_theta = np.asarray([group["Mean two_th"].values[0]])
             gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
             total_gauss += gaussian_peak
+            scale = 1
             
-        avg_gauss = total_gauss / len(two_theta)
+        avg_gauss = total_gauss / scale
         peak_curves[(h, k, l)] = avg_gauss
         
     # Combined total pattern
