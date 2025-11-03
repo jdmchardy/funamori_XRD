@@ -1108,9 +1108,10 @@ if uploaded_file:
                 #st.write("Results", results_df)
 
     ### XRD Refinement ----------------------------------------------------------------
-    st.subheader("Refine Parameters to XRD")
-
-    uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.subheader("Refine Parameters to XRD")
+        uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
 
     if uploaded_XRD is not None:
         raw_lines = uploaded_XRD.read().decode("utf-8").splitlines()
@@ -1121,8 +1122,7 @@ if uploaded_file:
         #Normalise exp data
         y_exp = y_exp/ np.max(y_exp)*100
 
-        col1, col2 = st.columns([2, 2])
-        with col1:
+        with col2:
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
