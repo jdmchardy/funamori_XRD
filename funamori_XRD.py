@@ -390,7 +390,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
             total_gauss += gaussian_peak
             
-        avg_gauss = total_gauss / len(group)
+        avg_gauss = total_gauss / len(two_theta)
         peak_curves[(h, k, l)] = avg_gauss
         
     # Combined total pattern
