@@ -347,7 +347,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     return hkl_label, df, psi_list, strain_33_list
 
-def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
+def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, broadening=True):
     results_dict = {}
     all_dfs = []  # Collect all dfs here
 
@@ -374,12 +374,17 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params):
     for (h, k, l), group in combined_df.groupby(["h", "k", "l"]):
         peak_intensity = group["intensity"].iloc[0]
         total_gauss = np.zeros_like(twotheta_grid)
-    
-        for _, row in group.iterrows():
-            two_theta = row["2th"]
-            gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
+
+        if broadening == True:
+            for _, row in group.iterrows():
+                two_theta = row["2th"]
+                gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
+                total_gauss += gaussian_peak
+        else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
+            two_theta = group["Mean strain"].values[0]
+            gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
             total_gauss += gaussian_peak
-    
+            
         avg_gauss = total_gauss / len(group)
         peak_curves[(h, k, l)] = avg_gauss
         
@@ -862,6 +867,7 @@ if uploaded_file:
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
+            Funamori_broadening = st.checkbox("Include broadening", value=True)
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
             # Dynamically build the list of Cij keys present in metadata
@@ -932,7 +938,6 @@ if uploaded_file:
                             for i, col in enumerate(df.columns):
                                 max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
                                 worksheet.set_column(i, i, max_width)
-                
                     output_buffer.seek(0)
                 
                     st.download_button(
@@ -1110,7 +1115,7 @@ if uploaded_file:
     ### XRD Refinement ----------------------------------------------------------------
     col1, col2, col3 = st.columns(3)
     with col1:
-        st.subheader("Refine Parameters to XRD")
+        st.subheader("Overlay/refine with XRD")
         uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
 
     if uploaded_XRD is not None:
@@ -1122,15 +1127,14 @@ if uploaded_file:
         #Normalise exp data
         y_exp = y_exp/ np.max(y_exp)*100
 
-        with col2:
-            st.subheader("")
+        col1, col2 = st.columns(2)
+        with col1:
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
                 t = sigma_33 - sigma_11
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
-                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
-                
+                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 
@@ -1142,9 +1146,9 @@ if uploaded_file:
                 y_exp_common = y_exp[mask]
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
-        
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
 
+        #Construct the default parameter dictionary for refinement
         defaults = {
             "a_val": a_val,
             "c44": c44,
