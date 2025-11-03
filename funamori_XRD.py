@@ -500,32 +500,106 @@ def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
 
     st.pyplot(fig)
 
-def get_initial_parameters(defaults):
-    """Returns editable parameter fields with memory between runs."""
+#def get_initial_parameters(defaults):
+#    """Returns editable parameter fields with memory between runs."""
+#    if "params" not in st.session_state:
+#        st.session_state.params = {
+#            "a_val": defaults["a_val"],
+#            "c44": defaults["c44"],
+#            "t": defaults["sigma_33"] - defaults["sigma_11"]
+#        }
+
+#    st.subheader("Initial Refinement Parameters")
+#    a_val = st.number_input("Lattice parameter a", value=st.session_state.params["a_val"], format="%.6f")
+#    c44 = st.number_input("c44", value=st.session_state.params["c44"], format="%.3f")
+#    t = st.number_input("t", value=st.session_state.params["t"], format="%.3f")
+
+#    st.session_state.params.update({"a_val": a_val, "c44": c44, "t": t})
+#    return a_val, c44, t
+
+#def select_parameters_to_refine():
+#    """Returns flags for parameters the user wants to refine."""
+#    st.subheader("Select Parameters to Refine")
+#    return {
+#        "a_val": st.checkbox("Refine a", value=True),
+#        "c44": st.checkbox("Refine c44", value=False),
+#        "t": st.checkbox("Refine t", value=False),
+#        "peak_intensity": st.checkbox("Refine peak intensities", value=False)
+#    }
+
+def create_default_parameters(lattice_params, **additional_fields):
+    """
+    Combine lattice parameters and other fields into a single defaults dictionary.
+    
+    Args:
+        lattice_params (dict): e.g. {"a": 4.05, "b": 4.05, "c": 5.00}
+        **additional_fields: other named groups of parameters (dicts)
+            e.g. elastic={"c44": 1.2}, stress={"sigma_11": 0.1, "sigma_33": 0.2}
+    
+    Returns:
+        dict: merged defaults dictionary
+    """
+    defaults = {}
+
+    # Start with lattice parameters
+    defaults.update(lattice_params)
+
+    # Merge any additional dictionaries passed as keyword arguments
+    for name, subdict in additional_fields.items():
+        if not isinstance(subdict, dict):
+            raise TypeError(f"Expected dict for '{name}', got {type(subdict).__name__}")
+        defaults.update(subdict)
+
+    return defaults
+
+def get_initial_parameters(defaults, refine_defaults=None):
+    """
+    Returns editable parameter fields and refinement toggles dynamically.
+    
+    Args:
+        defaults (dict): Default values for parameters.
+        refine_defaults (dict, optional): Default refinement toggles (True/False for each parameter).
+    
+    Returns:
+        params (dict): Updated parameter values.
+        refine_flags (dict): Booleans for whether each parameter is set to refine.
+    """
     if "params" not in st.session_state:
-        st.session_state.params = {
-            "a_val": defaults["a_val"],
-            "c44": defaults["c44"],
-            "t": defaults["sigma_33"] - defaults["sigma_11"]
+        st.session_state.params = defaults.copy()
+
+    if "refine_flags" not in st.session_state:
+        # If no refine defaults given, all False
+        st.session_state.refine_flags = {
+            k: refine_defaults.get(k, False) if refine_defaults else False
+            for k in defaults
         }
 
-    st.subheader("Initial Refinement Parameters")
-    a_val = st.number_input("Lattice parameter a", value=st.session_state.params["a_val"], format="%.6f")
-    c44 = st.number_input("c44", value=st.session_state.params["c44"], format="%.3f")
-    t = st.number_input("t", value=st.session_state.params["t"], format="%.3f")
+    st.subheader("Refinement Parameters")
 
-    st.session_state.params.update({"a_val": a_val, "c44": c44, "t": t})
-    return a_val, c44, t
+    params = {}
+    refine_flags = {}
 
-def select_parameters_to_refine():
-    """Returns flags for parameters the user wants to refine."""
-    st.subheader("Select Parameters to Refine")
-    return {
-        "a_val": st.checkbox("Refine a", value=True),
-        "c44": st.checkbox("Refine c44", value=False),
-        "t": st.checkbox("Refine t", value=False),
-        "peak_intensity": st.checkbox("Refine peak intensities", value=False)
-    }
+    for key, default_val in defaults.items():
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            params[key] = st.number_input(
+                key,
+                value=float(st.session_state.params.get(key, default_val)),
+                format="%.6f",
+                key=f"num_{key}"
+            )
+        with col2:
+            refine_flags[key] = st.checkbox(
+                f"Refine {key}",
+                value=st.session_state.refine_flags.get(key, False),
+                key=f"chk_{key}"
+            )
+
+    # Update session state
+    st.session_state.params.update(params)
+    st.session_state.refine_flags.update(refine_flags)
+
+    return params, refine_flags
 
 def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
     
@@ -871,7 +945,7 @@ if uploaded_file:
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
-            Funamori_broadening = st.checkbox("Include broadening", value=True)
+            Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
             # Dynamically build the list of Cij keys present in metadata
@@ -1133,6 +1207,7 @@ if uploaded_file:
 
         col1, col2 = st.columns(2)
         with col1:
+            st.subheader("Overlay XRD")
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
@@ -1152,13 +1227,13 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
 
+            st.subheader("Refine XRD")
         #Construct the default parameter dictionary for refinement
-        defaults = {
-            "a_val": a_val,
-            "c44": c44,
-            "sigma_11": sigma_11,
-            "sigma_33": sigma_33
-            }
+        stress = {"sigma_11": sigma_11,
+                 "sigma_33": sigma_33}
+        other = {"chi" : chi}
+        defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
+        st.write(defaults)
         col1, col2, col3 = st.columns(3)
         with col1:
             a_val_refine, c44_refine, t_refine = get_initial_parameters(defaults)
