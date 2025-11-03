@@ -1123,16 +1123,14 @@ if uploaded_file:
         y_exp = y_exp/ np.max(y_exp)*100
 
         with col2:
+            st.subheader("")
             if st.button("Overlay XRD"):
                 phi_values = np.linspace(0, 2 * np.pi, 72)
                 psi_values = 0
                 t = sigma_33 - sigma_11
-                strain_sim_params = (
-                    a_val, wavelength, c11, c12, c44,
-                    sigma_11, sigma_22, sigma_33,
-                    phi_values, psi_values, symmetry
-                )
+                strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
                 XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 
