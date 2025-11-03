@@ -618,7 +618,7 @@ def get_initial_parameters(defaults):
                 value=st.session_state.refine_flags.get(key, False),
                 key=f"chk_{key}"
             )
-     with col2:       
+    with col2:
         # --- Add peak intensity refinement checkbox separately ---
         refine_flags["peak_intensity"] = st.checkbox(
             "Refine peak intensities",
