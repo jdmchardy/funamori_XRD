@@ -465,7 +465,7 @@ def batch_XRD(batch_upload):
             psi_values,
         )
         # Run Generate_XRD for this row
-        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+        xrd_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
         # Rename columns so each block is unique
         xrd_df = xrd_df.rename(columns={
             "2th": f"2th_iter{idx+1}",
@@ -825,7 +825,6 @@ if uploaded_file:
                     # Find matching row to get intensity
                     h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
                     default_intensity = float(hkl_df[h_match]['intensity'].values[0]) if h_match.any() else 1.0
-                
                     peak_intensity_default[f"intensity_{i}"] = default_intensity
                 
             # Initialize state for peak intensity
@@ -1021,7 +1020,7 @@ if uploaded_file:
                 psi_values = 0
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
 
-                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params)
+                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
                 twotheta_grid = XRD_df["2th"]
                 total_pattern = XRD_df["Total Intensity"]
 
