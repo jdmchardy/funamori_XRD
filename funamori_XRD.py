@@ -565,45 +565,45 @@ def get_initial_parameters(defaults):
         refine_flags (dict): Booleans for whether each parameter is set to refine.
     """
     #Build appropriate parameter dictionary
-    params = {}
-    params["a_val"] = defaults["a_val"]
-    params["c11"] = defaults["c11"]
-    params["c12"] = defaults["c12"]
-    params["c44"] = defaults["c44"]
-    params["sigma_11"] = defaults["sigma_11"]
-    params["sigma_33"] = defaults["sigma_33"]
-    params["chi"] = defaults["chi"]
+    p_dict = {}
+    p_dict["a_val"] = defaults["a_val"]
+    p_dict["c11"] = defaults["c11"]
+    p_dict["c12"] = defaults["c12"]
+    p_dict["c44"] = defaults["c44"]
+    p_dict["sigma_11"] = defaults["sigma_11"]
+    p_dict["sigma_33"] = defaults["sigma_33"]
+    p_dict["chi"] = defaults["chi"]
 
     if symmetry == "cubic":
         pass 
     elif symmetry == "hexagonal":
-        params["c_val"] = defaults["c_val"]
-        params["c13"] = defaults["c13"]
+        p_dict["c_val"] = defaults["c_val"]
+        p_dict["c13"] = defaults["c13"]
     elif symmetry == "tetragonal_A":
-        params["c_val"] = defaults["c_val"]
-        params["c13"] = defaults["c13"]
-        params["c66"] = defaults["c66"]
+        p_dict["c_val"] = defaults["c_val"]
+        p_dict["c13"] = defaults["c13"]
+        p_dict["c66"] = defaults["c66"]
     elif symmetry == "tetragonal_B":
-        params["c_val"] = defaults["c_val"]
-        params["c13"] = defaults["c13"]
-        params["c16"] = defaults["c16"]
-        params["c66"] = defaults["c66"]
+        p_dict["c_val"] = defaults["c_val"]
+        p_dict["c13"] = defaults["c13"]
+        p_dict["c16"] = defaults["c16"]
+        p_dict["c66"] = defaults["c66"]
     else:
         st.error("{} symmetry is not yet supported".format(symmetry))
         
     if "params" not in st.session_state:
-        st.session_state.params = params.copy()
+        st.session_state.params = p_dict.copy()
 
     if "refine_flags" not in st.session_state:
         # If no refine defaults given, all False
-        st.session_state.refine_flags = {k: False for k in params}
+        st.session_state.refine_flags = {k: False for k in p_dict}
 
     st.subheader("Refinement Parameters")
 
     params = {}
     refine_flags = {}
 
-    for key, default_val in defaults.items():
+    for key, default_val in p_dict.items():
         col1, col2 = st.columns([2, 1])
         with col1:
             params[key] = st.number_input(
