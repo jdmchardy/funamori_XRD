@@ -603,8 +603,9 @@ def get_initial_parameters(defaults):
     params = {}
     refine_flags = {}
 
-    col1, col2 = st.columns([2, 1])
+    
     for key, default_val in p_dict.items():
+        col1, col2, col3 = st.columns([2, 1, 4])
         with col1:
             params[key] = st.number_input(
                 key,
