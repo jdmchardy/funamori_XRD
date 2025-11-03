@@ -603,8 +603,8 @@ def get_initial_parameters(defaults):
     params = {}
     refine_flags = {}
 
+    col1, col2 = st.columns([2, 1])
     for key, default_val in p_dict.items():
-        col1, col2 = st.columns([2, 1])
         with col1:
             params[key] = st.number_input(
                 key,
@@ -618,12 +618,13 @@ def get_initial_parameters(defaults):
                 value=st.session_state.refine_flags.get(key, False),
                 key=f"chk_{key}"
             )
-            # --- Add peak intensity refinement checkbox separately ---
-            refine_flags["peak_intensity"] = st.checkbox(
-                "Refine peak intensities",
-                value=st.session_state.refine_flags.get("peak_intensity", False),
-                key="chk_peak_intensity"
-            )
+     with col2:       
+        # --- Add peak intensity refinement checkbox separately ---
+        refine_flags["peak_intensity"] = st.checkbox(
+            "Refine peak intensities",
+            value=st.session_state.refine_flags.get("peak_intensity", False),
+            key="chk_peak_intensity"
+        )
 
     # Update session state
     st.session_state.params.update(params)
