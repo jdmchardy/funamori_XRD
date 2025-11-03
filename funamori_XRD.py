@@ -570,8 +570,7 @@ def get_initial_parameters(defaults):
     p_dict["c11"] = defaults["c11"]
     p_dict["c12"] = defaults["c12"]
     p_dict["c44"] = defaults["c44"]
-    p_dict["sigma_11"] = defaults["sigma_11"]
-    p_dict["sigma_33"] = defaults["sigma_33"]
+    p_dict["t"] = defaults["sigma_33"] - defaults["sigma_11"]
     p_dict["chi"] = defaults["chi"]
 
     if symmetry == "cubic":
@@ -597,6 +596,7 @@ def get_initial_parameters(defaults):
     if "refine_flags" not in st.session_state:
         # If no refine defaults given, all False
         st.session_state.refine_flags = {k: False for k in p_dict}
+        st.session_state.refine_flags["peak_intensity"] = False  # default for peak intensities
 
     st.subheader("Refinement Parameters")
 
@@ -618,6 +618,12 @@ def get_initial_parameters(defaults):
                 value=st.session_state.refine_flags.get(key, False),
                 key=f"chk_{key}"
             )
+             --- Add peak intensity refinement checkbox separately ---
+        refine_flags["peak_intensity"] = st.checkbox(
+            "Refine peak intensities",
+            value=st.session_state.refine_flags.get("peak_intensity", False),
+            key="chk_peak_intensity"
+        )
 
     # Update session state
     st.session_state.params.update(params)
@@ -625,55 +631,56 @@ def get_initial_parameters(defaults):
 
     return params, refine_flags
 
-def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
+def run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
+                   sigma_11, sigma_22, sigma_33, chi, Funamori_broadening):
+    """
+    Parameters:
+        params (dict): Current parameter values
+        refine_flags (dict): Dict of booleans indicating which params to refine
+        selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry:
+            Experimental/simulation data and settings.
+        x_exp, y_exp: Experimental x (2θ) and intensity data.
     
-    #New logic for lmfit -----------------------------
-    params = Parameters()
-    if param_flags["a_val"]:
-        params.add("a_val", value=a_val, min=0.5 * a_val, max=1.5 * a_val)
-    else:
-        params.add("a_val", value=a_val, vary=False)
-    
-    if param_flags["c44"]:
-        params.add("c44", value=c44, min=0, max=400)
-    else:
-        params.add("c44", value=c44, vary=False)
-    
-    if param_flags["t"]:
-        params.add("t", value=t, min=-20, max=20)
-    else:
-        params.add("t", value=t, vary=False)
-    
-    if param_flags["peak_intensity"]:
+    Returns:
+        result (lmfit.MinimizerResult): Refinement result object.
+    """
+    # Build lmfit.Parameters
+    lm_params = Parameters()
+    for name, val in params.items():
+        if name == "t":
+            min_val, max_val = -20, 20
+        elif "c" in name.lower():  # elastic constants
+            min_val, max_val = 0, 1000
+        elif name == "a_val" or name == "c_val":
+            min_val, max_val = 0.5 * val, 1.5 * val
+        elif name == "chi":
+            min_val, max_val = -90, 90
+        else:
+            min_val, max_val = None, None
+
+        if refine_flags.get(name, False):
+            lm_params.add(name, value=val, min=min_val, max=max_val)
+        else:
+            lm_params.add(name, value=val, vary=False)
+        
+    # Handle peak intensities separately 
+    if refine_flags.get("peak_intensity", False):
         for i, inten in zip(selected_indices, intensities):
-            params.add(f"intensity_{i}", value=inten, min=0, max=400)
+            lm_params.add(f"intensity_{i}", value=inten, min=0, max=400)
     else:
         for i, inten in zip(selected_indices, intensities):
-            params.add(f"intensity_{i}", value=inten, vary=False)
+            lm_params.add(f"intensity_{i}", value=inten, vary=False)
 
-    # --- First pass of refinement to determine common 2th domain ---
-    a_val_opt = params["a_val"].value
-    c44_opt = params["c44"].value
-    t_opt = params["t"].value
-    sigma_11 = -t_opt / 3
-    sigma_22 = -t_opt / 3
-    sigma_33 = 2 * t_opt / 3
-    intensities_opt = [params[f"intensity_{i}"].value for i in selected_indices]
-
-    strain_sim_params = (
-        a_val_opt, wavelength, c11, c12, c44_opt,
-        sigma_11, sigma_22, sigma_33,
-        phi_values, psi_values, symmetry
-    )
-
-    # Run Generate_XRD once to get the simulation range
-    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
+    # Run first iteration of refinement to determine common 2th domain
+    intensities_opt = [lm_params[f"intensity_{i}"].value for i in selected_indices]
+    strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
+    
+    # Generate simulated pattern
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
     twoth_sim = XRD_df["2th"].values
 
-    # Use overlap between simulation and experiment to define interpolation range 
-    #Fix this for subsequent refinement
-    #We tweak the range here to be slightly less than that returned by the simulation 
-    #to eliminate NaN values in evaluating the interpolated data
+    # Use overlap between simulation and experiment to set interpolation range. Fixed for subsequent iterations
+    #The range is slightly less than that returned by the simulation to eliminate NaN values in evaluating the interpolated data
     x_min_sim = np.min(twoth_sim) + 0.5
     x_max_sim = np.max(twoth_sim) - 0.5
     mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
@@ -683,54 +690,74 @@ def run_refinement(a_val, c44, t, param_flags, selected_hkls, selected_indices, 
     #Here we also determine the x_indices definining the binning around each peak for residual weighting
     #First we need the 2th center positions of each hkl reflection included
     hkl_peak_centers = []
+    a = lattice_params.get("a_val")
+    c = lattice_params.get("c_val")
     for hkl in selected_hkls:
         h, k, l = hkl
         #Compute d0 and 2th
         if symmetry == 'cubic':
-            d0 = a_val_opt / np.linalg.norm([h, k, l])
-            #Compute 2ths
-            sin_th = wavelength / (2 * d0)
-            two_th = 2 * np.degrees(np.arcsin(sin_th))
+            d0 = a / np.linalg.norm([h, k, l])
+        elif symmetry == "hexagonal":
+            d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
+        elif symmetry == "tetragonal_A":
+            d0 = np.sqrt((a**2*c**2)/((h**2+k**2)*c**2+a**2*l**2))
         else:
             st.write("No support for {} symmetries".format(symmetry))
-            two_th = 0
+            d0 = 0
+        #Compute 2ths
+        sin_th = wavelength / (2 * d0)
+        two_th = 2 * np.degrees(np.arcsin(sin_th))
         hkl_peak_centers = np.append(hkl_peak_centers, two_th)
 
     #Get the residual bin indices using these centers
     bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
 
     # --- Wrapped cost function that implements this fixed domain ---
-    def wrapped_cost_function(params):
-        return cost_function(
-            params, param_flags, selected_hkls, selected_indices, Gaussian_FWHM,
+    def wrapped_cost_function(lm_params):
+        return cost_function(lm_params, refine_flags, selected_hkls, selected_indices, Gaussian_FWHM,
             phi_values, psi_values, wavelength, c11, c12, symmetry,
-            x_exp_common, y_exp_common, bin_indices
+            x_exp_common, y_exp_common, bin_indices, Funamori_broadening, global_lattice_params=lattice_params, global_cijs=cijs
         )
 
     # Run optimization
-    result = minimize(wrapped_cost_function, params, method="least_squares")
+    result = minimize(wrapped_cost_function, lm_params, method="least_squares")
     #-------------------------------------------------
 
     return result
 
-def cost_function(params, param_flags, selected_hkls, selected_indices, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp_common, y_exp_common, bin_indices):
+def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
+                  Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry,
+                  x_exp_common, y_exp_common, bin_indices,
+                  Funamori_broadening, global_lattice_params, global_cijs):
+    """
+    lm_params: current parameters from lmfit
+    global_lattice: dictionary containing full lattice info (a_val, b_val, c_val, alpha, beta, gamma)
+    global_cijs: dictionary containing the full set of elastic constants
+    """
 
-    a_val_opt = params["a_val"].value
-    c44_opt = params["c44"].value
-    t_opt = params["t"].value
+    # --- Lattice parameters: use lm_params if refining, else global values ---
+    lattice_params = {}
+    for key in ["a_val", "b_val", "c_val", "alpha", "beta", "gamma"]:
+        if key in lm_params:
+            lattice_params[key] = lm_params[key].value
+        else:
+            lattice_params[key] = global_lattice_params[key]
 
-    sigma_11_opt = -t_opt/3
-    sigma_22_opt = -t_opt/3
-    sigma_33_opt = 2*t_opt/3
+    cijs = {}
+        for k in global_cijs:
+            cijs[k] = lm_params[k].value if k in lm_params else global_cijs[k]
 
-    intensities_opt = [params[f"intensity_{i}"].value for i in selected_indices]
+    # Stress parameters
+    t = lm_params["t"].value
+    sigma_11 = -t / 3
+    sigma_22 = -t / 3
+    sigma_33 = 2 * t / 3
+    chi = lm_params["chi"].value
 
-    strain_sim_params = (
-        a_val_opt, wavelength, c11, c12, c44_opt,
-        sigma_11_opt, sigma_22_opt, sigma_33_opt,
-        phi_values, psi_values, symmetry
-    )
-    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params)
+    intensities_opt = [lm_params[f"intensity_{i}"].value for i in selected_indices]
+
+    strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
+    XRD_df = Generate_XRD(selected_hkls, intensities_opt, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
     twoth_sim = XRD_df["2th"]
     intensity_sim = XRD_df["Total Intensity"]
 
@@ -1257,20 +1284,14 @@ if uploaded_file:
                  "sigma_33": sigma_33}
         other = {"chi" : chi}
         defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
-        st.write(defaults)
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            a_val_refine, c44_refine, t_refine = get_initial_parameters(defaults)
-        with col2:
-            param_flags = select_parameters_to_refine()
+        params, refine_flags = get_initial_parameters(defaults)
 
         if st.button("Refine XRD"):
             phi_values = np.linspace(0, 2 * np.pi, 72)
             psi_values = 0
-            result = run_refinement(
-                a_val_refine, c44_refine, t_refine, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM,
-                phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp
-                )
+            result = run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
+                                    phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
+                                    sigma_11, sigma_22, sigma_33, chi, Funamori_broadening)
             st.session_state["refinement_result"] = result
         
             if result.success:
