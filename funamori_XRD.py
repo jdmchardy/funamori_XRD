@@ -564,15 +564,37 @@ def get_initial_parameters(defaults, refine_defaults=None):
         params (dict): Updated parameter values.
         refine_flags (dict): Booleans for whether each parameter is set to refine.
     """
+    #Build appropriate parameter dictionary
+    params = {}
+    params["a_val"] = defaults["a_val"]
+    params["c11"] = defaults["c11"]
+    params["c12"] = defaults["c12"]
+    params["c44"] = defaults["c44"]
+    params["sigma_11"] = defaults["sigma_11"]
+    params["sigma_33"] = defaults["sigma_33"]
+    params["chi"] = defaults["chi"]
+        
+    if symmetry == "hexagonal":
+        params["c_val"] = defaults["c_val"]
+        params["c13"] = defaults["c13"]
+    elif symmetry == "tetragonal_A":
+        params["c_val"] = defaults["c_val"]
+        params["c13"] = defaults["c13"]
+        params["c66"] = defaults["c66"]
+    elif symmetry == "tetragonal_B":
+        params["c_val"] = defaults["c_val"]
+        params["c13"] = defaults["c13"]
+        params["c16"] = defaults["c16"]
+        params["c66"] = defaults["c66"]
+    else:
+        st.error("{} symmetry is not yet supported".format(symmetry))
+        
     if "params" not in st.session_state:
-        st.session_state.params = defaults.copy()
+        st.session_state.params = params.copy()
 
     if "refine_flags" not in st.session_state:
         # If no refine defaults given, all False
-        st.session_state.refine_flags = {
-            k: refine_defaults.get(k, False) if refine_defaults else False
-            for k in defaults
-        }
+        st.session_state.refine_flags = {k: False for k in params}
 
     st.subheader("Refinement Parameters")
 
