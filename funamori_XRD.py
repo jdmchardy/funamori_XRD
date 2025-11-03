@@ -744,8 +744,8 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
             lattice_params[key] = global_lattice_params[key]
 
     cijs = {}
-        for k in global_cijs:
-            cijs[k] = lm_params[k].value if k in lm_params else global_cijs[k]
+    for k in global_cijs:
+        cijs[k] = lm_params[k].value if k in lm_params else global_cijs[k]
 
     # Stress parameters
     t = lm_params["t"].value
