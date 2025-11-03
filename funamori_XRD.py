@@ -1298,23 +1298,20 @@ if uploaded_file:
         
             if result.success:
                 st.success("Refinement successful!")
-                #Updated logic for lmfit ----------------------------------------
                 # Extract refined values from result.params
-                a_refined = result.params["a_val"].value
-                c44_refined = result.params["c44"].value
-                t_refined = result.params["t"].value
+                for key in params:
+                    if key in result.params:
+                        st.session_state.params[key] = result.params[key].value
 
-                # Update session state
-                st.session_state.params["a_val"] = a_refined
-                st.session_state.params["c44"] = c44_refined
-                st.session_state.params["t"] = t_refined
-
-                # Handle refined intensities
-                if param_flags["peak_intensity"]:
-                    intensities_refined = [result.params[f"intensity_{i}"].value for i in selected_indices]
+                # --- Handle refined peak intensities if checkbox is selected ---
+                if refine_flags.get("peak_intensity", False):
+                    intensities_refined = [
+                        result.params[f"intensity_{i}"].value for i in selected_indices
+                    ]
                 else:
                     intensities_refined = intensities
-        
+            
+                # Update intensities in the session or UI
                 update_refined_intensities(intensities_refined, selected_indices)
 
                 #------------------------------------------------------
@@ -1326,20 +1323,40 @@ if uploaded_file:
                 st.markdown("### Fit Report")
                 st.code(report_str)
             
-                # Final simulation and plot
-                a_val_opt = st.session_state.params["a_val"]
-                c44_opt = st.session_state.params["c44"]
-                t_opt = st.session_state.params["t"]
-                sigma_11_opt = -t_opt/3
-                sigma_22_opt = -t_opt/3
-                sigma_33_opt = 2*t_opt/3
+                # --- Prepare final simulation using refined parameters ---
+                lattice_params_sim = {
+                    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
+                    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
+                    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
+                    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
+                    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
+                    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
+                }
                 
+                # Rebuild cijs dictionary dynamically from refined params
+                cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
+                
+                # Stress components from refined t
+                t_opt = st.session_state.params.get("t", 0)
+                sigma_11_opt = -t_opt / 3
+                sigma_22_opt = -t_opt / 3
+                sigma_33_opt = 2 * t_opt / 3
+                chi_opt = st.session_state.params.get("chi", 0)
+                
+                # Pack parameters for Generate_XRD
                 strain_sim_params = (
-                    a_val_opt, wavelength, c11, c12, c44_opt,
-                    sigma_11_opt, sigma_22_opt, sigma_33_opt,
-                    phi_values, psi_values, symmetry
+                    symmetry,
+                    lattice_params_sim,
+                    wavelength,
+                    cijs_sim,
+                    sigma_11_opt,
+                    sigma_22_opt,
+                    sigma_33_opt,
+                    chi_opt,
+                    phi_values,
+                    psi_values
                 )
-                XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params)
+                XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 x_min_sim = np.min(twoth_sim)
