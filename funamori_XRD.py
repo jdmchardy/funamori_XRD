@@ -288,7 +288,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     strain_33_list = strain_33_prime.ravel(order='F')
 
     # Repeat deltas so every phi/psi pair gets one. This way the ordering of the deltas is correct to match up the delta,psi,phi,strain
-    delta_list = np.repeat(deltas, len(phi_values)
+    delta_list = np.repeat(deltas, len(phi_values))
 
     # d0 and 2th
     if symmetry == 'cubic':
