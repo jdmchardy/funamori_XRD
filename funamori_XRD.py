@@ -552,7 +552,7 @@ def create_default_parameters(lattice_params, **additional_fields):
 
     return defaults
 
-def get_initial_parameters(defaults, refine_defaults=None):
+def get_initial_parameters(defaults):
     """
     Returns editable parameter fields and refinement toggles dynamically.
     
@@ -573,8 +573,10 @@ def get_initial_parameters(defaults, refine_defaults=None):
     params["sigma_11"] = defaults["sigma_11"]
     params["sigma_33"] = defaults["sigma_33"]
     params["chi"] = defaults["chi"]
-        
-    if symmetry == "hexagonal":
+
+    if symmetry == "cubic":
+        pass 
+    elif symmetry == "hexagonal":
         params["c_val"] = defaults["c_val"]
         params["c13"] = defaults["c13"]
     elif symmetry == "tetragonal_A":
