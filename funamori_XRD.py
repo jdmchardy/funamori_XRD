@@ -288,7 +288,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     strain_33_list = strain_33_prime.ravel(order='F')
 
     # Repeat deltas so every phi/psi pair gets one. This way the ordering of the deltas is correct to match up the delta,psi,phi,strain
-    delta_list = np.repeat(deltas, len(phi_values))
+    delta_list = np.repeat(deltas, len(phi_values)
 
     # d0 and 2th
     if symmetry == 'cubic':
@@ -329,18 +329,23 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     #Insert a placeholder column for the average strain at each psi
     df["Mean strain"] = np.nan
+    df["Mean two_th"] = np.nan
     #Initialise a list of the mean strains
     mean_strain_list = []
+    mean_2th_list = []
     #Compute the average strains and append to df
     for psi in np.unique(psi_list):
         #Obtain all the strains at this particular psi
         mask = psi_list == psi
         strains = strain_33_list[mask]
         mean_strain = np.mean(strains)
+        mean_dstrain = d0*(1+mean_strain)
+        mean_sin_th = wavelength / (2 * mean_dstrain)
+        mean_two_th = 2 * np.degrees(np.arcsin(mean_sin_th))
         #Append to list
         mean_strain_list.append(mean_strain)
-        #Update the mean strain column at the correct psi values
-        df.loc[df["psi (degrees)"] == psi, ["Mean strain"]] = mean_strain
+        #Update the mean_strain and mean_two_th column at the correct psi values
+        df.loc[df["psi (degrees)"] == psi, ["Mean strain", "Mean two_th"]] = [mean_strain, mean_two_th]
 
     # Group by hkl label and sort by azimuth
     df = df.sort_values(by=["hkl", "delta (degrees)"], ignore_index=True)
@@ -382,7 +387,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
                 total_gauss += gaussian_peak
         else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
             st.write(group["Mean strain"].values[0])
-            two_theta = group["Mean strain"].values[0]
+            two_theta = group["Mean two_th"].values[0]
             gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
             st.write(gaussian_peak)
             total_gauss += gaussian_peak
@@ -396,7 +401,6 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
     })
-    
     return total_df
 
 def batch_XRD(batch_upload):
