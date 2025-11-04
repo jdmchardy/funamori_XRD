@@ -431,11 +431,10 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     # --- Build single global histogram with scaled contributions ---
     if broadening:
         # Count number of contributions per (h,k,l)
-        counts = combined_df.groupby(["h","k","l"]).size()
-        # Assign weight to each row: intensity / number of contributions
-        weights = combined_df.apply(
-            lambda row: row['intensity'] / counts[(row['h'], row['k'], row['l'])],
-            axis=1
+        counts = combined_df.groupby(["h","k","l"])['intensity'].transform('size')
+        
+        # Vectorized weights: intensity / count
+        weights = combined_df['intensity'] / counts
         )
         # Build histogram
         hist, _ = np.histogram(
