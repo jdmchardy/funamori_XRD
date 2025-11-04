@@ -5,6 +5,7 @@ import pandas as pd
 import io
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
+from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 #import corner
 
@@ -352,72 +353,118 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     return hkl_label, df, psi_list, strain_33_list
 
+#def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, broadening=True):
+#    results_dict = {}
+#    all_dfs = []  # Collect all dfs here
+
+#    for hkl, intensity in zip(selected_hkls, intensities):
+#        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, *strain_sim_params)
+#        results_dict[hkl_label] = df
+#        all_dfs.append(df)
+
+#    # Concatenate all dataframes
+#    combined_df = pd.concat(all_dfs, ignore_index=True)
+
+#    # Define constants
+#    sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
+#    # Define common 2-theta range for evaluation
+#    twotheta_min = combined_df["2th"].min() - 1
+#    twotheta_max = combined_df["2th"].max() + 1
+#    twotheta_grid = np.arange(twotheta_min, twotheta_max, 0.01)
+
+#    # Group once by (h, k, l)
+#    grouped = combined_df.groupby(["h", "k", "l"], sort=False)
+    
+#    # Container to store individual peak curves
+#    peak_curves = {}
+#    total_pattern = np.zeros_like(twotheta_grid)
+    
+#    # Loop over unique (h, k, l)
+#    for (h, k, l), group in grouped:
+#        peak_intensity = group["intensity"].iloc[0]
+#        total_gauss = np.zeros_like(twotheta_grid)
+
+#        if broadening:
+#            # --- Vectorized Gaussian summation ---
+#            mus = group["2th"].values  # shape (M,)
+#            # Broadcasting: grid[:, None] vs mus[None, :]
+#            gaussians = Gaussian(twotheta_grid[:, None], mus[None, :], sigma_gauss)
+#            total_gauss = peak_intensity * gaussians.sum(axis=1)
+#            scale = len(mus)
+#        else:
+#            mu = group["Mean two_th"].iloc[0]
+#            total_gauss = peak_intensity * Gaussian(twotheta_grid, mu, sigma_gauss)
+#            scale = 1
+            
+#        avg_gauss = total_gauss / scale
+#        #Add to the total pattern
+#        total_pattern += avg_gauss
+#        #peak_curves[(h, k, l)] = avg_gauss
+        
+#    # Combined total pattern
+#    #total_pattern = sum(peak_curves.values(), axis=0)
+#    total_df = pd.DataFrame({
+#        "2th": twotheta_grid,
+#        "Total Intensity": total_pattern
+#    })
+#    return total_df
+
+#This version uses convolution of delta and Gaussian kernal to speed up massively
 def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, broadening=True):
-    results_dict = {}
-    all_dfs = []  # Collect all dfs here
-
-    for hkl, intensity in zip(selected_hkls, intensities):
-        hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, *strain_sim_params)
-        results_dict[hkl_label] = df
-        all_dfs.append(df)
-
-    # Concatenate all dataframes
+    # --- Compute strain results ---
+    all_dfs = [compute_strain(hkl, inten, *strain_sim_params)[1]
+               for hkl, inten in zip(selected_hkls, intensities)]
     combined_df = pd.concat(all_dfs, ignore_index=True)
 
-    # Define constants
-    sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
-    # Define common 2-theta range for evaluation
+    # --- Define grid ---
+    sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))
     twotheta_min = combined_df["2th"].min() - 1
     twotheta_max = combined_df["2th"].max() + 1
-    twotheta_grid = np.arange(twotheta_min, twotheta_max, 0.01)
+    step = 0.01 # In degrees
+    twotheta_grid = np.arange(twotheta_min, twotheta_max, step)
 
-    # Group once by (h, k, l)
-    grouped = combined_df.groupby(["h", "k", "l"], sort=False)
-    
-    # Container to store individual peak curves
-    peak_curves = {}
-    total_pattern = np.zeros_like(twotheta_grid)
-    
-    # Loop over unique (h, k, l)
-    for (h, k, l), group in grouped:
-        peak_intensity = group["intensity"].iloc[0]
-        total_gauss = np.zeros_like(twotheta_grid)
+    # --- Construct histogram of peak positions ---
+    if broadening:
+        # Treat each reflection point as delta function weighted by intensity
+        hist, _ = np.histogram(
+            combined_df["2th"],
+            bins=len(twotheta_grid),
+            range=(twotheta_min, twotheta_max),
+            weights=combined_df["intensity"]
+        )
 
-        if broadening:
-            # --- Vectorized Gaussian summation ---
-            mus = group["2th"].values  # shape (M,)
-            # Broadcasting: grid[:, None] vs mus[None, :]
-            gaussians = Gaussian(twotheta_grid[:, None], mus[None, :], sigma_gauss)
-            total_gauss = peak_intensity * gaussians.sum(axis=1)
-            scale = len(mus)
-        else:
-            mu = group["Mean two_th"].iloc[0]
-            total_gauss = peak_intensity * Gaussian(twotheta_grid, mu, sigma_gauss)
-            scale = 1
+        # --- Build normalized Gaussian kernel ---
+        kernel_extent = 6 * sigma_gauss  # ±3σ window
+        theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
+        gaussian_kernel = Gaussian(theta_kernal, 0, sigma_gauss)
+        gaussian_kernel /= gaussian_kernel.sum()  # normalize area to 1
 
-        #if broadening:
-        #    for _, row in group.iterrows():
-        #        two_theta = row["2th"]
-        #        gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
-        #        total_gauss += gaussian_peak
-        #        scale = len(group)
-        #else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
-        #    two_theta = np.asarray([group["Mean two_th"].values[0]])
-        #    gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
-        #    total_gauss += gaussian_peak
-        #    scale = 1
-            
-        avg_gauss = total_gauss / scale
-        #Add to the total pattern
-        total_pattern += avg_gauss
-        #peak_curves[(h, k, l)] = avg_gauss
-        
-    # Combined total pattern
-    #total_pattern = sum(peak_curves.values(), axis=0)
+        # --- Convolve using FFT (fast and accurate) ---
+        total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
+
+    else:
+        # Singh pattern: use mean positions only
+        mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
+        hist, _ = np.histogram(
+            mean_df["Mean two_th"],
+            bins=len(twotheta_grid),
+            range=(twotheta_min, twotheta_max),
+            weights=mean_df["intensity"]
+        )
+
+        kernel_extent = 6 * sigma_gauss
+        theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
+        gaussian_kernel = np.exp(-0.5 * (theta_kernel / sigma_gauss) ** 2)
+        gaussian_kernel /= gaussian_kernel.sum()
+
+        total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
+
+    # --- Output as DataFrame ---
     total_df = pd.DataFrame({
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
     })
+
     return total_df
 
 def batch_XRD(batch_upload):
