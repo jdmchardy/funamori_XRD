@@ -366,37 +366,51 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
 
     # Define constants
     sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))  # Convert FWHM to sigma
-    
     # Define common 2-theta range for evaluation
     twotheta_min = combined_df["2th"].min() - 1
     twotheta_max = combined_df["2th"].max() + 1
     twotheta_grid = np.arange(twotheta_min, twotheta_max, 0.01)
+
+    # Group once by (h, k, l)
+    grouped = combined_df.groupby(["h", "k", "l"], sort=False)
     
     # Container to store individual peak curves
     peak_curves = {}
     
     # Loop over unique (h, k, l)
-    for (h, k, l), group in combined_df.groupby(["h", "k", "l"]):
+    for (h, k, l), group in grouped:
         peak_intensity = group["intensity"].iloc[0]
         total_gauss = np.zeros_like(twotheta_grid)
 
-        if broadening == True:
-            for _, row in group.iterrows():
-                two_theta = row["2th"]
-                gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
-                total_gauss += gaussian_peak
-                scale = len(group)
-        else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
-            two_theta = np.asarray([group["Mean two_th"].values[0]])
-            gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
-            total_gauss += gaussian_peak
+        if broadening:
+            # --- Vectorized Gaussian summation ---
+            mus = group["2th"].values  # shape (M,)
+            # Broadcasting: grid[:, None] vs mus[None, :]
+            gaussians = Gaussian(twotheta_grid[:, None], mus[None, :], sigma_gauss)
+            total_gauss = peak_intensity * gaussians.sum(axis=1)
+            scale = len(mus)
+        else:
+            mu = group["Mean two_th"].iloc[0]
+            total_gauss = peak_intensity * Gaussian(twotheta_grid, mu, sigma_gauss)
             scale = 1
+
+        #if broadening:
+        #    for _, row in group.iterrows():
+        #        two_theta = row["2th"]
+        #        gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss) 
+        #        total_gauss += gaussian_peak
+        #        scale = len(group)
+        #else: #Run the code for mean positions (Singh pattern - one average peak per reflection)
+        #    two_theta = np.asarray([group["Mean two_th"].values[0]])
+        #    gaussian_peak = peak_intensity * Gaussian(twotheta_grid, two_theta, sigma_gauss)
+        #    total_gauss += gaussian_peak
+        #    scale = 1
             
         avg_gauss = total_gauss / scale
         peak_curves[(h, k, l)] = avg_gauss
         
     # Combined total pattern
-    total_pattern = sum(peak_curves.values())
+    total_pattern = sum(peak_curves.values(), axis=0)
     total_df = pd.DataFrame({
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
