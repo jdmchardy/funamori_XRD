@@ -436,7 +436,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
         # --- Build normalized Gaussian kernel ---
         kernel_extent = 6 * sigma_gauss  # ±3σ window
         theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
-        gaussian_kernel = Gaussian(theta_kernal, 0, sigma_gauss)
+        gaussian_kernel = Gaussian(theta_kernel, 0, sigma_gauss)
         gaussian_kernel /= gaussian_kernel.sum()  # normalize area to 1
 
         # --- Convolve using FFT (fast and accurate) ---
