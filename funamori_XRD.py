@@ -428,24 +428,50 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
     gaussian_kernel = Gaussian(theta_kernel, 0, sigma_gauss)
 
-    # --- Construct histogram of peak positions ---
+    # --- Build single global histogram with scaled contributions ---
     if broadening:
-        # Treat each reflection point as delta function weighted by intensity
+        # Count number of contributions per (h,k,l)
+        counts = combined_df.groupby(["h","k","l"]).size()
+        # Assign weight to each row: intensity / number of contributions
+        weights = combined_df.apply(
+            lambda row: row['intensity'] / counts[(row['h'], row['k'], row['l'])],
+            axis=1
+        )
+        # Build histogram
         hist, _ = np.histogram(
-            combined_df["2th"],
+            combined_df['2th'],
             bins=len(twotheta_grid),
             range=(twotheta_min, twotheta_max),
-            weights=combined_df["intensity"]
+            weights=weights
         )
     else:
-        # Singh pattern: use mean positions only
+        # Singh pattern: one average peak per reflection
         mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
         hist, _ = np.histogram(
-            mean_df["Mean two_th"],
+            mean_df['Mean two_th'],
             bins=len(twotheta_grid),
             range=(twotheta_min, twotheta_max),
-            weights=mean_df["intensity"]
+            weights=mean_df['intensity']
         )
+
+    ## --- Construct histogram of peak positions ---
+    #if broadening:
+    #    # Treat each reflection point as delta function weighted by intensity
+    #    hist, _ = np.histogram(
+    #        combined_df["2th"],
+    #        bins=len(twotheta_grid),
+    #        range=(twotheta_min, twotheta_max),
+    #        weights=combined_df["intensity"]
+    #    )
+    #else:
+    #    # Singh pattern: use mean positions only
+    #    mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
+    #    hist, _ = np.histogram(
+    #        mean_df["Mean two_th"],
+    #        bins=len(twotheta_grid),
+    #        range=(twotheta_min, twotheta_max),
+    #        weights=mean_df["intensity"]
+    #    )
     # Convolve using FFT
     total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
 
