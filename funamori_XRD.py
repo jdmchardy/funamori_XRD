@@ -423,6 +423,11 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     step = 0.01 # In degrees
     twotheta_grid = np.arange(twotheta_min, twotheta_max, step)
 
+    # --- Build normalized Gaussian kernel ---
+    kernel_extent = 8 * sigma_gauss  # ±3σ window
+    theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
+    gaussian_kernel = Gaussian(theta_kernel, 0, sigma_gauss)
+
     # --- Construct histogram of peak positions ---
     if broadening:
         # Treat each reflection point as delta function weighted by intensity
@@ -432,16 +437,6 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             range=(twotheta_min, twotheta_max),
             weights=combined_df["intensity"]
         )
-
-        # --- Build normalized Gaussian kernel ---
-        kernel_extent = 6 * sigma_gauss  # ±3σ window
-        theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
-        gaussian_kernel = Gaussian(theta_kernel, 0, sigma_gauss)
-        gaussian_kernel /= gaussian_kernel.sum()  # normalize area to 1
-
-        # --- Convolve using FFT (fast and accurate) ---
-        total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
-
     else:
         # Singh pattern: use mean positions only
         mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
@@ -451,15 +446,10 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             range=(twotheta_min, twotheta_max),
             weights=mean_df["intensity"]
         )
+    # Convolve using FFT
+    total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
 
-        kernel_extent = 6 * sigma_gauss
-        theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
-        gaussian_kernel = np.exp(-0.5 * (theta_kernel / sigma_gauss) ** 2)
-        gaussian_kernel /= gaussian_kernel.sum()
-
-        total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
-
-    # --- Output as DataFrame ---
+    # Output as DataFrame
     total_df = pd.DataFrame({
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
