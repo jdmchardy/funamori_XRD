@@ -435,7 +435,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
         
         # Vectorized weights: intensity / count
         weights = combined_df['intensity'] / counts
-        )
+        
         # Build histogram
         hist, _ = np.histogram(
             combined_df['2th'],
