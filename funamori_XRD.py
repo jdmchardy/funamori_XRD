@@ -193,10 +193,10 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
             if chi == 0: 
                 # return only one psi_value assuming compression axis aligned with X-rays
                 psi_values = np.asarray([np.pi/2 - theta0])
-                deltas = np.arange(-180,180,2)
+                deltas = np.arange(-180,180,5)
             else:
                 #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
-                deltas = np.arange(-180,180,2)
+                deltas = np.arange(-180,180,5)
                 deltas_rad = np.radians(deltas)
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
@@ -420,7 +420,8 @@ def batch_XRD(batch_upload):
     # Store results side-by-side
     results_blocks = []
 
-    phi_values = np.linspace(0, 2*np.pi, 72)
+    phi_values = np.arange(0,360,5)
+    phi_values = np.radians(phi_values)
     psi_values = 0
 
     for idx, row in df.iterrows():
@@ -1086,7 +1087,7 @@ if uploaded_file:
                 if len(selected_hkls) == 1:
                     axs = [axs]
                 for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                    phi_values = np.radians(np.arange(0, 360, 2))
+                    phi_values = np.radians(np.arange(0, 360, 5))
                     #Pass psi_values of zero so that compute_strains calculates it for each respective hkl
                     psi_values = 0
                     #Get the azimuth and strain values
@@ -1149,7 +1150,7 @@ if uploaded_file:
                     )
         with col2:
             if st.button("Generate XRD") and selected_hkls:
-                phi_values = np.linspace(0, 2 * np.pi, 72)
+                phi_values = np.radians(np.arange(0, 360, 5))
                 psi_values = 0
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
 
@@ -1263,7 +1264,7 @@ if uploaded_file:
         with col1:
             st.subheader("Overlay XRD")
             if st.button("Overlay XRD"):
-                phi_values = np.linspace(0, 2 * np.pi, 72)
+                phi_values = np.radians(np.arange(0, 360, 10))
                 psi_values = 0
                 t = sigma_33 - sigma_11
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
@@ -1290,7 +1291,7 @@ if uploaded_file:
         params, refine_flags = get_initial_parameters(defaults)
 
         if st.button("Refine XRD"):
-            phi_values = np.linspace(0, 2 * np.pi, 72)
+            phi_values = np.radians(np.arange(0, 360, 10))
             psi_values = 0
             result = run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
                                     phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
