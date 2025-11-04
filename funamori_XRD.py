@@ -376,6 +376,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     
     # Container to store individual peak curves
     peak_curves = {}
+    total_pattern = np.zeros_like(twotheta_grid)
     
     # Loop over unique (h, k, l)
     for (h, k, l), group in grouped:
@@ -407,10 +408,12 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
         #    scale = 1
             
         avg_gauss = total_gauss / scale
-        peak_curves[(h, k, l)] = avg_gauss
+        #Add to the total pattern
+        total_pattern += avg_gauss
+        #peak_curves[(h, k, l)] = avg_gauss
         
     # Combined total pattern
-    total_pattern = sum(peak_curves.values(), axis=0)
+    #total_pattern = sum(peak_curves.values(), axis=0)
     total_df = pd.DataFrame({
         "2th": twotheta_grid,
         "Total Intensity": total_pattern
