@@ -1092,12 +1092,8 @@ if uploaded_file is not None:
         results_dict = {}  # Store results per HKL reflection
 
         col1, col2 = st.columns([1,2])
-        with col1:
-            st.subheader("Execute calculations")
         with col2:
-            st.subheader("Generate XRD patterns")
-        
-        with col1:
+            st.subheader("Execute calculations")
             if st.button("Compute Strains") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
@@ -1220,7 +1216,8 @@ if uploaded_file is not None:
                         file_name="cakes_results.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-        with col2:
+
+            st.subheader("Generate XRD patterns")
             if st.button("Generate XRD") and selected_hkls:
                 phi_values = np.radians(np.arange(0, 360, 5))
                 psi_values = 0
@@ -1318,7 +1315,6 @@ if uploaded_file is not None:
                 #st.write("Results", results_df)
 
     ### XRD Refinement ----------------------------------------------------------------
-    col1, col2, col3 = st.columns(3)
     with col1:
         st.subheader("Overlay/refine with XRD")
         uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
@@ -1332,7 +1328,6 @@ if uploaded_file is not None:
         #Normalise exp data
         y_exp = y_exp/ np.max(y_exp)*100
 
-        col1, col2 = st.columns(2)
         with col1:
             st.subheader("Overlay XRD")
             if st.button("Overlay XRD"):
