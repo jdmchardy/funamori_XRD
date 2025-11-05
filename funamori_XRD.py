@@ -1000,13 +1000,13 @@ if uploaded_file is not None:
                 "sigma_33": metadata["sig33"]
             }
 
-        col1,col2 = st.columns([3,6])
+        col1,col2,col3 = st.columns([3,6,2])
         with col1:
             st.subheader("Reflections and Intensities")
         with col2:
             st.subheader("Material Constants")
     
-        col1, col2, col3, col4 = st.columns([3,2,2,2])
+        col1, col2, col3, col4, col5 = st.columns([3,2,2,2,2])
         with col1:
             for i, hkl in enumerate(hkl_list):
                     # Find matching row to get intensity
@@ -1047,12 +1047,6 @@ if uploaded_file is not None:
             st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
             st.session_state.params["wavelength"] = st.number_input("Wavelength (Å)", value=st.session_state.params["wavelength"], step=0.01, format="%.4f")
             st.session_state.params["chi"] = st.number_input("Chi angle (deg)", value=st.session_state.params["chi"], step=0.01, format="%.2f")            
-            
-            st.subheader("Computation Settings")
-            total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
-            Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
-            Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
-            #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
             # Dynamically build the list of Cij keys present in params
             c_keys = [key for key in st.session_state.params.keys() if key.startswith('c') and key not in ["c_val", "chi"]]
@@ -1066,6 +1060,12 @@ if uploaded_file is not None:
             st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
+        with col5:
+            st.subheader("Computation Settings")
+            total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
+            Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
+            Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
+            #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
 
         lattice_params = {
             "a_val" : st.session_state.params.get("a_val"),
