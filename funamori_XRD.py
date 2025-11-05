@@ -1055,6 +1055,7 @@ if uploaded_file is not None:
                     st.number_input(
                         "Intensity",
                         min_value=0.0,
+                        value=st.session_state.intensities[f"intensity_{i}"],
                         step=1.0,
                         key=f"intensity_{i}",
                         label_visibility="collapsed"
