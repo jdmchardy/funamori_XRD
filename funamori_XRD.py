@@ -1406,7 +1406,7 @@ if uploaded_file is not None:
                 report_str = fit_report(result)
                 st.session_state["report_str"] = report_str
                 st.write(st.session_state.get("report_str"))
-                st.rerun()
+                #st.rerun()
 
             else:
                 st.error("Refinement failed.")
