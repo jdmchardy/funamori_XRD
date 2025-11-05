@@ -1382,15 +1382,15 @@ if uploaded_file is not None:
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
 
             st.subheader("Refine XRD")
-
+        
+        #Construct the default parameter dictionary for refinement
+        stress = {"sigma_11": sigma_11,
+                 "sigma_33": sigma_33}
+        other = {"chi" : chi}
+        defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
         if st.button("Refine XRD"):
             phi_values = np.radians(np.arange(0, 360, 10))
             psi_values = 0
-            #Construct the default parameter dictionary for refinement
-            stress = {"sigma_11": sigma_11,
-                     "sigma_33": sigma_33}
-            other = {"chi" : chi}
-            defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
             params, refine_flags = get_initial_parameters(defaults)
             result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
                                     phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
