@@ -1041,11 +1041,6 @@ if uploaded_file is not None:
             if "intensities" not in st.session_state:
                 st.session_state.intensities = peak_intensity_default.copy()
 
-            # Set widget start values the first time
-            for i in range(len(hkl_list)):
-                if f"intensity_{i}" not in st.session_state:
-                    st.session_state[f"intensity_{i}"] = st.session_state.intensities[f"intensity_{i}"]
-
             for i, hkl in enumerate(hkl_list):
                 cols = st.columns([2, 2, 2])    
                 with cols[0]:
