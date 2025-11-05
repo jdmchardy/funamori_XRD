@@ -1047,17 +1047,14 @@ if uploaded_file is not None:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
-                    st.number_input(
-                        "Intensity",
+                    st.session_state.intensities[f"intensity_{i}"] = st.number_input(
+                        f"Intensity_{i}",
                         min_value=0.0,
                         value=st.session_state.intensities[f"intensity_{i}"],
                         step=1.0,
-                        key=f"intensity_{i}",
                         label_visibility="collapsed"
                     )
 
-                    # Sync widget → intensity array
-                    st.session_state.intensities[f"intensity_{i}"] = st.session_state[f"intensity_{i}"]
                 if selected:
                     selected_hkls.append(hkl)
                     selected_indices.append(i)  # Save which index was selected
@@ -1412,7 +1409,6 @@ if uploaded_file is not None:
                     if key in result.params:
                         refined_val = result.params[key].value
                         st.session_state.intensities[key] = refined_val
-                        st.session_state[key] = refined_val
                         
                 # Update intensities in the session or UI
                 #update_refined_intensities(intensities_refined, selected_indices)
