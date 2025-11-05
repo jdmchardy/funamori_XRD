@@ -581,33 +581,6 @@ def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
 
     st.pyplot(fig)
 
-#def get_initial_parameters(defaults):
-#    """Returns editable parameter fields with memory between runs."""
-#    if "params" not in st.session_state:
-#        st.session_state.params = {
-#            "a_val": defaults["a_val"],
-#            "c44": defaults["c44"],
-#            "t": defaults["sigma_33"] - defaults["sigma_11"]
-#        }
-
-#    st.subheader("Initial Refinement Parameters")
-#    a_val = st.number_input("Lattice parameter a", value=st.session_state.params["a_val"], format="%.6f")
-#    c44 = st.number_input("c44", value=st.session_state.params["c44"], format="%.3f")
-#    t = st.number_input("t", value=st.session_state.params["t"], format="%.3f")
-
-#    st.session_state.params.update({"a_val": a_val, "c44": c44, "t": t})
-#    return a_val, c44, t
-
-#def select_parameters_to_refine():
-#    """Returns flags for parameters the user wants to refine."""
-#    st.subheader("Select Parameters to Refine")
-#    return {
-#        "a_val": st.checkbox("Refine a", value=True),
-#        "c44": st.checkbox("Refine c44", value=False),
-#        "t": st.checkbox("Refine t", value=False),
-#        "peak_intensity": st.checkbox("Refine peak intensities", value=False)
-#    }
-
 def setup_refinement_toggles(lattice_params, **additional_fields):
     """
     Returns editable parameter fields and refinement toggles dynamically.
@@ -664,7 +637,7 @@ def setup_refinement_toggles(lattice_params, **additional_fields):
     st.subheader("Refinement Parameters")
 
     for key, default_val in p_dict.items():
-        col1, col2, col3 = st.columns([1, 1, 6])
+        col1, col2, col3 = st.columns([1, 1])
         with col1:
             st.session_state.refine_flags[key] = st.checkbox(
                 f"Refine {key}",
