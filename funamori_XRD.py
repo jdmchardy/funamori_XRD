@@ -1453,7 +1453,7 @@ if uploaded_file:
     
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
 
-                st.experimental_rerun()
+                st.rerun()
 
             else:
                 st.error("Refinement failed.")
