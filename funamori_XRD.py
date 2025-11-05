@@ -1099,7 +1099,7 @@ if uploaded_file is not None:
 
         lattice_params = 
         wavelength = st.session_state.params.get("wavelength")
-        chi = st.session_state.params.get(chi")
+        chi = st.session_state.params.get("chi")
         
         # Determine grid sizes
         psi_steps = int(2 * np.sqrt(total_points))
