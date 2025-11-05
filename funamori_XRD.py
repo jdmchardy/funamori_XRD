@@ -1416,7 +1416,6 @@ if uploaded_file is not None:
                     if key in result.params:
                         refined_val = result.params[key].value
                         st.session_state.intensities[key] = refined_val
-                        st.session_state[key] = refined_val
                         
                 # Update intensities in the session or UI
                 #update_refined_intensities(intensities_refined, selected_indices)
