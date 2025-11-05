@@ -1351,106 +1351,85 @@ if uploaded_file is not None:
 
             st.subheader("Refine XRD")
         
-        #Construct the default parameter dictionary for refinement
-        stress = {"sigma_11": sigma_11,
-                 "sigma_33": sigma_33}
-        other = {"chi" : chi}
-    
-        setup_refinement_toggles(lattice_params, cijs=cijs, stress=stress, other=other)
+            #Construct the default parameter dictionary for refinement
+            stress = {"sigma_11": sigma_11,
+                     "sigma_33": sigma_33}
+            other = {"chi" : chi}
         
-        if st.button("Refine XRD"):
-            phi_values = np.radians(np.arange(0, 360, 10))
-            psi_values = 0
+            setup_refinement_toggles(lattice_params, cijs=cijs, stress=stress, other=other)
             
-            result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
-                                    phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
-                                    sigma_11, sigma_22, sigma_33, chi, Funamori_broadening)
+            if st.button("Refine XRD"):
+                phi_values = np.radians(np.arange(0, 360, 10))
+                psi_values = 0
+                
+                result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
+                                        phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
+                                        sigma_11, sigma_22, sigma_33, chi, Funamori_broadening)
+            
+                if result.success:
+                    st.success("Refinement successful!")
+                    # Extract refined values from result.params
+                    for key in st.session_state.params:
+                        if key in result.params:
+                            st.session_state.params[key] = result.params[key].value
+                        else:
+                            #Update the other lattice parameters that dont get refined for cubic etc
+                            if key in ["b_val", "c_val"]:
+                                st.session_state.params[key] = result.params["a_val"].value
+                    
+                    #Update the t and sigma values
+                    t_opt = result.params["t"]
+                    st.session_state.params["sigma_11"] = -t_opt / 3
+                    st.session_state.params["sigma_22"] = -t_opt / 3
+                    st.session_state.params["sigma_33"] = 2 * t_opt / 3
+    
+                    # --- Handle refined peak intensities if checkbox is selected ---
+                    #if st.session_state.refine_flags.get("peak_intensity", False):
+                    #    intensities_refined = [
+                    #        result.params[f"intensity_{i}"].value for i in selected_indices
+                    #    ]
+                    #else:
+                    #    intensities_refined = intensities
+    
+                    #Update the intensity widgets and state values
+                    for key in st.session_state.intensities:
+                        if key in result.params:
+                            refined_val = result.params[key].value
+                            st.session_state.intensities[key] = refined_val
+                            
+                    st.markdown("### Fit Report")
+                    report_str = fit_report(result)
+                    st.code(report_str)
         
-            if result.success:
-                st.success("Refinement successful!")
-                # Extract refined values from result.params
-                for key in st.session_state.params:
-                    if key in result.params:
-                        st.session_state.params[key] = result.params[key].value
-                    else:
-                        #Update the other lattice parameters that dont get refined for cubic etc
-                        if key in ["b_val", "c_val"]:
-                            st.session_state.params[key] = result.params["a_val"].value
-                
-                #Update the t and sigma values
-                t_opt = result.params["t"]
-                st.session_state.params["sigma_11"] = -t_opt / 3
-                st.session_state.params["sigma_22"] = -t_opt / 3
-                st.session_state.params["sigma_33"] = 2 * t_opt / 3
-
-                # --- Handle refined peak intensities if checkbox is selected ---
-                #if st.session_state.refine_flags.get("peak_intensity", False):
-                #    intensities_refined = [
-                #        result.params[f"intensity_{i}"].value for i in selected_indices
-                #    ]
-                #else:
-                #    intensities_refined = intensities
-
-                #Update the intensity widgets and state values
-                for key in st.session_state.intensities:
-                    if key in result.params:
-                        refined_val = result.params[key].value
-                        st.session_state.intensities[key] = refined_val
-                        
-                # Update intensities in the session or UI
-                #update_refined_intensities(intensities_refined, selected_indices)
-
-                #------------------------------------------------------
-
-                st.markdown("### Fit Report")
-                report_str = fit_report(result)
-                st.code(report_str)
-    
-                # --- Prepare final simulation using refined parameters ---
-                #lattice_params_sim = {
-                #    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
-                #    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
-                #    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
-                #    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
-                #    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
-                #    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
-                #}
-                
-                # Rebuild cijs dictionary dynamically from refined params
-                #cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
-                
-                
-                #chi_opt = st.session_state.params.get("chi", 0)
-                
-                # Pack parameters for Generate_XRD
-                strain_sim_params = (
-                    symmetry,
-                    lattice_params,
-                    wavelength,
-                    cijs,
-                    sigma_11,
-                    sigma_22,
-                    sigma_33,
-                    chi,
-                    phi_values,
-                    psi_values
-                )
-                
-                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
-                twoth_sim = XRD_df["2th"]
-                intensity_sim = XRD_df["Total Intensity"]
-                x_min_sim = np.min(twoth_sim)
-                x_max_sim = np.max(twoth_sim)
-                mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
-                x_exp_common = x_exp[mask]
-                y_exp_common = y_exp[mask]
-                interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
-                y_sim_common = interp_sim(x_exp_common)
-    
-                plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
-                
-            else:
-                st.error("Refinement failed.")
+                    # Pack parameters for Generate_XRD
+                    strain_sim_params = (
+                        symmetry,
+                        lattice_params,
+                        wavelength,
+                        cijs,
+                        sigma_11,
+                        sigma_22,
+                        sigma_33,
+                        chi,
+                        phi_values,
+                        psi_values
+                    )
+                    
+                    XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
+                    twoth_sim = XRD_df["2th"]
+                    intensity_sim = XRD_df["Total Intensity"]
+                    x_min_sim = np.min(twoth_sim)
+                    x_max_sim = np.max(twoth_sim)
+                    mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+                    x_exp_common = x_exp[mask]
+                    y_exp_common = y_exp[mask]
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    y_sim_common = interp_sim(x_exp_common)
+        
+                    plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+                    
+                else:
+                    st.error("Refinement failed.")
 
         #Next display a button to compute the posterior probability distribution
         #st.subheader("Probe fit surface")
