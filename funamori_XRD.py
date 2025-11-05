@@ -1412,7 +1412,9 @@ if uploaded_file is not None:
         if st.session_state.get("refinement_result").success:
             # Display in Streamlit
             st.markdown("### Fit Report")
-            st.code(st.session_state.get("result_str"))
+            result = st.session_state.get("refinement_result")
+            report_str = fit_report(result)
+            st.code(report)
 
             # --- Prepare final simulation using refined parameters ---
             lattice_params_sim = {
