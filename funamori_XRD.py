@@ -671,8 +671,8 @@ def get_initial_parameters(defaults):
     else:
         st.error("{} symmetry is not yet supported".format(symmetry))
         
-    if "params" not in st.session_state:
-        st.session_state.params = p_dict.copy()
+    if "refinement_params" not in st.session_state:
+        st.session_state.ref_params = p_dict.copy()
 
     if "refine_flags" not in st.session_state:
         # If no refine defaults given, all False
@@ -687,32 +687,19 @@ def get_initial_parameters(defaults):
     for key, default_val in p_dict.items():
         col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
-            st.session_state.params[key] = st.number_input(
-                key,
-                value=float(st.session_state.params.get(key, default_val)),
-                format="%.6f",
-                key=f"num_{key}"
-            )
-        with col2:
             st.session_state.refine_flags[key] = st.checkbox(
                 f"Refine {key}",
                 value=st.session_state.refine_flags.get(key, False),
                 key=f"chk_{key}"
             )
-    with col2:
-        # --- Add peak intensity refinement checkbox separately ---
-        st.session_state.refine_flags["peak_intensity"] = st.checkbox(
-            "Refine peak intensities",
-            value=st.session_state.refine_flags.get("peak_intensity", False),
-            key="chk_peak_intensity"
-        )
-
-    # Update session state
-    #st.session_state.params.update(params)
-    #st.session_state.refine_flags.update(refine_flags)
-
-    #return params, refine_flags
-    return st.session_state.params, st.session_state.refine_flags
+    with col1:
+    # --- Add peak intensity refinement checkbox separately ---
+    st.session_state.refine_flags["peak_intensity"] = st.checkbox(
+        "Refine peak intensities",
+        value=st.session_state.refine_flags.get("peak_intensity", False),
+        key="chk_peak_intensity"
+    )
+    return st.session_state.ref_params, st.session_state.refine_flags
 
 def run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
                    sigma_11, sigma_22, sigma_33, chi, Funamori_broadening):
@@ -1027,7 +1014,22 @@ if uploaded_file is not None:
         intensities = []
         selected_indices = []
         peak_intensity_default = {}
-        #intensity_boxes = {}
+
+        if "params" not in st.session_state:
+            st.session_state.params = {
+                "a_val": metadata['a'],
+                "b_val": metadata['b'],
+                "c_val": metadata['c'],
+                "alpha": metadata['alpha'],
+                "beta": metadata['beta'],
+                "gamma": metadata['gamma'],
+                "chi": metadata['chi'],
+                "wavelength": metadata['wavelength'],
+                **{k.lower(): metadata[k] for k in metadata.keys() if k.startswith("C")},
+                "sigma_11": metadata["sig11"],
+                "sigma_22": metadata["sig22"],
+                "sigma_33": metadata["sig33"],
+            }
 
         col1,col2 = st.columns([3,6])
         with col1:
@@ -1053,7 +1055,6 @@ if uploaded_file is not None:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
-                    #intensity_boxes[f"intensity_{i}"] = st.number_input(
                     st.session_state.intensities[f"intensity_{i}"] = st.number_input(
                         "Intensity",
                         min_value=0.0,
@@ -1069,16 +1070,15 @@ if uploaded_file is not None:
 
             #st.session_state.intensities.update(intensity_boxes)
         with col2:
-            lattice_params = {}
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
-            lattice_params["a_val"] = st.number_input("Lattice parameter a (Å)", value=metadata['a'], step=0.01, format="%.4f")
-            lattice_params["b_val"] = st.number_input("Lattice parameter b (Å)", value=metadata['b'], step=0.01, format="%.4f")
-            lattice_params["c_val"] = st.number_input("Lattice parameter c (Å)", value=metadata['c'], step=0.01, format="%.4f")
-            lattice_params["alpha"] = st.number_input("alpha (deg)", value=metadata['alpha'], step=0.1, format="%.3f")
-            lattice_params["beta"] = st.number_input("beta (deg)", value=metadata['beta'], step=0.1, format="%.3f")
-            lattice_params["gamma"] = st.number_input("gamma (deg)", value=metadata['gamma'], step=0.1, format="%.3f")
-            wavelength = st.number_input("Wavelength (Å)", value=metadata['wavelength'], step=0.01, format="%.4f")
-            chi = st.number_input("Chi angle (deg)", value=metadata['chi'], step=0.01, format="%.2f")
+            st.session_state.params["a_val"] = st.number_input("Lattice parameter a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
+            st.session_state.params["b_val"] = st.number_input("Lattice parameter b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
+            st.session_state.params["c_val"] = st.number_input("Lattice parameter c (Å)", value=st.session_state.params["c_val"], step=0.01, format="%.4f")
+            st.session_state.params["alpha"] = st.number_input("alpha (deg)", value=st.session_state.params["alpha"], step=0.1, format="%.3f")
+            st.session_state.params["beta"] = st.number_input("beta (deg)", value=st.session_state.params["beta"], step=0.1, format="%.3f")
+            st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
+            st.session_state.params["wavelength"] = st.number_input("Wavelength (Å)", value=st.session_state.params["wavelength"], step=0.01, format="%.4f")
+            st.session_state.params["chi"] = st.number_input("Chi angle (deg)", value=st.session_state.params["chi"], step=0.01, format="%.2f")            
             
             st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
@@ -1096,6 +1096,10 @@ if uploaded_file is not None:
             sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'], step=0.1, format="%.3f")
             sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'], step=0.1, format="%.3f")
             sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'], step=0.1, format="%.3f")
+
+        lattice_params = 
+        wavelength = st.session_state.params.get("wavelength")
+        chi = st.session_state.params.get(chi")
         
         # Determine grid sizes
         psi_steps = int(2 * np.sqrt(total_points))
@@ -1376,20 +1380,19 @@ if uploaded_file is not None:
         if st.button("Refine XRD"):
             phi_values = np.radians(np.arange(0, 360, 10))
             psi_values = 0
-            result = run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
+            result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
                                     phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
                                     sigma_11, sigma_22, sigma_33, chi, Funamori_broadening)
-            st.session_state["refinement_result"] = result
         
             if result.success:
                 st.success("Refinement successful!")
                 # Extract refined values from result.params
-                for key in params:
+                for key in st.session_state.ref_params:
                     if key in result.params:
                         st.session_state.params[key] = result.params[key].value
 
                 # --- Handle refined peak intensities if checkbox is selected ---
-                if refine_flags.get("peak_intensity", False):
+                if st.session_state.refine_flags.get("peak_intensity", False):
                     st.write("Intesities being updated")
                     intensities_refined = [
                         result.params[f"intensity_{i}"].value for i in selected_indices
@@ -1402,66 +1405,59 @@ if uploaded_file is not None:
 
                 #------------------------------------------------------
 
-                # Generate the fit report string
+                st.markdown("### Fit Report")
                 report_str = fit_report(result)
-                st.session_state["report_str"] = report_str
-                st.rerun()
+                st.code(report_str)
+    
+                # --- Prepare final simulation using refined parameters ---
+                lattice_params_sim = {
+                    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
+                    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
+                    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
+                    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
+                    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
+                    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
+                }
+                
+                # Rebuild cijs dictionary dynamically from refined params
+                cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
+                
+                # Stress components from refined t
+                t_opt = st.session_state.params.get("t", 0)
+                sigma_11_opt = -t_opt / 3
+                sigma_22_opt = -t_opt / 3
+                sigma_33_opt = 2 * t_opt / 3
+                chi_opt = st.session_state.params.get("chi", 0)
+                
+                # Pack parameters for Generate_XRD
+                strain_sim_params = (
+                    symmetry,
+                    lattice_params_sim,
+                    wavelength,
+                    cijs_sim,
+                    sigma_11_opt,
+                    sigma_22_opt,
+                    sigma_33_opt,
+                    chi_opt,
+                    phi_values,
+                    psi_values
+                )
+                
+                XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
+                twoth_sim = XRD_df["2th"]
+                intensity_sim = XRD_df["Total Intensity"]
+                x_min_sim = np.min(twoth_sim)
+                x_max_sim = np.max(twoth_sim)
+                mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
+                x_exp_common = x_exp[mask]
+                y_exp_common = y_exp[mask]
+                interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                y_sim_common = interp_sim(x_exp_common)
+    
+                plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+                
             else:
                 st.error("Refinement failed.")
-                
-        if st.session_state.get("refinement_result").success:
-            # Display in Streamlit
-            st.markdown("### Fit Report")
-            result = st.session_state.get("refinement_result")
-            report_str = fit_report(result)
-            st.code(report)
-
-            # --- Prepare final simulation using refined parameters ---
-            lattice_params_sim = {
-                "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
-                "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
-                "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
-                "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
-                "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
-                "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
-            }
-            
-            # Rebuild cijs dictionary dynamically from refined params
-            cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
-            
-            # Stress components from refined t
-            t_opt = st.session_state.params.get("t", 0)
-            sigma_11_opt = -t_opt / 3
-            sigma_22_opt = -t_opt / 3
-            sigma_33_opt = 2 * t_opt / 3
-            chi_opt = st.session_state.params.get("chi", 0)
-            
-            # Pack parameters for Generate_XRD
-            strain_sim_params = (
-                symmetry,
-                lattice_params_sim,
-                wavelength,
-                cijs_sim,
-                sigma_11_opt,
-                sigma_22_opt,
-                sigma_33_opt,
-                chi_opt,
-                phi_values,
-                psi_values
-            )
-            
-            XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
-            twoth_sim = XRD_df["2th"]
-            intensity_sim = XRD_df["Total Intensity"]
-            x_min_sim = np.min(twoth_sim)
-            x_max_sim = np.max(twoth_sim)
-            mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
-            x_exp_common = x_exp[mask]
-            y_exp_common = y_exp[mask]
-            interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
-            y_sim_common = interp_sim(x_exp_common)
-
-            plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
 
         #Next display a button to compute the posterior probability distribution
         #st.subheader("Probe fit surface")
