@@ -964,9 +964,11 @@ st.title("XRD Strain Simulator (with Batch Mode)")
 st.subheader("Upload hkl.csv Input File")
 uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
 
-if uploaded_file:
+if uploaded_file is not None:
+    st.session_state["uploaded_file"] = uploaded_file
+    file_obj = st.session_state.get("uploaded_file", None)
     # --- Read and split file ---
-    content = uploaded_file.getvalue().decode("utf-8")
+    content = file_obj.getvalue().decode("utf-8")
     lines = content.strip().splitlines()
     # --- Separate metadata and data lines ---
     metadata = {}
