@@ -681,37 +681,38 @@ def get_initial_parameters(defaults):
 
     st.subheader("Refinement Parameters")
 
-    params = {}
-    refine_flags = {}
+    #params = {}
+    #refine_flags = {}
 
     for key, default_val in p_dict.items():
         col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
-            params[key] = st.number_input(
+            st.session_state.params[key] = st.number_input(
                 key,
                 value=float(st.session_state.params.get(key, default_val)),
                 format="%.6f",
                 key=f"num_{key}"
             )
         with col2:
-            refine_flags[key] = st.checkbox(
+            st.session_state.refine_flags[key] = st.checkbox(
                 f"Refine {key}",
                 value=st.session_state.refine_flags.get(key, False),
                 key=f"chk_{key}"
             )
     with col2:
         # --- Add peak intensity refinement checkbox separately ---
-        refine_flags["peak_intensity"] = st.checkbox(
+        st.session_state.refine_flags["peak_intensity"] = st.checkbox(
             "Refine peak intensities",
             value=st.session_state.refine_flags.get("peak_intensity", False),
             key="chk_peak_intensity"
         )
 
     # Update session state
-    st.session_state.params.update(params)
-    st.session_state.refine_flags.update(refine_flags)
+    #st.session_state.params.update(params)
+    #st.session_state.refine_flags.update(refine_flags)
 
-    return params, refine_flags
+    #return params, refine_flags
+    return st.session_state.params, st.session_state.refine_flags
 
 def run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
                    sigma_11, sigma_22, sigma_33, chi, Funamori_broadening):
