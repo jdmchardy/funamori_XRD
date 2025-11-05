@@ -9,28 +9,6 @@ from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 #import corner
 
-st.markdown("""
-<style>
-/* --- NUMBER & TEXT INPUT FIELD COMPACTING --- */
-input[type=number], input[type=text] {
-    padding: 2px 6px !important;
-    height: 1.6rem !important;
-    font-size: 0.85rem !important;
-}
-
-/* --- LABEL REDUCTION --- */
-label, span, .stMarkdown {
-    font-size: 0.85rem !important;
-    margin-bottom: -4px !important;
-}
-
-/* --- REDUCE CHECKBOX SPACING --- */
-.stCheckbox {
-    line-height: 0.9;
-}
-</style>
-""", unsafe_allow_html=True)
-
 #### Functions -----------------------------------------------------
 
 def Gaussian(x, x0, sigma):
@@ -1005,7 +983,9 @@ if uploaded_file is not None:
             st.subheader("Reflections and Intensities")
         with col2:
             st.subheader("Material Constants")
-    
+        with col3:
+            st.subheader("Computation Settings")
+
         col1, col2, col3, col4, col5 = st.columns([3,2,2,2,2])
         with col1:
             for i, hkl in enumerate(hkl_list):
@@ -1061,7 +1041,6 @@ if uploaded_file is not None:
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
         with col5:
-            st.subheader("Computation Settings")
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
