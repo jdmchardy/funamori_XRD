@@ -1404,10 +1404,6 @@ if uploaded_file is not None:
 
                 # Generate the fit report string
                 report_str = fit_report(result)
-                
-                # Display in Streamlit
-                st.markdown("### Fit Report")
-                st.code(report_str)
             
                 # --- Prepare final simulation using refined parameters ---
                 lattice_params_sim = {
@@ -1442,6 +1438,12 @@ if uploaded_file is not None:
                     phi_values,
                     psi_values
                 )
+                st.rerun()
+                
+                # Display in Streamlit
+                st.markdown("### Fit Report")
+                st.code(report_str)
+                
                 XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
@@ -1454,8 +1456,6 @@ if uploaded_file is not None:
                 y_sim_common = interp_sim(x_exp_common)
     
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
-
-                st.rerun()
 
             else:
                 st.error("Refinement failed.")
