@@ -1413,7 +1413,7 @@ if uploaded_file is not None:
             
             # Display in Streamlit
             st.markdown("### Fit Report")
-            st.code(st.session_state.get("result_str")
+            st.code(st.session_state.get("result_str"))
 
             # --- Prepare final simulation using refined parameters ---
             lattice_params_sim = {
