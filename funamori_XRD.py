@@ -9,6 +9,26 @@ from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 #import corner
 
+st.markdown("""
+<style>
+/* Remove vertical gaps between widgets */
+.block-container {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+div[data-testid="stVerticalBlock"] > div {
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.15rem !important;
+}
+
+/* Tighten spacing around number inputs and labels */
+.stNumberInput, .stTextInput, .stCheckbox, .stSelectbox, .stSlider {
+    margin-bottom: -0.2rem !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 #### Functions -----------------------------------------------------
 
 def Gaussian(x, x0, sigma):
