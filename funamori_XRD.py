@@ -1405,13 +1405,13 @@ if uploaded_file is not None:
                         st.session_state.params[key] = result.params[key].value
 
                 # --- Handle refined peak intensities if checkbox is selected ---
-                #if st.session_state.refine_flags.get("peak_intensity", False):
-                #    st.write("Intesities being updated")
-                #    intensities_refined = [
-                #        result.params[f"intensity_{i}"].value for i in selected_indices
-                #    ]
-                #else:
-                #    intensities_refined = intensities
+                if st.session_state.refine_flags.get("peak_intensity", False):
+                    st.write("Intesities being updated")
+                    intensities_refined = [
+                        result.params[f"intensity_{i}"].value for i in selected_indices
+                    ]
+                else:
+                    intensities_refined = intensities
 
                 #Update the intensity widgets and state values
                 for i in selected_indices:
