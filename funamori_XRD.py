@@ -892,7 +892,7 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
         indices = np.where(mask)[0]
         if len(indices) > 0:
             bin_indices.append(indices)
-    st.write(np.shape(bin_indices))
+    #st.write(np.shape(bin_indices))
     st.write(bin_indices)
 
     #Get the unique values for instances where there is peak overlap
