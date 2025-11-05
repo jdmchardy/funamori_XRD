@@ -637,7 +637,7 @@ def setup_refinement_toggles(lattice_params, **additional_fields):
     st.subheader("Refinement Parameters")
 
     for key, default_val in p_dict.items():
-        col1, col2, col3 = st.columns([1, 1])
+        col1, col2 = st.columns([1, 1])
         with col1:
             st.session_state.refine_flags[key] = st.checkbox(
                 f"Refine {key}",
