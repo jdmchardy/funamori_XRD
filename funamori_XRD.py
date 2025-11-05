@@ -1064,7 +1064,7 @@ if uploaded_file is not None:
         phi_steps = int(np.sqrt(total_points) / 2)
         results_dict = {}  # Store results per HKL reflection
 
-        col1, col2 = st.columns([1,2])
+        col1, col2 = st.columns(2)
         with col2:
             st.subheader("Execute calculations")
             if st.button("Compute Strains") and selected_hkls:
