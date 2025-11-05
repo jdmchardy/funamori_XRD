@@ -37,7 +37,7 @@ p, span, div {
 
 /* Optional: make headers smaller too */
 h1, h2, h3, h4, h5 {
-    font-size: 14px !important;
+    font-size: 18px !important;
 }
 </style>
 """, unsafe_allow_html=True)
