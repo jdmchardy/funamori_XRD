@@ -608,66 +608,48 @@ def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
 #        "peak_intensity": st.checkbox("Refine peak intensities", value=False)
 #    }
 
-def create_default_parameters(lattice_params, **additional_fields):
-    """
-    Combine lattice parameters and other fields into a single defaults dictionary.
-    
-    Args:
-        lattice_params (dict): e.g. {"a": 4.05, "b": 4.05, "c": 5.00}
-        **additional_fields: other named groups of parameters (dicts)
-            e.g. elastic={"c44": 1.2}, stress={"sigma_11": 0.1, "sigma_33": 0.2}
-    
-    Returns:
-        dict: merged defaults dictionary
-    """
-    defaults = {}
-
-    # Start with lattice parameters
-    defaults.update(lattice_params)
-
-    # Merge any additional dictionaries passed as keyword arguments
-    for name, subdict in additional_fields.items():
-        if not isinstance(subdict, dict):
-            raise TypeError(f"Expected dict for '{name}', got {type(subdict).__name__}")
-        defaults.update(subdict)
-
-    return defaults
-
-def get_initial_parameters(defaults):
+def setup_refinement_toggles(lattice_params, **additional_fields):
     """
     Returns editable parameter fields and refinement toggles dynamically.
-    
-    Args:
-        defaults (dict): Default values for parameters.
-        refine_defaults (dict, optional): Default refinement toggles (True/False for each parameter).
     
     Returns:
         params (dict): Updated parameter values.
         refine_flags (dict): Booleans for whether each parameter is set to refine.
     """
+    combined_params = {}
+
+    # Start with lattice parameters
+    combined_params.update(lattice_params)
+
+    # Merge any additional dictionaries passed as keyword arguments
+    for name, subdict in additional_fields.items():
+        if not isinstance(subdict, dict):
+            raise TypeError(f"Expected dict for '{name}', got {type(subdict).__name__}")
+        combined_params.update(subdict)
+        
     #Build appropriate parameter dictionary
     p_dict = {}
-    p_dict["a_val"] = defaults["a_val"]
-    p_dict["c11"] = defaults["c11"]
-    p_dict["c12"] = defaults["c12"]
-    p_dict["c44"] = defaults["c44"]
-    p_dict["t"] = defaults["sigma_33"] - defaults["sigma_11"]
-    p_dict["chi"] = defaults["chi"]
+    p_dict["a_val"] = combined_params["a_val"]
+    p_dict["c11"] = combined_params["c11"]
+    p_dict["c12"] = combined_params["c12"]
+    p_dict["c44"] = combined_params["c44"]
+    p_dict["t"] = combined_params["sigma_33"] - combined_params["sigma_11"]
+    p_dict["chi"] = combined_params["chi"]
 
     if symmetry == "cubic":
         pass 
     elif symmetry == "hexagonal":
-        p_dict["c_val"] = defaults["c_val"]
-        p_dict["c13"] = defaults["c13"]
+        p_dict["c_val"] = combined_params["c_val"]
+        p_dict["c13"] = combined_params["c13"]
     elif symmetry == "tetragonal_A":
-        p_dict["c_val"] = defaults["c_val"]
-        p_dict["c13"] = defaults["c13"]
-        p_dict["c66"] = defaults["c66"]
+        p_dict["c_val"] = combined_params["c_val"]
+        p_dict["c13"] = combined_params["c13"]
+        p_dict["c66"] = combined_params["c66"]
     elif symmetry == "tetragonal_B":
-        p_dict["c_val"] = defaults["c_val"]
-        p_dict["c13"] = defaults["c13"]
-        p_dict["c16"] = defaults["c16"]
-        p_dict["c66"] = defaults["c66"]
+        p_dict["c_val"] = combined_params["c_val"]
+        p_dict["c13"] = combined_params["c13"]
+        p_dict["c16"] = combined_params["c16"]
+        p_dict["c66"] = combined_params["c66"]
     else:
         st.error("{} symmetry is not yet supported".format(symmetry))
         
@@ -697,7 +679,7 @@ def get_initial_parameters(defaults):
         key="chk_peak_intensity"
         )
     return st.session_state.ref_params, st.session_state.refine_flags
-
+    
 def run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
                    sigma_11, sigma_22, sigma_33, chi, Funamori_broadening):
     """
@@ -1378,8 +1360,8 @@ if uploaded_file is not None:
         stress = {"sigma_11": sigma_11,
                  "sigma_33": sigma_33}
         other = {"chi" : chi}
-        defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
-        params, refine_flags = get_initial_parameters(defaults)
+    
+        setup_refinement_toggles(lattice_params, cijs=cijs, stress=stress, other=other)
         
         if st.button("Refine XRD"):
             phi_values = np.radians(np.arange(0, 360, 10))
@@ -1392,17 +1374,27 @@ if uploaded_file is not None:
             if result.success:
                 st.success("Refinement successful!")
                 # Extract refined values from result.params
-                for key in st.session_state.ref_params:
+                for key in st.session_state.params:
                     if key in result.params:
                         st.session_state.params[key] = result.params[key].value
+                    else:
+                        #Update the other lattice parameters that dont get refined for cubic etc
+                        if key in ["b_val", "c_val"]:
+                            st.session_state.params[key] = result.params["a_val"].value
+                
+                #Update the t and sigma values
+                t_opt = result.params["t"]
+                st.session_state.params["sigma_11"] = -t_opt / 3
+                st.session_state.params["sigma_22"] = -t_opt / 3
+                st.session_state.params["sigma_33"] = 2 * t_opt / 3
 
                 # --- Handle refined peak intensities if checkbox is selected ---
-                if st.session_state.refine_flags.get("peak_intensity", False):
-                    intensities_refined = [
-                        result.params[f"intensity_{i}"].value for i in selected_indices
-                    ]
-                else:
-                    intensities_refined = intensities
+                #if st.session_state.refine_flags.get("peak_intensity", False):
+                #    intensities_refined = [
+                #        result.params[f"intensity_{i}"].value for i in selected_indices
+                #    ]
+                #else:
+                #    intensities_refined = intensities
 
                 #Update the intensity widgets and state values
                 for key in st.session_state.intensities:
@@ -1420,40 +1412,36 @@ if uploaded_file is not None:
                 st.code(report_str)
     
                 # --- Prepare final simulation using refined parameters ---
-                lattice_params_sim = {
-                    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
-                    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
-                    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
-                    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
-                    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
-                    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
-                }
+                #lattice_params_sim = {
+                #    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
+                #    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
+                #    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
+                #    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
+                #    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
+                #    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
+                #}
                 
                 # Rebuild cijs dictionary dynamically from refined params
-                cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
+                #cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
                 
-                # Stress components from refined t
-                t_opt = st.session_state.params.get("t", 0)
-                sigma_11_opt = -t_opt / 3
-                sigma_22_opt = -t_opt / 3
-                sigma_33_opt = 2 * t_opt / 3
-                chi_opt = st.session_state.params.get("chi", 0)
+                
+                #chi_opt = st.session_state.params.get("chi", 0)
                 
                 # Pack parameters for Generate_XRD
                 strain_sim_params = (
                     symmetry,
-                    lattice_params_sim,
+                    lattice_params,
                     wavelength,
-                    cijs_sim,
-                    sigma_11_opt,
-                    sigma_22_opt,
-                    sigma_33_opt,
-                    chi_opt,
+                    cijs,
+                    sigma_11,
+                    sigma_22,
+                    sigma_33,
+                    chi,
                     phi_values,
                     psi_values
                 )
                 
-                XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
+                XRD_df = Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
                 twoth_sim = XRD_df["2th"]
                 intensity_sim = XRD_df["Total Intensity"]
                 x_min_sim = np.min(twoth_sim)
