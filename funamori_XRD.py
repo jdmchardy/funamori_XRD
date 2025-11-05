@@ -1086,16 +1086,17 @@ if uploaded_file is not None:
             Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
-            # Dynamically build the list of Cij keys present in metadata
-            C_keys = [key for key in metadata.keys() if key.startswith('C')]
+            # Dynamically build the list of Cij keys present in params
+            c_keys = [key for key in st.session_state.params.keys() if key.startswith('c')]
             cijs = {}
-            for key in C_keys:
-                var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
-                cijs[var_name] = st.number_input(key, value=metadata[key])
+            for key in c_keys:
+                #var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
+                st.session_state.params[key] = st.number_input(key, value=st.session_state.params[key])
+                cijs[key] = st.session_state.params.get(key)
         with col4:
-            sigma_11 = st.number_input("σ₁₁", value=metadata['sig11'], step=0.1, format="%.3f")
-            sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'], step=0.1, format="%.3f")
-            sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'], step=0.1, format="%.3f")
+            st.session_state.params["sigma_11"] = st.number_input("σ₁₁", value=st.session_state.params["sigma_11"], step=0.1, format="%.3f")
+            st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
+            st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
 
         lattice_params = {
             "a_val" : st.session_state.params.get("a_val"),
@@ -1107,6 +1108,9 @@ if uploaded_file is not None:
         }
         wavelength = st.session_state.params.get("wavelength")
         chi = st.session_state.params.get("chi")
+        sigma_11 = st.session_state.params.get("sigma_11")
+        sigma_22 = st.session_state.params.get("sigma_22")
+        sigma_33 = st.session_state.params.get("sigma_33")
         
         # Determine grid sizes
         psi_steps = int(2 * np.sqrt(total_points))
