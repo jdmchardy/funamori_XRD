@@ -9,6 +9,48 @@ from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 #import corner
 
+st.markdown("""
+<style>
+/* --- GLOBAL LAYOUT TIGHTENING --- */
+.block-container {
+    padding-top: 0.4rem;
+    padding-bottom: 0.2rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+/* Reduce space between widgets */
+.streamlit-expanderHeader, .stForm {
+    margin-top: 0.1rem;
+    margin-bottom: 0.1rem;
+}
+
+/* --- NUMBER & TEXT INPUT FIELD COMPACTING --- */
+input[type=number], input[type=text] {
+    padding: 2px 6px !important;
+    height: 1.6rem !important;
+    font-size: 0.85rem !important;
+}
+
+/* --- SLIDER HEIGHT REDUCTION --- */
+.stSlider > div[data-baseweb='slider'] {
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
+}
+
+/* --- LABEL REDUCTION --- */
+label, span, .stMarkdown {
+    font-size: 0.85rem !important;
+    margin-bottom: -4px !important;
+}
+
+/* --- REDUCE CHECKBOX SPACING --- */
+.stCheckbox {
+    line-height: 0.9;
+}
+</style>
+""", unsafe_allow_html=True)
+
 #### Functions -----------------------------------------------------
 
 def Gaussian(x, x0, sigma):
