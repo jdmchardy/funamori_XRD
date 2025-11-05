@@ -1405,14 +1405,11 @@ if uploaded_file is not None:
                 # Generate the fit report string
                 report_str = fit_report(result)
                 st.session_state["report_str"] = report_str
-                st.code(st.session_state.get("report_str"))
-                st.write(st.session_state.get("refinement_result").success)
-                #st.rerun()
-
+                st.rerun()
             else:
                 st.error("Refinement failed.")
+                
         if st.session_state.get("refinement_result").success:
-            
             # Display in Streamlit
             st.markdown("### Fit Report")
             st.code(st.session_state.get("result_str"))
