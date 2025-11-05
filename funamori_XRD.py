@@ -1028,9 +1028,9 @@ if uploaded_file is not None:
                 **{k.lower(): metadata[k] for k in metadata.keys() if k.startswith("C")},
                 "sigma_11": metadata["sig11"],
                 "sigma_22": metadata["sig22"],
-                "sigma_33": metadata["sig33"],
-                "t" : metadata["sig33"] - metadata["sig11"]
+                "sigma_33": metadata["sig33"]
             }
+            st.session_state.params["t"] = st.session_state.params.get("sigma_33") - st.session_state.params.get("sigma_11")
 
         col1,col2 = st.columns([3,6])
         with col1:
@@ -1098,7 +1098,7 @@ if uploaded_file is not None:
             st.session_state.params["sigma_11"] = st.number_input("σ₁₁", value=st.session_state.params["sigma_11"], step=0.1, format="%.3f")
             st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
-            st.session_state.params["t"] = st.write("t: {}".format(st.session_state.params["t"]))
+            st.write("t: {}".format(st.session_state.params["t"]))
 
         lattice_params = {
             "a_val" : st.session_state.params.get("a_val"),
