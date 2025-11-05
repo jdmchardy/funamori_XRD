@@ -1388,6 +1388,7 @@ if uploaded_file:
 
                 # --- Handle refined peak intensities if checkbox is selected ---
                 if refine_flags.get("peak_intensity", False):
+                    st.write("Intesities being updated")
                     intensities_refined = [
                         result.params[f"intensity_{i}"].value for i in selected_indices
                     ]
@@ -1451,6 +1452,8 @@ if uploaded_file:
                 y_sim_common = interp_sim(x_exp_common)
     
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
+
+                st.experimental_rerun()
 
             else:
                 st.error("Refinement failed.")
