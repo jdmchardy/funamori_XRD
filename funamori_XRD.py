@@ -693,12 +693,12 @@ def get_initial_parameters(defaults):
                 key=f"chk_{key}"
             )
     with col1:
-    # --- Add peak intensity refinement checkbox separately ---
-    st.session_state.refine_flags["peak_intensity"] = st.checkbox(
+        # --- Add peak intensity refinement checkbox separately ---
+        st.session_state.refine_flags["peak_intensity"] = st.checkbox(
         "Refine peak intensities",
         value=st.session_state.refine_flags.get("peak_intensity", False),
         key="chk_peak_intensity"
-    )
+        )
     return st.session_state.ref_params, st.session_state.refine_flags
 
 def run_refinement(params, refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
