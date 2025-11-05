@@ -1030,7 +1030,7 @@ if uploaded_file is not None:
                 "sigma_22": metadata["sig22"],
                 "sigma_33": metadata["sig33"]
             }
-            st.session_state.params["t"] = st.session_state.params.get("sigma_33") - st.session_state.params.get("sigma_11")
+            st.session_state.params["t"] = st.session_state.params.["sigma_33"] - st.session_state.params.["sigma_11"]
 
         col1,col2 = st.columns([3,6])
         with col1:
