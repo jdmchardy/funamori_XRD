@@ -926,10 +926,12 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
-st.title("XRD Strain Simulator (with Batch Mode)")
+st.title("X-Forge (XRD stress simulator)")
 
-st.subheader("Upload hkl.csv Input File")
-uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
+col1,col2,col3, col4 = st.columns([2,3,6,2])
+with col1:
+    st.subheader("Upload hkl.csv Input File")
+    uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
@@ -1010,17 +1012,15 @@ if uploaded_file is not None:
                 "sigma_22": metadata["sig22"],
                 "sigma_33": metadata["sig33"]
             }
-
-        col1,col2,col3 = st.columns([3,6,2])
-        with col1:
-            st.subheader("Reflections and Intensities")
         with col2:
-            st.subheader("Material Constants")
+            st.subheader("Reflections and Intensities")
         with col3:
+            st.subheader("Material Constants")
+        with col4:
             st.subheader("Computation Settings")
 
-        col1, col2, col3, col4, col5 = st.columns([3,2,2,2,2])
-        with col1:
+        col1, col2, col3, col4, col5, col6 = st.columns([2,3,2,2,2,2])
+        with col2:
             for i, hkl in enumerate(hkl_list):
                     # Find matching row to get intensity
                     h_match = (hkl_df['h'] == hkl[0]) & (hkl_df['k'] == hkl[1]) & (hkl_df['l'] == hkl[2])
@@ -1050,7 +1050,7 @@ if uploaded_file is not None:
                     selected_indices.append(i)  # Save which index was selected
                     intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
-        with col2:
+        with col3:
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
             st.session_state.params["a_val"] = st.number_input("Lattice parameter a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
             st.session_state.params["b_val"] = st.number_input("Lattice parameter b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
@@ -1060,7 +1060,7 @@ if uploaded_file is not None:
             st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
             st.session_state.params["wavelength"] = st.number_input("Wavelength (Å)", value=st.session_state.params["wavelength"], step=0.01, format="%.4f")
             st.session_state.params["chi"] = st.number_input("Chi angle (deg)", value=st.session_state.params["chi"], step=0.01, format="%.2f")            
-        with col3:
+        with col4:
             # Dynamically build the list of Cij keys present in params
             c_keys = [key for key in st.session_state.params.keys() if key.startswith('c') and key not in ["c_val", "chi"]]
             cijs = {}
@@ -1068,12 +1068,12 @@ if uploaded_file is not None:
                 #var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
                 st.session_state.params[key] = st.number_input(key, value=st.session_state.params[key])
                 cijs[key] = st.session_state.params.get(key)
-        with col4:
+        with col5:
             st.session_state.params["sigma_11"] = st.number_input("σ₁₁", value=st.session_state.params["sigma_11"], step=0.1, format="%.3f")
             st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
-        with col5:
+        with col6:
             total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
