@@ -681,9 +681,6 @@ def get_initial_parameters(defaults):
 
     st.subheader("Refinement Parameters")
 
-    #params = {}
-    #refine_flags = {}
-
     for key, default_val in p_dict.items():
         col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
@@ -718,7 +715,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     lm_params = Parameters()
     for name, val in params.items():
         if name == "t":
-            min_val, max_val = -20, 20
+            min_val, max_val = -15, 15
         elif "c" in name.lower():  # elastic constants
             min_val, max_val = 0, 1000
         elif name == "a_val" or name == "c_val":
@@ -850,11 +847,6 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
     #Combine bins into a single array of weighted residuals
     weighted_residuals = np.concatenate(norm_residuals)
     return weighted_residuals
-
-def update_refined_intensities(refined_intensities, selected_indices):
-    for val, i in zip(refined_intensities, selected_indices):
-        key = f"intensity_{i}"
-        st.session_state.intensities[key] = val
 
 def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
     """
@@ -1047,7 +1039,7 @@ if uploaded_file is not None:
                 
             # Initialize state for peak intensity
             if "intensities" not in st.session_state:
-                st.session_state.intensities = peak_intensity_default
+                st.session_state.intensities = peak_intensity_default.copy()
 
             for i, hkl in enumerate(hkl_list):
                 cols = st.columns([2, 2, 2])    
@@ -1060,7 +1052,6 @@ if uploaded_file is not None:
                         min_value=0.0,
                         value=st.session_state.intensities[f"intensity_{i}"],
                         step=1.0,
-                        key=f"intensity_{i}",
                         label_visibility="collapsed"
                     )
                 if selected:
@@ -1068,7 +1059,6 @@ if uploaded_file is not None:
                     selected_indices.append(i)  # Save which index was selected
                     intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
-            #st.session_state.intensities.update(intensity_boxes)
         with col2:
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
             st.session_state.params["a_val"] = st.number_input("Lattice parameter a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
@@ -1389,6 +1379,7 @@ if uploaded_file is not None:
         other = {"chi" : chi}
         defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
         params, refine_flags = get_initial_parameters(defaults)
+        
         if st.button("Refine XRD"):
             phi_values = np.radians(np.arange(0, 360, 10))
             psi_values = 0
@@ -1406,7 +1397,6 @@ if uploaded_file is not None:
 
                 # --- Handle refined peak intensities if checkbox is selected ---
                 if st.session_state.refine_flags.get("peak_intensity", False):
-                    st.write("Intesities being updated")
                     intensities_refined = [
                         result.params[f"intensity_{i}"].value for i in selected_indices
                     ]
@@ -1414,9 +1404,10 @@ if uploaded_file is not None:
                     intensities_refined = intensities
 
                 #Update the intensity widgets and state values
-                for i in selected_indices:
-                    refined_val = result.params[f"intensity_{i}"].value
-                    st.session_state.intensities[f"intensity_{i}"] = refined_val
+                for key in st.session_state.intensities:
+                    if key in result.params:
+                        refined_val = result.params[key].value
+                        st.session_state.intensities[key] = refined_val
             
                 # Update intensities in the session or UI
                 #update_refined_intensities(intensities_refined, selected_indices)
