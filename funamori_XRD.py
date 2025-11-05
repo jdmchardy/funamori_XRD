@@ -1404,48 +1404,50 @@ if uploaded_file is not None:
 
                 # Generate the fit report string
                 report_str = fit_report(result)
-            
-                # --- Prepare final simulation using refined parameters ---
-                lattice_params_sim = {
-                    "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
-                    "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
-                    "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
-                    "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
-                    "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
-                    "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
-                }
-                
-                # Rebuild cijs dictionary dynamically from refined params
-                cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
-                
-                # Stress components from refined t
-                t_opt = st.session_state.params.get("t", 0)
-                sigma_11_opt = -t_opt / 3
-                sigma_22_opt = -t_opt / 3
-                sigma_33_opt = 2 * t_opt / 3
-                chi_opt = st.session_state.params.get("chi", 0)
-                
-                # Pack parameters for Generate_XRD
-                strain_sim_params = (
-                    symmetry,
-                    lattice_params_sim,
-                    wavelength,
-                    cijs_sim,
-                    sigma_11_opt,
-                    sigma_22_opt,
-                    sigma_33_opt,
-                    chi_opt,
-                    phi_values,
-                    psi_values
-                )
+                st.session_state["report_str"] = report_str
                 st.rerun()
 
             else:
                 st.error("Refinement failed.")
-        if result.success:
+        if st.session_state.get("refinement_result").success:
+            
             # Display in Streamlit
             st.markdown("### Fit Report")
-            st.code(report_str)
+            st.code(st.session_state.get("result_str")
+
+            # --- Prepare final simulation using refined parameters ---
+            lattice_params_sim = {
+                "a_val": st.session_state.params.get("a_val", defaults["a_val"]),
+                "b_val": st.session_state.params.get("b_val", defaults.get("b_val", st.session_state.params.get("a_val"))),
+                "c_val": st.session_state.params.get("c_val", defaults.get("c_val", st.session_state.params.get("a_val"))),
+                "alpha": st.session_state.params.get("alpha", defaults.get("alpha", 90)),
+                "beta": st.session_state.params.get("beta", defaults.get("beta", 90)),
+                "gamma": st.session_state.params.get("gamma", defaults.get("gamma", 90)),
+            }
+            
+            # Rebuild cijs dictionary dynamically from refined params
+            cijs_sim = {k: st.session_state.params[k] for k in cijs.keys() if k in st.session_state.params}
+            
+            # Stress components from refined t
+            t_opt = st.session_state.params.get("t", 0)
+            sigma_11_opt = -t_opt / 3
+            sigma_22_opt = -t_opt / 3
+            sigma_33_opt = 2 * t_opt / 3
+            chi_opt = st.session_state.params.get("chi", 0)
+            
+            # Pack parameters for Generate_XRD
+            strain_sim_params = (
+                symmetry,
+                lattice_params_sim,
+                wavelength,
+                cijs_sim,
+                sigma_11_opt,
+                sigma_22_opt,
+                sigma_33_opt,
+                chi_opt,
+                phi_values,
+                psi_values
+            )
             
             XRD_df = Generate_XRD(selected_hkls, intensities_refined, Gaussian_FWHM, strain_sim_params, Funamori_broadening)
             twoth_sim = XRD_df["2th"]
