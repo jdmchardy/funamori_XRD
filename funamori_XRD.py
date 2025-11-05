@@ -11,20 +11,33 @@ from lmfit import Parameters, minimize, fit_report
 
 st.markdown("""
 <style>
-/* Remove vertical gaps between widgets */
-.block-container {
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+html, body, [class*="css"]  {
+    font-size: 12px !important;   /* Adjust this value to your desired size */
 }
 
-div[data-testid="stVerticalBlock"] > div {
-    margin-top: 0.15rem !important;
-    margin-bottom: 0.15rem !important;
+/* Smaller widget labels */
+label, .stTextInput label, .stNumberInput label, .stSelectbox label {
+    font-size: 12px !important;
 }
 
-/* Tighten spacing around number inputs and labels */
-.stNumberInput, .stTextInput, .stCheckbox, .stSelectbox, .stSlider {
-    margin-bottom: -0.2rem !important;
+/* Smaller number + text input text */
+input, textarea, select {
+    font-size: 12px !important;
+}
+
+/* Smaller checkbox labels */
+.stCheckbox label {
+    font-size: 12px !important;
+}
+
+/* Smaller markdown text */
+p, span, div {
+    font-size: 12px !important;
+}
+
+/* Optional: make headers smaller too */
+h1, h2, h3, h4, h5 {
+    font-size: 14px !important;
 }
 </style>
 """, unsafe_allow_html=True)
