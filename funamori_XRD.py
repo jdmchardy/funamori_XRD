@@ -892,9 +892,11 @@ def compute_bin_indices(x_exp_common, hkl_peak_centers, window_width=0.2):
         indices = np.where(mask)[0]
         if len(indices) > 0:
             bin_indices.append(indices)
+    st.write(np.shape(bin_indices))
+    st.write(bin_indices)
 
     #Get the unique values for instances where there is peak overlap
-    bin_indices = np.unique(bin_indices)
+    #bin_indices = np.unique(bin_indices)
     return bin_indices
 
 def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp):
