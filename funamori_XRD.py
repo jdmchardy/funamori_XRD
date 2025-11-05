@@ -928,9 +928,19 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 st.title("X-Forge (XRD stress simulator)")
 
-col1,col2,col3, col4 = st.columns([2,3,6,2])
+col1,col2,col3,col4 = st.columns([2,3,6,2])
+
 with col1:
     st.subheader("Upload hkl.csv Input File")
+with col2:
+    st.subheader("Reflections and Intensities")
+with col3:
+    st.subheader("Material Constants")
+with col4:
+    st.subheader("Computation Settings")
+
+col1, col2, col3, col4, col5, col6 = st.columns([2,3,2,2,2,2])
+with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
 
 if uploaded_file is not None:
@@ -1012,14 +1022,6 @@ if uploaded_file is not None:
                 "sigma_22": metadata["sig22"],
                 "sigma_33": metadata["sig33"]
             }
-        with col2:
-            st.subheader("Reflections and Intensities")
-        with col3:
-            st.subheader("Material Constants")
-        with col4:
-            st.subheader("Computation Settings")
-
-        col1, col2, col3, col4, col5, col6 = st.columns([2,3,2,2,2,2])
         with col2:
             for i, hkl in enumerate(hkl_list):
                     # Find matching row to get intensity
