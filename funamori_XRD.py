@@ -1097,7 +1097,14 @@ if uploaded_file is not None:
             sigma_22 = st.number_input("σ₂₂", value=metadata['sig22'], step=0.1, format="%.3f")
             sigma_33 = st.number_input("σ₃₃", value=metadata['sig33'], step=0.1, format="%.3f")
 
-        #lattice_params = 
+        lattice_params = {
+            "a_val" : st.session_state.params.get("a_val"),
+            "b_val" : st.session_state.params.get("b_val"),
+            "c_val" : st.session_state.params.get("c_val"),
+            "alpha" : st.session_state.params.get("alpha"),
+            "beta" : st.session_state.params.get("beta"),
+            "gamma" : st.session_state.params.get("gamma"),
+        }
         wavelength = st.session_state.params.get("wavelength")
         chi = st.session_state.params.get("chi")
         
