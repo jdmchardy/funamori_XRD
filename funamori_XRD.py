@@ -684,7 +684,6 @@ def get_initial_parameters(defaults):
     params = {}
     refine_flags = {}
 
-    
     for key, default_val in p_dict.items():
         col1, col2, col3 = st.columns([1, 1, 6])
         with col1:
@@ -1025,7 +1024,7 @@ if uploaded_file:
         intensities = []
         selected_indices = []
         peak_intensity_default = {}
-        intensity_boxes = {}
+        #intensity_boxes = {}
 
         col1,col2 = st.columns([3,6])
         with col1:
@@ -1051,7 +1050,8 @@ if uploaded_file:
                     label = f"hkl = ({int(hkl[0])}, {int(hkl[1])}, {int(hkl[2])})"
                     selected = st.checkbox(label, value=True, key=f"chk_{i}")
                 with cols[1]:
-                    intensity_boxes[f"intensity_{i}"] = st.number_input(
+                    #intensity_boxes[f"intensity_{i}"] = st.number_input(
+                    st.session_state.intensities[f"intensity_{i}"] = st.number_input(
                         "Intensity",
                         min_value=0.0,
                         value=st.session_state.intensities[f"intensity_{i}"],
@@ -1064,7 +1064,7 @@ if uploaded_file:
                     selected_indices.append(i)  # Save which index was selected
                     intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
-            st.session_state.intensities.update(intensity_boxes)
+            #st.session_state.intensities.update(intensity_boxes)
         with col2:
             lattice_params = {}
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
