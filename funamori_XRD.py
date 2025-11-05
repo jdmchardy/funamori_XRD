@@ -1098,7 +1098,7 @@ if uploaded_file is not None:
             st.session_state.params["sigma_11"] = st.number_input("σ₁₁", value=st.session_state.params["sigma_11"], step=0.1, format="%.3f")
             st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
-            st.session_state.params["t"] = st.number_input("t", value=st.session_state.params["t"], step=0.1, format="%.3f")
+            st.session_state.params["t"] = st.write("t: {}".format(st.session_state.params["t"]))
 
         lattice_params = {
             "a_val" : st.session_state.params.get("a_val"),
