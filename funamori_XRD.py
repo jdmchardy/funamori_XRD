@@ -1387,8 +1387,8 @@ if uploaded_file is not None:
         stress = {"sigma_11": sigma_11,
                  "sigma_33": sigma_33}
         other = {"chi" : chi}
-        params, refine_flags = get_initial_parameters(defaults)
         defaults = create_default_parameters(lattice_params, cijs=cijs, stress=stress, other=other)
+        params, refine_flags = get_initial_parameters(defaults)
         if st.button("Refine XRD"):
             phi_values = np.radians(np.arange(0, 360, 10))
             psi_values = 0
