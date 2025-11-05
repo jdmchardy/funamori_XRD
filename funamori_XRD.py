@@ -1060,7 +1060,7 @@ if uploaded_file is not None:
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
         with col3:
             # Dynamically build the list of Cij keys present in params
-            c_keys = [key for key in st.session_state.params.keys() if key.startswith('c')]
+            c_keys = [key for key in st.session_state.params.keys() if key.startswith('c') and not in ["c_val", "chi"]]
             cijs = {}
             for key in c_keys:
                 #var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
