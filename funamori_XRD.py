@@ -939,7 +939,7 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 st.title("X-Forge (XRD stress simulator)")
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,2])
+col1, col2, col3, col4, col5, col6 = st.columns([2,2,3,1,1,1])
 
 with col1:
     st.subheader("Upload Files")
@@ -954,7 +954,7 @@ with col5:
 with col6:
     st.subheader("Computation")
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,2])
+col1, col2, col3, col4, col5, col6, col7, col8 = st.columns([2,2,1,1,1,1,1,1])
 with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
     if uploaded_file is not None:
@@ -1072,15 +1072,17 @@ if uploaded_file is not None:
 
         with col3:
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
-            st.session_state.params["a_val"] = st.number_input("Lattice a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
-            st.session_state.params["b_val"] = st.number_input("Lattice b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
-            st.session_state.params["c_val"] = st.number_input("Lattice c (Å)", value=st.session_state.params["c_val"], step=0.01, format="%.4f")
-            st.session_state.params["alpha"] = st.number_input("alpha (deg)", value=st.session_state.params["alpha"], step=0.1, format="%.3f")
-            st.session_state.params["beta"] = st.number_input("beta (deg)", value=st.session_state.params["beta"], step=0.1, format="%.3f")
-            st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
             st.session_state.params["wavelength"] = st.number_input("Wavelength (Å)", value=st.session_state.params["wavelength"], step=0.01, format="%.4f")
             st.session_state.params["chi"] = st.number_input("Chi angle (deg)", value=st.session_state.params["chi"], step=0.01, format="%.2f")            
         with col4:
+            st.session_state.params["a_val"] = st.number_input("Lattice a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
+            st.session_state.params["b_val"] = st.number_input("Lattice b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
+            st.session_state.params["c_val"] = st.number_input("Lattice c (Å)", value=st.session_state.params["c_val"], step=0.01, format="%.4f")
+        with col5:
+            st.session_state.params["alpha"] = st.number_input("alpha (deg)", value=st.session_state.params["alpha"], step=0.1, format="%.3f")
+            st.session_state.params["beta"] = st.number_input("beta (deg)", value=st.session_state.params["beta"], step=0.1, format="%.3f")
+            st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
+        with col6:
             # Dynamically build the list of Cij keys present in params
             c_keys = [key for key in st.session_state.params.keys() if key.startswith('c') and key not in ["c_val", "chi"]]
             cijs = {}
@@ -1088,12 +1090,12 @@ if uploaded_file is not None:
                 #var_name = key.lower()  # changes variables to lower case e.g. c11, c12, etc.
                 st.session_state.params[key] = st.number_input(key, value=st.session_state.params[key])
                 cijs[key] = st.session_state.params.get(key)
-        with col5:
+        with col7:
             st.session_state.params["sigma_11"] = st.number_input("σ₁₁", value=st.session_state.params["sigma_11"], step=0.1, format="%.3f")
             st.session_state.params["sigma_22"] = st.number_input("σ₂₂", value=st.session_state.params["sigma_22"], step=0.1, format="%.3f")
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
-        with col6:
+        with col8:
             total_points = st.number_input("Total points (φ × ψ)", value=5000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             Funamori_broadening = st.checkbox("Include broadening", value=True)
