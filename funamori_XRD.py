@@ -946,6 +946,7 @@ with col6:
 col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,2,2,2])
 with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
+    poni_file = st.file_uploader("Upload poni file", type=["poni"])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
