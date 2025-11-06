@@ -651,12 +651,12 @@ def cake_dict_to_2Dcake(cake_dict):
     # Create summed intensity array
     summed_array = np.zeros((len(unique_2th), len(unique_delta)), dtype=int)
 
-    # Fill summed cake
     for df in cake_dict.values():
+        n = len(df)  # normalization factor
         for _, row in df.iterrows():
             i = np.searchsorted(unique_2th, row["2th"])
             j = np.searchsorted(unique_delta, row["delta (degrees)"])
-            summed_array[i, j] += 1  # every contribution adds intensity = 1
+            summed_array[i, j] += row["intensity"] / n
 
     return unique_2th, unique_delta, summed_array
 
