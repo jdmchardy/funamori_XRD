@@ -1453,11 +1453,11 @@ if uploaded_file is not None:
                     )
 
                     # Step 3: Sample cake intensities at detector angular coordinates
-                    coords = np.stack([chi_pix, tth_pix], axis=-1)
+                    coords = np.stack([tth_pix, chi_pix], axis=-1)
                     det_image = interp(coords)
 
                     fig, ax = plt.subplots(figsize=(8, 6))
-                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal', vmin=0, vmax=np.percentile(det_image, 90))
+                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
                     fig.colorbar(im, ax=ax, label='Intensity')
                     ax.set_xlabel('Pixel X')
                     ax.set_ylabel('Pixel Y')
