@@ -1415,6 +1415,27 @@ if uploaded_file is not None:
                     ax.set_title("Summed Cake Intensity Map")
                     plt.colorbar(im, ax=ax, label="Intensity")
                     st.pyplot(fig)
+
+                    # Generate the raw detector image
+                    # convert two_th to radians (requirement of pyFAI)
+                    tth_rad = np.deg2rad(cake_two_thetas)
+
+                    det_shape = (ai.detector_shape[1], ai.detector_shape[0])  # (height, width)
+                    det_image = np.zeros(det_shape)
+                    
+                    for i, delta in enumerate(cake_deltas):
+                        for j, tth in enumerate(tth_deg):
+                            x, y = ai.angleToPixel(tth_rad[j], delta)
+                            x_int, y_int = int(round(x)), int(round(y))
+                            if 0 <= x_int < det_shape[1] and 0 <= y_int < det_shape[0]:
+                                det_image[y_int, x_int] += cake_intensity[i, j]
+
+                    fig, ax = plt.subplots(figsize=(8, 6))
+                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
+                    fig.colorbar(im, ax=ax, label='Intensity')
+                    ax.set_xlabel('Pixel X')
+                    ax.set_ylabel('Pixel Y')
+                    st.pyplot(fig)
                 
             #Make batch processing section
             if batch_upload:
