@@ -1422,11 +1422,13 @@ if uploaded_file is not None:
 
                     text = poni_file.read().decode("utf-8")
                     for line in text.splitlines():
+                        st.write(line)
                         if line.startswith("Detector_config:"):
                             # Extract JSON part
                             json_str = line.split(":", 1)[1].strip()
                             config = json.loads(json_str)
                             height, width = config["max_shape"]
+                            st.write(height,width)
 
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
