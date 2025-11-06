@@ -1410,7 +1410,7 @@ if uploaded_file is not None:
                                            cake_deltas.min(), cake_deltas.max()],
                                    aspect='auto', origin='lower', 
                                   vmin=0, vmax=np.percentile(cake_intensity, 95),
-                                  cmap='plasma')
+                                  cmap='Greys')
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
@@ -1458,7 +1458,7 @@ if uploaded_file is not None:
                     det_image = interp(coords)
 
                     fig, ax = plt.subplots(figsize=(8, 6))
-                    im = ax.imshow(det_image, origin='lower', cmap='plasma', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
+                    im = ax.imshow(det_image, origin='lower', cmap='Greys', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
                     fig.colorbar(im, ax=ax, label='Intensity')
                     ax.set_xlabel('Pixel X')
                     ax.set_ylabel('Pixel Y')
