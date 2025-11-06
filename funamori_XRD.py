@@ -1419,6 +1419,7 @@ if uploaded_file is not None:
                     # Generate the raw detector image
                     # convert two_th to radians (requirement of pyFAI)
                     tth_rad = np.deg2rad(cake_two_thetas)
+                    delta_rad = np.deg2rad(cake_deltas)
 
                     poni_file.seek(0)
                     text = poni_file.read().decode("utf-8")
@@ -1439,12 +1440,14 @@ if uploaded_file is not None:
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
                     
-                    for i, delta in enumerate(cake_deltas):
-                        for j, tth in enumerate(cake_two_thetas):
-                            x, y = ai.angleToPixel(tth_rad[j], delta)
-                            x_int, y_int = int(round(x)), int(round(y))
-                            if 0 <= x_int < det_shape[1] and 0 <= y_int < det_shape[0]:
-                                det_image[y_int, x_int] += cake_intensity[i, j]
+                    for i, delta in enumerate(delta_rad):
+                        for j, tth in enumerate(tth_rad):
+                            x_cart, y_cart, _ = ai.angles_to_cartesian(tth, delta)
+                            x_pix = int(round(x_cart / ai.pixel1 + ai.poni1))
+                            y_pix = int(round(y_cart / ai.pixel2 + ai.poni2))
+                            
+                            if 0 <= x_pix < width and 0 <= y_pix < height:
+                                det_image[y_pix, x_pix] += cake_intensity[i, j]
 
                     fig, ax = plt.subplots(figsize=(8, 6))
                     im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
