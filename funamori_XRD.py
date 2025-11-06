@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import io
+import pyFAI
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from scipy.signal import fftconvolve
