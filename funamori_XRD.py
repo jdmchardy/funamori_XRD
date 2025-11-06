@@ -1418,8 +1418,8 @@ if uploaded_file is not None:
 
                     # Generate the raw detector image
                     # convert two_th to radians (requirement of pyFAI)
-                    tth_rad = np.deg2rad(cake_two_thetas)
-                    delta_rad = np.deg2rad(cake_deltas)
+                    delta_axis_rad = np.deg2rad(cake_deltas)
+                    tth_axis_rad = np.deg2rad(cake_two_thetas)
 
                     poni_file.seek(0)
                     text = poni_file.read().decode("utf-8")
@@ -1438,17 +1438,22 @@ if uploaded_file is not None:
                                     st.write("Detector size:", height, width)
 
                     det_shape = (height, width)  # (height, width)
-                    det_image = np.zeros(det_shape)
                     
-                    for i, delta in enumerate(delta_rad):
-                        for j, tth in enumerate(tth_rad):
-                            z_m, y_m, x_m = ai.calc_pos_zyx(tth, delta)
-                            st.write(np.shape(x_m))
-                            st.write(x_m)
-                            #x_pix = int(np.rint(x_m / ai.get_pixel1() + ai.get_poni1()))
-                            #y_pix = int(np.rint(y_m / ai.get_pixel2() + ai.get_poni2()))
-                            #if 0 <= x_pix < width and 0 <= y_pix < height:
-                            #    det_image[y_pix, x_pix] += cake_intensity[i, j]
+                    # Step 1: Compute angular field for each detector pixel
+                    tth_pix = ai.twoThetaArray((height, width))  # radians
+                    chi_pix = ai.chiArray((height, width))       # radians
+                    
+                    # Step 2: Build interpolator from cake space
+                    interp = RegularGridInterpolator(
+                        (delta_axis_rad, tth_axis_rad),
+                        cake_intensity,
+                        bounds_error=False,
+                        fill_value=0
+                    )
+
+                    # Step 3: Sample cake intensities at detector angular coordinates
+                    coords = np.stack([chi_pix, tth_pix], axis=-1)
+                    det_image = interp(coords)
 
                     #fig, ax = plt.subplots(figsize=(8, 6))
                     #im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
