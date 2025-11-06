@@ -707,7 +707,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
         elif "c" in name.lower():  # elastic constants
             min_val, max_val = 0, 1000
         elif name == "a_val" or name == "c_val":
-            min_val, max_val = 0.5 * val, 1.5 * val
+            min_val, max_val = 0.2 * val, 2 * val
         elif name == "chi":
             min_val, max_val = -90, 90
         else:
@@ -775,7 +775,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
         )
 
     # Run optimization
-    result = minimize(wrapped_cost_function, lm_params, method="least_squares")
+    result = minimize(wrapped_cost_function, lm_params, method="leastsq")
     #-------------------------------------------------
 
     return result
