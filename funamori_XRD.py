@@ -634,6 +634,32 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     
     return cake_dict
 
+def cake_dict_to_2Dcake(cake_dict):
+    """
+    Convert cake_dict → summed cake intensity array.
+
+    Returns:
+        unique_2th      (sorted array of 2θ values)
+        unique_delta    (sorted array of δ values)
+        summed_array    (2D array, shape = (n_2th, n_delta))
+    """
+    # Combine everything to determine grid
+    combined = pd.concat(cake_dict.values(), ignore_index=True)
+    unique_2th = np.sort(combined["2th"].unique())
+    unique_delta = np.sort(combined["delta (degrees)"].unique())
+
+    # Create summed intensity array
+    summed_array = np.zeros((len(unique_2th), len(unique_delta)), dtype=int)
+
+    # Fill summed cake
+    for df in cake_dict.values():
+        for _, row in df.iterrows():
+            i = np.searchsorted(unique_2th, row["2th"])
+            j = np.searchsorted(unique_delta, row["delta (degrees)"])
+            summed_array[i, j] += 1  # every contribution adds intensity = 1
+
+    return unique_2th, unique_delta, summed_array
+
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
@@ -1316,6 +1342,20 @@ if uploaded_file is not None:
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
+                    cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict)
+
+                    fig, ax = plt.subplots()
+                    im = ax.imshow(intensity.T,
+                                   extent=[cake_two_thetas.min(), cake_two_thetas.max(),
+                                           cake_deltas.min(), cake_deltas.max()],
+                                   aspect='auto', origin='lower')
+
+                    ax.set_xlabel("2θ (degrees)")
+                    ax.set_ylabel("δ (degrees)")
+                    ax.set_title("Summed Cake Intensity Map")
+                    plt.colorbar(im, ax=ax, label="Intensity")
+                
+                    st.pyplot(fig)
                 
             #Make batch processing section
             if batch_upload:
