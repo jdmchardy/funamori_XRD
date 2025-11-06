@@ -664,9 +664,11 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
 
     for df in cake_dict.values():
         total_I = df["intensity"].iloc[0]
-        if total_I == 0:
+        n_points = len(df)
+        if total_intensity == 0 or n_points == 0:
             continue
-        norm_intensity = df["intensity"] / total_I  # normalize per HKL
+        # Each row contributes equally to the total intensity
+        norm_intensity = df["intensity"] / n_points
         all_2th.extend(df["2th"])
         all_delta.extend(df["delta (degrees)"])
         all_intensity.extend(norm_intensity)
@@ -676,7 +678,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
     all_intensity = np.array(all_intensity)
 
     # --- Create regular grid ---
-    grid_2th = np.arange(all_2th.min(), all_2th.max(), step_2th)
+    grid_2th = np.arange(all_2th.min()-0.5, all_2th.max()+0.5, step_2th)
     grid_delta = np.arange(all_delta.min(), all_delta.max(), step_delta)
     n_2th = len(grid_2th)
     n_delta = len(grid_delta)
