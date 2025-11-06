@@ -1126,7 +1126,7 @@ if uploaded_file is not None:
         col1, col2, col3 = st.columns(3)
         with col1:
             st.subheader("Execute calculations")
-            if st.button("Compute Strains") and selected_hkls:
+            if st.button("Funamori Plots") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
@@ -1180,7 +1180,7 @@ if uploaded_file is not None:
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
             #Code for generating axial cake plots
-            if st.button("Plot axial cake") and selected_hkls:
+            if st.button("Cake Plots") and selected_hkls:
                 results_dict = {}  # Store results per HKL reflection
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 fig2, axs2 = plt.subplots(1, 1, figsize=(8, 5))
