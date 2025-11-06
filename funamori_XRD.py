@@ -634,31 +634,89 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     
     return cake_dict
 
-def cake_dict_to_2Dcake(cake_dict):
+def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, delta_step=5):
     """
-    Convert cake_dict → summed cake intensity array.
+    Rasterize cake_dict onto a regular 2D grid using bilinear weighting.
+    
+    Parameters
+    ----------
+    cake_dict : dict
+        HKL label -> DataFrame with '2th', 'delta (degrees)', and intensity column
+    step_2th : float
+        grid spacing in 2θ direction
+    n_delta : int
+        Number of pixels in δ direction
+    intensity_column : str
+        Name of the intensity column in the DF
 
-    Returns:
-        unique_2th      (sorted array of 2θ values)
-        unique_delta    (sorted array of δ values)
-        summed_array    (2D array, shape = (n_2th, n_delta))
+    Returns
+    -------
+    grid_2th : 1D array
+        Grid values for 2θ (length n_2th)
+    grid_delta : 1D array
+        Grid values for δ (length n_delta)
+    intensity_grid : 2D array
+        Rasterized intensity map (shape = n_2th x n_delta)
     """
-    # Combine everything to determine grid
-    combined = pd.concat(cake_dict.values(), ignore_index=True)
-    unique_2th = np.sort(combined["2th"].unique())
-    unique_delta = np.sort(combined["delta (degrees)"].unique())
 
-    # Create summed intensity array
-    summed_array = np.zeros((len(unique_2th), len(unique_delta)), dtype=int)
+    # --- Collect all data from all HKLs ---
+    all_2th = []
+    all_delta = []
+    all_intensity = []
 
     for df in cake_dict.values():
-        n = len(unique_delta)  # normalization factor
-        for _, row in df.iterrows():
-            i = np.searchsorted(unique_2th, row["2th"])
-            j = np.searchsorted(unique_delta, row["delta (degrees)"])
-            summed_array[i, j] += row["intensity"]
+        total_I = df[intensity_column].iloc[0]
+        if total_I == 0:
+            continue
+        norm_intensity = df["intensity"] / total_I  # normalize per HKL
+        all_2th.extend(df["2th"])
+        all_delta.extend(df["delta (degrees)"])
+        all_intensity.extend(norm_intensity)
 
-    return unique_2th, unique_delta, summed_array
+    all_2th = np.array(all_2th)
+    all_delta = np.array(all_delta)
+    all_intensity = np.array(all_intensity)
+
+    # --- Create regular grid ---
+    grid_2th = np.arange(all_2th.min(), all_2th.max(), step_2th)
+    grid_delta = np.arange(all_delta.min(), all_delta.max(), delta_step)
+    n_2th = len(grid_2th)
+    n_delta = len(grid_delta)
+
+    intensity_grid = np.zeros((n_2th, n_delta), dtype=float)
+
+    # --- Map each point to 4 nearest pixels (bilinear) ---
+    for x, y, I in zip(all_2th, all_delta, all_intensity):
+        # Floating grid indices
+        i_f = (x - grid_2th[0]) / step_2th
+        j_f = (y - grid_delta[0]) / step_delta
+
+        i0 = int(np.floor(i_f))
+        j0 = int(np.floor(j_f))
+        i1 = i0 + 1
+        j1 = j0 + 1
+
+        # Fractions
+        fi = i_f - i0
+        fj = j_f - j0
+
+        # Weights
+        w00 = (1 - fi) * (1 - fj)
+        w10 = fi * (1 - fj)
+        w01 = (1 - fi) * fj
+        w11 = fi * fj
+
+        # Add contributions if indices are in bounds
+        if 0 <= i0 < n_2th and 0 <= j0 < n_delta:
+            intensity_grid[i0, j0] += I * w00
+        if 0 <= i1 < n_2th and 0 <= j0 < n_delta:
+            intensity_grid[i1, j0] += I * w10
+        if 0 <= i0 < n_2th and 0 <= j1 < n_delta:
+            intensity_grid[i0, j1] += I * w01
+        if 0 <= i1 < n_2th and 0 <= j1 < n_delta:
+            intensity_grid[i1, j1] += I * w11
+
+    return grid_2th, grid_delta, intensity_grid
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
@@ -1375,14 +1433,12 @@ if uploaded_file is not None:
                 for idx in range(len(results_blocks)):
                     x_col = f"2th_iter{idx+1}"
                     y_col = f"Intensity_iter{idx+1}"
-                    
                     x = results_df[x_col]
                     y = results_df[y_col]
-                    
                     ax.plot(x, y + y_offset, color="black", lw=1, label=f"Iteration {idx+1}")
                     #Increase the offset
                     y_offset = y_offset+offset_step
-                
+                    
                 ax.set_xlabel("2θ (degrees)")
                 ax.set_ylabel("Intensity (a.u.)")
                 ax.set_title("Batch XRD")
