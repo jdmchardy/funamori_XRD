@@ -1405,10 +1405,15 @@ if uploaded_file is not None:
                     #    intensities_refined = intensities
     
                     #Update the intensity widgets and state values
+                    
                     for key in st.session_state.intensities:
                         if key in result.params:
                             refined_val = result.params[key].value
                             st.session_state.intensities[key] = refined_val
+                    
+                    intensities = []
+                    for i in selected_indices:   
+                        intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
                     #Ensure the parameters are updated for the plot
                     lattice_params = {
