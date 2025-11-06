@@ -652,7 +652,7 @@ def cake_dict_to_2Dcake(cake_dict):
     summed_array = np.zeros((len(unique_2th), len(unique_delta)), dtype=int)
 
     for df in cake_dict.values():
-        n = len(df)  # normalization factor
+        n = len(unique_delta)  # normalization factor
         for _, row in df.iterrows():
             i = np.searchsorted(unique_2th, row["2th"])
             j = np.searchsorted(unique_delta, row["delta (degrees)"])
