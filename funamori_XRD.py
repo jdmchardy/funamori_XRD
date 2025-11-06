@@ -1420,14 +1420,13 @@ if uploaded_file is not None:
                     # convert two_th to radians (requirement of pyFAI)
                     tth_rad = np.deg2rad(cake_two_thetas)
 
-                    try:
-                        height, width = ai.getMaxShape()
-                    except:
-                        st.write("getMaxshape didnt work")
-                    try:
-                        height, width = ai._poni.max_shape
-                    except:
-                        st.write("._poni didnt work")
+                    poni_file.seek(0)  # ensure start
+                    lines = file_like.read().decode("utf-8").splitlines()
+                    for line in lines:
+                        if line.startswith("max_shape"):
+                            # Line format: max_shape = (nrows, ncols)
+                            shape_str = line.split("=")[1].strip()
+                            height, width = eval(shape_str)
 
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
