@@ -1290,6 +1290,10 @@ if uploaded_file is not None:
                     file_name="Simulated_XRD.xy",
                     mime="text/plain"
                 )
+
+            if poni_file is not None:
+                if st.button("Generate 2D-XRD") and selected_hkls:
+                    pass
                 
             #Make batch processing section
             if batch_upload:
