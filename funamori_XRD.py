@@ -1446,7 +1446,7 @@ if uploaded_file is not None:
                     
                     # Step 2: Build interpolator from cake space
                     interp = RegularGridInterpolator(
-                        (delta_axis_rad, tth_axis_rad),
+                        (tth_axis_rad, delta_axis_rad),
                         cake_intensity,
                         bounds_error=False,
                         fill_value=0
