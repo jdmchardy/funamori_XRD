@@ -1397,8 +1397,8 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    st.write(dir(ai))
-                    st.write(help(ai))
+                    #st.write(dir(ai))
+                    #st.write(help(ai))
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
@@ -1444,10 +1444,9 @@ if uploaded_file is not None:
                     
                     for i, delta in enumerate(delta_rad):
                         for j, tth in enumerate(tth_rad):
-                            x_cart, y_cart, _ = ai.angles_to_cartesian(tth, delta)
-                            x_pix = int(round(x_cart / ai.pixel1 + ai.poni1))
-                            y_pix = int(round(y_cart / ai.pixel2 + ai.poni2))
-                            
+                            z_m, y_m, x_m = ai.calc_pos_zyx(tth, delta)
+                            x_pix = int(round(x_m / ai.get_pixel1() + ai.get_poni1()))
+                            y_pix = int(round(y_m / ai.get_pixel2() + ai.get_poni2()))
                             if 0 <= x_pix < width and 0 <= y_pix < height:
                                 det_image[y_pix, x_pix] += cake_intensity[i, j]
 
