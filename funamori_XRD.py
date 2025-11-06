@@ -939,10 +939,21 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 st.title("X-Forge (XRD stress simulator)")
 
-col1, col2, col3, col4, col5, col6 = st.columns([2,2,3,1,1,1])
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.subheader("Upload Files")
+    uploaded_file = st.file_uploader("Elastic and hkl csv", type=["csv"])
+
+if uploaded_file is not None:
+    with col2:
+        poni_file = st.file_uploader("Poni", type=["poni"])
+    with col3:
+        batch_upload = st.file_uploader("Batch XRD file", type=["csv"])
+    with col4:
+        twoD_XRD = st.file_uploader("2D XRD tiff", type=["tiff"])
+
+col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([1,1,2,1,1,1,1,1,1])
 with col2:
     st.subheader("Reflections/Intensities")
 with col3:
@@ -953,16 +964,6 @@ with col5:
     st.subheader("Stress")
 with col6:
     st.subheader("Computation")
-
-col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([1,1,2,1,1,1,1,1,1])
-with col1:
-    uploaded_file = st.file_uploader("Elastic and hkl csv", type=["csv"])
-    if uploaded_file is not None:
-        poni_file = st.file_uploader("Poni", type=["poni"])
-with col2:
-    if uploaded_file is not None:
-        batch_upload = st.file_uploader("Batch XRD file", type=["csv"])
-        twoD_XRD = st.file_uploader("2D XRD tiff", type=["tiff"])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
@@ -1123,7 +1124,7 @@ if uploaded_file is not None:
         phi_steps = int(np.sqrt(total_points) / 2)
         results_dict = {}  # Store results per HKL reflection
 
-        col1, col2, col3 = st.columns(3)
+        #col1, col2, col3 = st.columns(3)
         with col1:
             st.subheader("Execute calculations")
             if st.button("Funamori Plots") and selected_hkls:
@@ -1248,7 +1249,8 @@ if uploaded_file is not None:
                         file_name="cakes_results.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-        with col2:
+        col1, col2 = st.columns(2)
+        with col1:
             st.subheader("Generate XRD patterns")
             if st.button("Generate 1D-XRD") and selected_hkls:
                 phi_values = np.radians(np.arange(0, 360, 5))
@@ -1346,7 +1348,7 @@ if uploaded_file is not None:
                 #st.write("Results", results_df)
 
     ### XRD Refinement ----------------------------------------------------------------
-    with col3:
+    with col2:
         st.subheader("Overlay/refine with XRD")
         uploaded_XRD = st.file_uploader("Upload .xy experimental XRD file", type=[".xy"])
 
@@ -1359,7 +1361,7 @@ if uploaded_file is not None:
         #Normalise exp data
         y_exp = y_exp/ np.max(y_exp)*100
 
-        with col3:
+        with col2:
             if st.button("Overlay XRD"):
                 phi_values = np.radians(np.arange(0, 360, 10))
                 psi_values = 0
