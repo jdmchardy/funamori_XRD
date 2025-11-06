@@ -1351,7 +1351,8 @@ if uploaded_file is not None:
                     im = ax.imshow(cake_intensity.T,
                                    extent=[cake_two_thetas.min(), cake_two_thetas.max(),
                                            cake_deltas.min(), cake_deltas.max()],
-                                   aspect='auto', origin='lower')
+                                   aspect='auto', origin='lower', 
+                                  vmin=0, vmax=np.percentile(cake_intensity, 95))
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
