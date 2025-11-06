@@ -1409,6 +1409,25 @@ if uploaded_file is not None:
                         if key in result.params:
                             refined_val = result.params[key].value
                             st.session_state.intensities[key] = refined_val
+
+                    #Ensure the parameters are updated for the plot
+                    lattice_params = {
+                        "a_val" : st.session_state.params.get("a_val"),
+                        "b_val" : st.session_state.params.get("b_val"),
+                        "c_val" : st.session_state.params.get("c_val"),
+                        "alpha" : st.session_state.params.get("alpha"),
+                        "beta" : st.session_state.params.get("beta"),
+                        "gamma" : st.session_state.params.get("gamma"),
+                    }
+                    wavelength = st.session_state.params.get("wavelength")
+                    chi = st.session_state.params.get("chi")
+                    sigma_11 = st.session_state.params.get("sigma_11")
+                    sigma_22 = st.session_state.params.get("sigma_22")
+                    sigma_33 = st.session_state.params.get("sigma_33")
+                    c_keys = [key for key in st.session_state.params.keys() if key.startswith('c') and key not in ["c_val", "chi"]]
+                    cijs = {}
+                    for key in c_keys:
+                        cijs[key] = st.session_state.params.get(key)
                             
                     st.markdown("### Fit Report")
                     report_str = fit_report(result)
