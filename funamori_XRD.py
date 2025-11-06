@@ -1455,12 +1455,12 @@ if uploaded_file is not None:
                     coords = np.stack([chi_pix, tth_pix], axis=-1)
                     det_image = interp(coords)
 
-                    #fig, ax = plt.subplots(figsize=(8, 6))
-                    #im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
-                    #fig.colorbar(im, ax=ax, label='Intensity')
-                    #ax.set_xlabel('Pixel X')
-                    #ax.set_ylabel('Pixel Y')
-                    #st.pyplot(fig)
+                    fig, ax = plt.subplots(figsize=(8, 6))
+                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
+                    fig.colorbar(im, ax=ax, label='Intensity')
+                    ax.set_xlabel('Pixel X')
+                    ax.set_ylabel('Pixel Y')
+                    st.pyplot(fig)
                 
             #Make batch processing section
             if batch_upload:
