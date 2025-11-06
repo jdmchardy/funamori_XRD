@@ -656,7 +656,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
     intensity_grid : 2D array
         Rasterized intensity map (shape = n_2th x n_delta)
     """
-
+    
     # --- Collect all data from all HKLs ---
     all_2th = []
     all_delta = []
@@ -1408,7 +1408,7 @@ if uploaded_file is not None:
                                    extent=[cake_two_thetas.min(), cake_two_thetas.max(),
                                            cake_deltas.min(), cake_deltas.max()],
                                    aspect='auto', origin='lower', 
-                                  vmin=0, vmax=np.percentile(cake_intensity, 99))
+                                  vmin=0, vmax=np.percentile(cake_intensity, 95))
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
