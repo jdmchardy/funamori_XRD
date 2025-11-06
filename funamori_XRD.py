@@ -1420,16 +1420,19 @@ if uploaded_file is not None:
                     # convert two_th to radians (requirement of pyFAI)
                     tth_rad = np.deg2rad(cake_two_thetas)
 
+                    poni_file.seek(0)
                     text = poni_file.read().decode("utf-8")
-                    st.write(text)
+                    # Parse line by line
                     for line in text.splitlines():
-                        st.write(line)
-                        if line.startswith("Detector_config:"):
-                            # Extract JSON part
-                            json_str = line.split(":", 1)[1].strip()
-                            config = json.loads(json_str)
-                            height, width = config["max_shape"]
-                            st.write(height,width)
+                        st.write(line)  # optional: debug each line
+                        if "Detector_config" in line:
+                            # Extract JSON by finding the first '{'
+                            idx = line.find("{")
+                            if idx != -1:
+                                json_str = line[idx:]  # take everything from '{' to end
+                                config = json.loads(json_str)
+                                height, width = config["max_shape"]
+                                st.write("Detector size:", height, width)
 
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
