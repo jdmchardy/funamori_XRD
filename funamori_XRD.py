@@ -775,7 +775,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
         )
 
     # Run optimization
-    result = minimize(wrapped_cost_function, lm_params, method="ampgo")
+    result = minimize(wrapped_cost_function, lm_params, method="leastsq")
     #-------------------------------------------------
 
     return result
