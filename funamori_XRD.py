@@ -1080,7 +1080,7 @@ if uploaded_file is not None:
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
         with col6:
-            total_points = st.number_input("Total number of points (φ × ψ)", value=20000, min_value=10, step=5000)
+            total_points = st.number_input("Total number of points (φ × ψ)", value=5000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
             Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
