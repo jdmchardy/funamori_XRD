@@ -243,10 +243,10 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
             if chi == 0: 
                 # return only one psi_value assuming compression axis aligned with X-rays
                 psi_values = np.asarray([np.pi/2 - theta0])
-                deltas = np.arange(-180,180,5)
+                deltas = np.arange(-180,180+5,5)
             else:
                 #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
-                deltas = np.arange(-180,180,5)
+                deltas = np.arange(-180,180+5,5)
                 deltas_rad = np.radians(deltas)
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
@@ -680,7 +680,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
 
     # --- Create regular grid ---
     grid_2th = np.arange(all_2th.min()-0.5, all_2th.max()+0.5, step_2th)
-    grid_delta = np.arange(all_delta.min(), all_delta.max()+step_delta, step_delta)
+    grid_delta = np.arange(all_delta.min(), all_delta.max(), step_delta)
     n_2th = len(grid_2th)
     n_delta = len(grid_delta)
 
