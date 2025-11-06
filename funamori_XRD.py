@@ -1396,7 +1396,7 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    #st.write(ai)
+                    st.write(ai)
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
@@ -1420,7 +1420,10 @@ if uploaded_file is not None:
                     # convert two_th to radians (requirement of pyFAI)
                     tth_rad = np.deg2rad(cake_two_thetas)
 
-                    det_shape = (ai.detector_shape[1], ai.detector_shape[0])  # (height, width)
+                    if hasattr(ai, 'max_shape'):
+                        height, width = ai.max_shape
+
+                    det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
                     
                     for i, delta in enumerate(cake_deltas):
