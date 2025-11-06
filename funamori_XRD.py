@@ -634,7 +634,7 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     
     return cake_dict
 
-def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, delta_step=5):
+def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
     """
     Rasterize cake_dict onto a regular 2D grid using bilinear weighting.
     
@@ -677,7 +677,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, delta_step=5):
 
     # --- Create regular grid ---
     grid_2th = np.arange(all_2th.min(), all_2th.max(), step_2th)
-    grid_delta = np.arange(all_delta.min(), all_delta.max(), delta_step)
+    grid_delta = np.arange(all_delta.min(), all_delta.max(), step_delta)
     n_2th = len(grid_2th)
     n_delta = len(grid_delta)
 
