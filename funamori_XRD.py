@@ -1231,7 +1231,7 @@ if uploaded_file is not None:
                     )
 
             st.subheader("Generate XRD patterns")
-            if st.button("Generate XRD") and selected_hkls:
+            if st.button("Generate 1D-XRD") and selected_hkls:
                 phi_values = np.radians(np.arange(0, 360, 5))
                 psi_values = 0
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
