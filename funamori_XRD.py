@@ -1440,7 +1440,7 @@ if uploaded_file is not None:
                     det_image = np.zeros(det_shape)
                     
                     for i, delta in enumerate(cake_deltas):
-                        for j, tth in enumerate(tth_deg):
+                        for j, tth in enumerate(cake_two_thetas):
                             x, y = ai.angleToPixel(tth_rad[j], delta)
                             x_int, y_int = int(round(x)), int(round(y))
                             if 0 <= x_int < det_shape[1] and 0 <= y_int < det_shape[0]:
