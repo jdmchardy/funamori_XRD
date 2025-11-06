@@ -1444,6 +1444,8 @@ if uploaded_file is not None:
                     
                     for i, delta in enumerate(delta_rad):
                         for j, tth in enumerate(tth_rad):
+                            tth_arr = np.array([tth])
+                            delta_arr = np.array([delta])
                             z_m_arr, y_m_arr, x_m_arr = ai.calc_pos_zyx(tth_arr, delta_arr)
                             x_m = x_m_arr[0]
                             y_m = y_m_arr[0]
