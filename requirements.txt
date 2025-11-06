@@ -5,6 +5,7 @@ pandas
 xlsxwriter
 scipy
 lmfit
-corner
+#corner
 emcee>=3.0
 mpld3
+pyfai
