@@ -1346,7 +1346,7 @@ if uploaded_file is not None:
                     cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict)
 
                     fig, ax = plt.subplots()
-                    im = ax.imshow(intensity.T,
+                    im = ax.imshow(cake_intensity.T,
                                    extent=[cake_two_thetas.min(), cake_two_thetas.max(),
                                            cake_deltas.min(), cake_deltas.max()],
                                    aspect='auto', origin='lower')
