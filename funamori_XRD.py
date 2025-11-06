@@ -1213,7 +1213,7 @@ if uploaded_file is not None:
                     )
             #Code for generating axial cake plots
             if st.button("Cake Plots") and selected_hkls:
-                results_dict = compute_results_dict(selected_hkls, intensities, symmetry, lattice_params, 
+                results_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
 
                 
