@@ -956,13 +956,13 @@ with col6:
 
 col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([1,1,2,1,1,1,1,1,1])
 with col1:
-    uploaded_file = st.file_uploader("Upload elastic params and hkls", type=["csv"])
+    uploaded_file = st.file_uploader("Elastic and hkl csv", type=["csv"])
     if uploaded_file is not None:
-        poni_file = st.file_uploader("Upload poni file", type=["poni"])
+        poni_file = st.file_uploader("Poni", type=["poni"])
 with col2:
     if uploaded_file is not None:
-        batch_upload = st.file_uploader("Upload batch XRD file", type=["csv"])
-        twoD_XRD = st.file_uploader("Upload 2D XRD file", type=["tiff"])
+        batch_upload = st.file_uploader("Batch XRD file", type=["csv"])
+        twoD_XRD = st.file_uploader("2D XRD tiff", type=["tiff"])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
