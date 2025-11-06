@@ -1360,7 +1360,6 @@ if uploaded_file is not None:
         y_exp = y_exp/ np.max(y_exp)*100
 
         with col3:
-            st.subheader("Overlay XRD")
             if st.button("Overlay XRD"):
                 phi_values = np.radians(np.arange(0, 360, 10))
                 psi_values = 0
@@ -1379,8 +1378,6 @@ if uploaded_file is not None:
                 interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
                 y_sim_common = interp_sim(x_exp_common)
                 plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common)
-
-            st.subheader("Refine XRD")
         
             #Construct the default parameter dictionary for refinement
             stress = {"sigma_11": sigma_11,
