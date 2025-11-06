@@ -644,10 +644,8 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, delta_step=5):
         HKL label -> DataFrame with '2th', 'delta (degrees)', and intensity column
     step_2th : float
         grid spacing in 2θ direction
-    n_delta : int
-        Number of pixels in δ direction
-    intensity_column : str
-        Name of the intensity column in the DF
+    step_delta : float
+        grid spacing in δ direction
 
     Returns
     -------
@@ -665,7 +663,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, delta_step=5):
     all_intensity = []
 
     for df in cake_dict.values():
-        total_I = df[intensity_column].iloc[0]
+        total_I = df["intensity"].iloc[0]
         if total_I == 0:
             continue
         norm_intensity = df["intensity"] / total_I  # normalize per HKL
