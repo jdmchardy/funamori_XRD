@@ -939,7 +939,7 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 st.title("X-Forge (XRD stress simulator)")
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,3])
+col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,2])
 
 with col1:
     st.subheader("Upload Files")
@@ -954,7 +954,7 @@ with col5:
 with col6:
     st.subheader("Computation")
 
-col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,3])
+col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,2])
 with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
     if uploaded_file is not None:
