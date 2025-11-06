@@ -1342,8 +1342,10 @@ if uploaded_file is not None:
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
-                    st.write(cake_dict)
+                    #st.write(cake_dict)
                     cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict)
+
+                    st.write(cake_intensity)
 
                     fig, ax = plt.subplots()
                     im = ax.imshow(cake_intensity.T,
@@ -1355,7 +1357,6 @@ if uploaded_file is not None:
                     ax.set_ylabel("δ (degrees)")
                     ax.set_title("Summed Cake Intensity Map")
                     plt.colorbar(im, ax=ax, label="Intensity")
-                
                     st.pyplot(fig)
                 
             #Make batch processing section
