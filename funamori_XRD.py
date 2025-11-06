@@ -613,7 +613,7 @@ def batch_XRD(batch_upload):
 
     return parameters_df, results_df, results_blocks
 
-def cake_data():
+def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi):
     """
     Computes the azimuth vs 2th strain data for each hkl and combines into a dictionary with entries for each hkl
 
@@ -622,6 +622,16 @@ def cake_data():
     keys (hkl_labels) : values (df of information for this hkl)
     """
     cake_dict = {}
+    
+    for hkl, intensity in zip(selected_hkls, intensities):
+        phi_values = np.radians(np.arange(0, 360, 5))
+        psi_values = 0  # let compute_strain calculate psi for each HKL
+        hkl_label, df, psi_list, strain_33_list = compute_strain(
+            hkl, intensity, symmetry, lattice_params, wavelength, cijs,
+            sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values
+        )
+        cake_dict[hkl_label] = df
+    
     return cake_dict
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
@@ -1203,32 +1213,24 @@ if uploaded_file is not None:
                     )
             #Code for generating axial cake plots
             if st.button("Cake Plots") and selected_hkls:
+                results_dict = compute_results_dict(selected_hkls, intensities, symmetry, lattice_params, 
+                                                    wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
+
+                
                 results_dict = {}  # Store results per HKL reflection
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 fig2, axs2 = plt.subplots(1, 1, figsize=(8, 5))
                 if len(selected_hkls) == 1:
                     axs = [axs]
-                for ax, hkl, intensity in zip(axs, selected_hkls, intensities):
-                    phi_values = np.radians(np.arange(0, 360, 5))
-                    #Pass psi_values of zero so that compute_strains calculates it for each respective hkl
-                    psi_values = 0
-                    #Get the azimuth and strain values
-                    hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
+                for ax, hkl_label in zip(axs, results_dict.keys()):
+                    df = results_dict[hkl_label]
                     delta_list = df["delta (degrees)"]
+                    strain_33_list = df["strain_33"]
                     scatter = ax.scatter(delta_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
-                    #Add the results to the dictionary
-                    results_dict[hkl_label] = df
 
                     #Plot the mean strain curve
                     unique_delta = np.unique(delta_list)
-                    mean_strain_list = []
-                    for delta in np.unique(delta_list):
-                        #Obtain all the strains at this particular psi
-                        mask = df["delta (degrees)"] == delta
-                        strains = strain_33_list[mask]
-                        mean_strain = df["Mean strain"][mask].iloc[0]
-                        #Append to list
-                        mean_strain_list.append(mean_strain)
+                    mean_strain_list = [df[df["delta (degrees)"]==d]["Mean strain"].iloc[0] for d in unique_delta]
                     ax.plot(unique_delta, mean_strain_list, color="blue", lw=0.8, label="mean strain")
                     ax.set_xlabel("azimuth (degrees)")
                     ax.set_ylabel("ε′₃₃")
@@ -1236,15 +1238,15 @@ if uploaded_file is not None:
                     plt.tight_layout()
                     ax.legend()
 
-                    #Add data to cake plot
-                    x = df["2th"]
-                    y = df["delta (degrees)"]
-                    axs2.scatter(x,y, color="black", s=0.2, alpha=0.1)
-                    axs2.set_xlabel("2th")
-                    axs2.set_ylabel("azimuth (degrees)")
-                    axs2.set_title(f"cake plot")
-                    axs2.set_ylim(-180,180)
-                    plt.tight_layout()
+                # Cake plot
+                for df in results_dict.values():
+                    axs2.scatter(df["2th"], df["delta (degrees)"], color="black", s=0.2, alpha=0.1)
+                axs2.set_xlabel("2th")
+                axs2.set_ylabel("azimuth (degrees)")
+                axs2.set_title("Cake plot")
+                axs2.set_ylim(-180, 180)
+            
+                plt.tight_layout()
                 st.pyplot(fig)
                 st.pyplot(fig2)
 
