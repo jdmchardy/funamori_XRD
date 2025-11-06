@@ -665,7 +665,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
     for df in cake_dict.values():
         total_I = df["intensity"].iloc[0]
         n_points = len(df)
-        if total_intensity == 0 or n_points == 0:
+        if total_I == 0 or n_points == 0:
             continue
         # Each row contributes equally to the total intensity
         norm_intensity = df["intensity"] / n_points
