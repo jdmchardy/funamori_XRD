@@ -703,11 +703,11 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     lm_params = Parameters()
     for name, val in params.items():
         if name == "t":
-            min_val, max_val = -15, 15
+            min_val, max_val = -10, 10
         elif "c" in name.lower():  # elastic constants
             min_val, max_val = 0, 1000
         elif name == "a_val" or name == "c_val":
-            min_val, max_val = 0.2 * val, 2 * val
+            min_val, max_val = 0.75 * val, 1.25 * val
         elif name == "chi":
             min_val, max_val = -90, 90
         else:
