@@ -939,22 +939,22 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 st.title("X-Forge (XRD stress simulator)")
 
-col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,2,2,2])
+col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,4])
 
 with col1:
     st.subheader("Upload Files")
 with col2:
-    st.subheader("Reflections and Intensities")
+    st.subheader("Reflections/Intensities")
 with col3:
     st.subheader("Material Constants")
 with col4:
-    st.subheader("Elastic Constants")
+    st.subheader("Elastic Consts")
 with col5:
-    st.subheader("Stress Components")
+    st.subheader("Stress")
 with col6:
-    st.subheader("Computation Settings")
+    st.subheader("Computation")
 
-col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,2,2,2])
+col1, col2, col3, col4, col5, col6, col7 = st.columns([2,2,1,1,1,1,4])
 with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
     if uploaded_file is not None:
@@ -1072,9 +1072,9 @@ if uploaded_file is not None:
 
         with col3:
             symmetry = st.text_input("Symmetry", value=metadata['symmetry'])
-            st.session_state.params["a_val"] = st.number_input("Lattice parameter a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
-            st.session_state.params["b_val"] = st.number_input("Lattice parameter b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
-            st.session_state.params["c_val"] = st.number_input("Lattice parameter c (Å)", value=st.session_state.params["c_val"], step=0.01, format="%.4f")
+            st.session_state.params["a_val"] = st.number_input("Lattice a (Å)", value=st.session_state.params["a_val"], step=0.01, format="%.4f")
+            st.session_state.params["b_val"] = st.number_input("Lattice b (Å)", value=st.session_state.params["b_val"], step=0.01, format="%.4f")
+            st.session_state.params["c_val"] = st.number_input("Lattice c (Å)", value=st.session_state.params["c_val"], step=0.01, format="%.4f")
             st.session_state.params["alpha"] = st.number_input("alpha (deg)", value=st.session_state.params["alpha"], step=0.1, format="%.3f")
             st.session_state.params["beta"] = st.number_input("beta (deg)", value=st.session_state.params["beta"], step=0.1, format="%.3f")
             st.session_state.params["gamma"] = st.number_input("gamma (deg)", value=st.session_state.params["gamma"], step=0.1, format="%.3f")
@@ -1094,9 +1094,9 @@ if uploaded_file is not None:
             st.session_state.params["sigma_33"] = st.number_input("σ₃₃", value=st.session_state.params["sigma_33"], step=0.1, format="%.3f")
             st.markdown("t: {}".format(round(st.session_state.params["sigma_33"] - st.session_state.params["sigma_11"],3)))
         with col6:
-            total_points = st.number_input("Total number of points (φ × ψ)", value=5000, min_value=10, step=5000)
+            total_points = st.number_input("Total points (φ × ψ)", value=5000, min_value=10, step=5000)
             Gaussian_FWHM = st.number_input("Gaussian FWHM", value=0.05, min_value=0.005, step=0.005, format="%.3f")
-            Funamori_broadening = st.checkbox("Include broadening (in XRD pattern)", value=True)
+            Funamori_broadening = st.checkbox("Include broadening", value=True)
             #selected_psi = st.number_input("Psi slice position (deg)", value=54.7356, min_value=0.0, step=5.0, format="%.4f")
 
         lattice_params = {
