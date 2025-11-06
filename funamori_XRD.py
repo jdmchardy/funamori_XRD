@@ -1444,7 +1444,9 @@ if uploaded_file is not None:
                     
                     for i, delta in enumerate(delta_rad):
                         for j, tth in enumerate(tth_rad):
-                            z_m, y_m, x_m = ai.calc_pos_zyx(tth, delta)  # scalars
+                            z_m_arr, y_m_arr, x_m_arr = ai.calc_pos_zyx(tth_arr, delta_arr)
+                            x_m = x_m_arr[0]
+                            y_m = y_m_arr[0]
                             x_pix = int(np.rint(x_m / ai.get_pixel1() + ai.get_poni1()))
                             y_pix = int(np.rint(y_m / ai.get_pixel2() + ai.get_poni2()))
                             if 0 <= x_pix < width and 0 <= y_pix < height:
