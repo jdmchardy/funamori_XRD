@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import io
 import pyFAI
-st.write(pyFAI.__version__)
+import importlib.metadata
+version = importlib.metadata.version("pyFAI")
+st.write(version)
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from scipy.signal import fftconvolve
