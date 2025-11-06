@@ -816,7 +816,7 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
     twoth_sim = XRD_df["2th"]
     intensity_sim = XRD_df["Total Intensity"]
 
-    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=0)
     y_sim_common = interp_sim(x_exp_common)
 
     residuals = np.asarray(y_exp_common - y_sim_common)
