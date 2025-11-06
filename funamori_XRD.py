@@ -1421,7 +1421,7 @@ if uploaded_file is not None:
                     tth_rad = np.deg2rad(cake_two_thetas)
 
                     poni_file.seek(0)  # ensure start
-                    lines = file_like.read().decode("utf-8").splitlines()
+                    lines = poni_file.read().decode("utf-8").splitlines()
                     for line in lines:
                         if line.startswith("max_shape"):
                             # Line format: max_shape = (nrows, ncols)
