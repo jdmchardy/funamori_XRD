@@ -1425,16 +1425,16 @@ if uploaded_file is not None:
                     # Parse line by line
                     for line in text.splitlines():
                         if "Detector_config" in line:
-                        # Find the part after "max_shape"
-                        idx = line.find("max_shape")
-                        if idx != -1:
-                            # Example: max_shape: [2048, 2048]
-                            start = line.find("[", idx)
-                            end = line.find("]", idx)
-                            if start != -1 and end != -1:
-                                shape_str = line[start+1:end]  # '2048, 2048'
-                                height, width = map(int, shape_str.split(","))
-                                st.write("Detector size:", height, width)
+                            # Find the part after "max_shape"
+                            idx = line.find("max_shape")
+                            if idx != -1:
+                                # Example: max_shape: [2048, 2048]
+                                start = line.find("[", idx)
+                                end = line.find("]", idx)
+                                if start != -1 and end != -1:
+                                    shape_str = line[start+1:end]  # '2048, 2048'
+                                    height, width = map(int, shape_str.split(","))
+                                    st.write("Detector size:", height, width)
 
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
