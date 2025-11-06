@@ -1457,7 +1457,7 @@ if uploaded_file is not None:
                     det_image = interp(coords)
 
                     fig, ax = plt.subplots(figsize=(8, 6))
-                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
+                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal', vmin=0, vmax=np.percentile(det_image, 90))
                     fig.colorbar(im, ax=ax, label='Intensity')
                     ax.set_xlabel('Pixel X')
                     ax.set_ylabel('Pixel Y')
