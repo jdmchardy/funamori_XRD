@@ -35,9 +35,15 @@ p, span, div {
     font-size: 12px !important;
 }
 
-/* Optional: make headers smaller too */
+/* Make headers smaller too */
 h1, h2, h3, h4, h5 {
     font-size: 18px !important;
+}
+
+/* Reduce vertical spacing between widgets */
+div[data-testid="stVerticalBlock"] > div {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.1rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
