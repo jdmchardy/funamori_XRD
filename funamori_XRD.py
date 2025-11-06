@@ -1243,7 +1243,6 @@ if uploaded_file is not None:
                 axs2.set_ylabel("azimuth (degrees)")
                 axs2.set_title("Cake plot")
                 axs2.set_ylim(-180, 180)
-            
                 plt.tight_layout()
                 st.pyplot(fig)
                 st.pyplot(fig2)
@@ -1255,15 +1254,12 @@ if uploaded_file is not None:
                         for hkl_label, df in results_dict.items():
                             sheet_name = f"hkl_{hkl_label}"
                             df.to_excel(writer, sheet_name=sheet_name, index=False)
-                
                             # auto-width adjustment
                             worksheet = writer.sheets[sheet_name]
                             for i, col in enumerate(df.columns):
                                 max_width = max(df[col].astype(str).map(len).max(), len(col)) + 2
                                 worksheet.set_column(i, i, max_width)
-                
                     output_buffer.seek(0)
-                
                     st.download_button(
                         label="📥 Download Cake results as Excel (.xlsx)",
                         data=output_buffer,
@@ -1316,8 +1312,10 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    
-                    st.write(ai)
+                    #st.write(ai)
+                    #Compute the cake data
+                    cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
+                                                    wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
                 
             #Make batch processing section
             if batch_upload:
