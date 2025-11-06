@@ -946,10 +946,11 @@ with col6:
 col1, col2, col3, col4, col5, col6 = st.columns([2,2,2,2,2,2])
 with col1:
     uploaded_file = st.file_uploader("Upload CSV file with elastic parameters and hkl reflections", type=["csv"])
-    st.subheader("Upload PONI")
-    poni_file = st.file_uploader("Upload poni file", type=["poni"])
-    st.subheader("Upload 2D XRD")
-    twoD_XRD = st.file_uploader("Upload 2D XRD file", type=["tiff"])
+    if uploaded_file is not None:
+        st.subheader("Upload PONI")
+        poni_file = st.file_uploader("Upload poni file", type=["poni"])
+        st.subheader("Upload 2D XRD")
+        twoD_XRD = st.file_uploader("Upload 2D XRD file", type=["tiff"])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
