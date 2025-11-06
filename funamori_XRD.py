@@ -655,8 +655,10 @@ def cake_dict_to_2Dcake(cake_dict):
         n = len(unique_delta)  # normalization factor
         for _, row in df.iterrows():
             i = np.searchsorted(unique_2th, row["2th"])
+            st.write(i)
+            st.write(row["intensity"])
             j = np.searchsorted(unique_delta, row["delta (degrees)"])
-            summed_array[i, j] += row["intensity"] / n
+            summed_array[i, j] += row["intensity"]
 
     return unique_2th, unique_delta, summed_array
 
