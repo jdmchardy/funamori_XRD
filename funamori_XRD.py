@@ -1296,8 +1296,15 @@ if uploaded_file is not None:
 
             if poni_file is not None:
                 if st.button("Generate 2D-XRD") and selected_hkls:
-                    st.write(poni_file)
-                    ai = pyFAI.load(poni_file)
+                    # Save to a temporary file
+                    with tempfile.NamedTemporaryFile(suffix=".poni") as tmp:
+                        tmp.write(poni_file.read())
+                        tmp.flush()
+                        
+                        # Load the geometry
+                        ai = AzimuthalIntegrator()
+                        ai.load(tmp.name)
+                    
                     st.write(ai)
                 
             #Make batch processing section
