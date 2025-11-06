@@ -1296,6 +1296,7 @@ if uploaded_file is not None:
 
             if poni_file is not None:
                 if st.button("Generate 2D-XRD") and selected_hkls:
+                    st.write(poni_file)
                     ai = pyFAI.load(poni_file)
                     st.write(ai)
                 
