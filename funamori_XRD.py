@@ -1342,6 +1342,7 @@ if uploaded_file is not None:
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
+                    st.write(cake_dict)
                     cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict)
 
                     fig, ax = plt.subplots()
