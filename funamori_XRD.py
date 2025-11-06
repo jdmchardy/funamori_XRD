@@ -1445,8 +1445,8 @@ if uploaded_file is not None:
                     for i, delta in enumerate(delta_rad):
                         for j, tth in enumerate(tth_rad):
                             z_m, y_m, x_m = ai.calc_pos_zyx(tth, delta)  # scalars
-                            x_pix = int(np.round(x_m / ai.get_pixel1() + ai.get_poni1()))
-                            y_pix = int(np.round(y_m / ai.get_pixel2() + ai.get_poni2()))
+                            x_pix = int(np.rint(x_m / ai.get_pixel1() + ai.get_poni1()))
+                            y_pix = int(np.rint(y_m / ai.get_pixel2() + ai.get_poni2()))
                             if 0 <= x_pix < width and 0 <= y_pix < height:
                                 det_image[y_pix, x_pix] += cake_intensity[i, j]
 
