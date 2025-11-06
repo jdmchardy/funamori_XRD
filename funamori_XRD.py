@@ -7,6 +7,8 @@ from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
+from pyFAI import AzimuthalIntegrator
+from pyFAI.reconstruct import Backprojector
 #import corner
 
 st.markdown("""
