@@ -1216,8 +1216,6 @@ if uploaded_file is not None:
                 results_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
 
-                
-                results_dict = {}  # Store results per HKL reflection
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 fig2, axs2 = plt.subplots(1, 1, figsize=(8, 5))
                 if len(selected_hkls) == 1:
