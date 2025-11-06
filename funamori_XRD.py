@@ -1397,7 +1397,8 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    help(ai)
+                    st.write(dir(ai))
+                    st.write(help(ai))
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
