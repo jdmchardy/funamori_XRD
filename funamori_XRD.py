@@ -40,10 +40,15 @@ h1, h2, h3, h4, h5 {
     font-size: 18px !important;
 }
 
-/* Reduce vertical spacing between widgets */
-div[data-testid="stVerticalBlock"] > div {
-    margin-top: 0rem !important;
-    margin-bottom: 0rem !important;
+/* Reduce vertical gaps between all widgets */
+.stNumberInput, .stTextInput, .stSelectbox, .stSlider, .stCheckbox {
+    margin-top: 0.1rem !important;
+    margin-bottom: 0.1rem !important;
+}
+
+/* Reduce extra padding around Streamlit containers */
+div[data-testid="stVerticalBlock"] {
+    gap: 0.1rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
