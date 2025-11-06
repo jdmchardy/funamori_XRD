@@ -953,7 +953,7 @@ if uploaded_file is not None:
     with col4:
         twoD_XRD = st.file_uploader("2D XRD tiff", type=["tiff"])
 
-col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([1,1,2,1,1,1,1,1,1])
+col1, col2, col3, col4, col5, col6 = st.columns([2,2,3,1,1,1])
 with col2:
     st.subheader("Reflections/Intensities")
 with col3:
@@ -964,6 +964,8 @@ with col5:
     st.subheader("Stress")
 with col6:
     st.subheader("Computation")
+
+col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([2,1,1,1,1,1,1,1,1])
 
 if uploaded_file is not None:
     st.session_state["uploaded_file"] = uploaded_file
