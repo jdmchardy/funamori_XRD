@@ -680,7 +680,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=5):
 
     # --- Create regular grid ---
     grid_2th = np.arange(all_2th.min()-0.5, all_2th.max()+0.5, step_2th)
-    grid_delta = np.arange(all_delta.min(), all_delta.max(), step_delta)
+    grid_delta = np.arange(all_delta.min(), all_delta.max()+step_delta, step_delta)
     n_2th = len(grid_2th)
     n_delta = len(grid_delta)
 
@@ -1409,7 +1409,8 @@ if uploaded_file is not None:
                                    extent=[cake_two_thetas.min(), cake_two_thetas.max(),
                                            cake_deltas.min(), cake_deltas.max()],
                                    aspect='auto', origin='lower', 
-                                  vmin=0, vmax=np.percentile(cake_intensity, 95))
+                                  vmin=0, vmax=np.percentile(cake_intensity, 95),
+                                  cmap='plasma')
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
@@ -1457,7 +1458,7 @@ if uploaded_file is not None:
                     det_image = interp(coords)
 
                     fig, ax = plt.subplots(figsize=(8, 6))
-                    im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
+                    im = ax.imshow(det_image, origin='lower', cmap='plasma', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
                     fig.colorbar(im, ax=ax, label='Intensity')
                     ax.set_xlabel('Pixel X')
                     ax.set_ylabel('Pixel Y')
