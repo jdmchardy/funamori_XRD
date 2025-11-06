@@ -957,12 +957,14 @@ if uploaded_file is not None:
         twoD_XRD = st.file_uploader("2D XRD tiff", type=["tiff"])
 
 col1, col2, col3, col4, col5, col6 = st.columns([2,2,3,1,1,1])
+with col1:
+    st.subheader("Execute calculations")
 with col2:
     st.subheader("Reflections/Intensities")
 with col3:
-    st.subheader("Material Constants")
+    st.subheader("Material")
 with col4:
-    st.subheader("Elastic Consts")
+    st.subheader("Elastic")
 with col5:
     st.subheader("Stress")
 with col6:
@@ -1131,7 +1133,6 @@ if uploaded_file is not None:
 
         #col1, col2, col3 = st.columns(3)
         with col1:
-            st.subheader("Execute calculations")
             if st.button("Funamori Plots") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
