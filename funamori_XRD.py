@@ -5,6 +5,7 @@ import pandas as pd
 import io
 import pyFAI
 import importlib.metadata
+import inspect
 from scipy.interpolate import interp1d
 #from scipy.optimize import minimize
 from scipy.signal import fftconvolve
@@ -1397,8 +1398,8 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    #st.write(dir(ai))
-                    #st.write(help(ai))
+                    sig = inspect.signature(ai.calc_pos_zyx)
+                    st.write(sig)
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
