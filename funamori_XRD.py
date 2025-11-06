@@ -1359,7 +1359,7 @@ if uploaded_file is not None:
         #Normalise exp data
         y_exp = y_exp/ np.max(y_exp)*100
 
-        with col1:
+        with col3:
             st.subheader("Overlay XRD")
             if st.button("Overlay XRD"):
                 phi_values = np.radians(np.arange(0, 360, 10))
