@@ -613,6 +613,17 @@ def batch_XRD(batch_upload):
 
     return parameters_df, results_df, results_blocks
 
+def cake_data():
+    """
+    Computes the azimuth vs 2th strain data for each hkl and combines into a dictionary with entries for each hkl
+
+    Returns:
+    cake_dict
+    keys (hkl_labels) : values (df of information for this hkl)
+    """
+    cake_dict = {}
+    return cake_dict
+
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
     residuals = y_exp - y_sim
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(8, 6), sharex=True, gridspec_kw={'height_ratios': [3, 1]})
