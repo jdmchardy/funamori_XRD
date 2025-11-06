@@ -1447,8 +1447,8 @@ if uploaded_file is not None:
                             tth_arr = np.array([tth])
                             delta_arr = np.array([delta])
                             z_m_arr, y_m_arr, x_m_arr = ai.calc_pos_zyx(tth_arr, delta_arr)
-                            x_m = x_m_arr[0]
-                            y_m = y_m_arr[0]
+                            x_m = x_m_arr.item()
+                            y_m = y_m_arr.item()
                             x_pix = int(np.rint(x_m / ai.get_pixel1() + ai.get_poni1()))
                             y_pix = int(np.rint(y_m / ai.get_pixel2() + ai.get_poni2()))
                             if 0 <= x_pix < width and 0 <= y_pix < height:
