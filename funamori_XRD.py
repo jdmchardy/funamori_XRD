@@ -1442,16 +1442,13 @@ if uploaded_file is not None:
                     det_shape = (height, width)  # (height, width)
                     det_image = np.zeros(det_shape)
                     
-                    # Create meshgrid
-                    tth_grid, delta_grid = np.meshgrid(tth_rad, delta_rad)
-                    z_m, y_m, x_m = ai.calc_pos_zyx(tth_grid, delta_grid)
-                    
-                    x_pix = np.rint(x_m / ai.get_pixel1() + ai.get_poni1()).astype(int)
-                    y_pix = np.rint(y_m / ai.get_pixel2() + ai.get_poni2()).astype(int)
-                    
-                    # Only keep valid indices
-                    mask = (x_pix >= 0) & (x_pix < width) & (y_pix >= 0) & (y_pix < height)
-                    det_image[y_pix[mask], x_pix[mask]] = cake_intensity[mask]
+                    for i, delta in enumerate(delta_rad):
+                        for j, tth in enumerate(tth_rad):
+                            z_m, y_m, x_m = ai.calc_pos_zyx(tth, delta)  # scalars
+                            x_pix = int(np.round(x_m / ai.get_pixel1() + ai.get_poni1()))
+                            y_pix = int(np.round(y_m / ai.get_pixel2() + ai.get_poni2()))
+                            if 0 <= x_pix < width and 0 <= y_pix < height:
+                                det_image[y_pix, x_pix] += cake_intensity[i, j]
 
                     fig, ax = plt.subplots(figsize=(8, 6))
                     im = ax.imshow(det_image, origin='lower', cmap='viridis', aspect='equal')
