@@ -1396,7 +1396,7 @@ if uploaded_file is not None:
                         # Load the geometry
                         ai = AzimuthalIntegrator()
                         ai.load(tmp.name)
-                    st.write(ai)
+                    #st.write(ai)
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
@@ -1421,6 +1421,7 @@ if uploaded_file is not None:
                     tth_rad = np.deg2rad(cake_two_thetas)
 
                     text = poni_file.read().decode("utf-8")
+                    st.write(text)
                     for line in text.splitlines():
                         st.write(line)
                         if line.startswith("Detector_config:"):
