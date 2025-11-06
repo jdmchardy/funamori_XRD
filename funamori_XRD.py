@@ -1447,6 +1447,8 @@ if uploaded_file is not None:
                             tth_arr = np.array([tth])
                             delta_arr = np.array([delta])
                             z_m_arr, y_m_arr, x_m_arr = ai.calc_pos_zyx(tth_arr, delta_arr)
+                            st.write(np.shape(x_m_arr))
+                            st.write(x_m_arr)
                             x_m = x_m_arr.item()
                             y_m = y_m_arr.item()
                             x_pix = int(np.rint(x_m / ai.get_pixel1() + ai.get_poni1()))
