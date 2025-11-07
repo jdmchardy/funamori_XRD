@@ -6,12 +6,10 @@ import io
 import pyFAI
 from scipy.interpolate import interp1d
 from scipy.interpolate import RegularGridInterpolator
-#from scipy.optimize import minimize
 from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 from pyFAI import AzimuthalIntegrator
 import tempfile
-#from pyFAI.reconstruct import Backprojector
 #import corner
 
 st.markdown("""
