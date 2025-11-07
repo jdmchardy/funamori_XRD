@@ -684,9 +684,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
             norm_intensity = df["intensity"] / n_points
             all_2th.extend(df["Mean two_th"])
             all_delta.extend(np.unique(df["delta (degrees)"].values))
-            st.write(np.unique(df["delta (degrees)"].values))
             all_intensity.extend(norm_intensity)
-            st.write(np.unique(norm_intensity))
             
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
@@ -730,6 +728,8 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
             intensity_grid[i0, j1] += I * w01
         if 0 <= i1 < n_2th and 0 <= j1 < n_delta:
             intensity_grid[i1, j1] += I * w11
+
+    st.write(intensity_grid)
 
     return grid_2th, grid_delta, intensity_grid
 
