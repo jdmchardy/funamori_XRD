@@ -681,10 +681,10 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
             n_points = len(np.unique(df["delta (degrees)"].values))
             if total_I == 0 or n_points == 0:
                 continue
-            norm_intensity = df["intensity"] / n_points
-            all_2th.extend(df["Mean two_th"])
+            norm_intensity = total_I / n_points
+            all_2th.extend(np.full(len(np.unique(df["delta (degrees)"].values)),df["Mean two_th"].iloc[0]))
             all_delta.extend(np.unique(df["delta (degrees)"].values))
-            all_intensity.extend(norm_intensity)
+            all_intensity.extend(np.full(len(np.unique(df["delta (degrees)"].values)),norm_intensity))
             
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
