@@ -678,7 +678,6 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
     else:
         for df in cake_dict.values():
             total_I = df["intensity"].iloc[0]
-            st.write(total_I)
             n_points = len(np.unique(df["delta (degrees)"].values))
             if total_I == 0 or n_points == 0:
                 continue
@@ -690,6 +689,9 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
     all_intensity = np.array(all_intensity)
+    st.write(len(all_intensity))
+    st.write(len(all_2th))
+    st.write(len(all_delta))
     st.write(all_intensity)
     st.write(all_2th)
 
