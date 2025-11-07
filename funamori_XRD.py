@@ -11,6 +11,7 @@ from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 from pyFAI import AzimuthalIntegrator
 import tempfile
+from matplotlib.colors import Normalize
 #from pyFAI.reconstruct import Backprojector
 #import corner
 
@@ -1418,12 +1419,18 @@ if uploaded_file is not None:
                     cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict, broadening=Funamori_broadening)
 
                     fig, ax = plt.subplots()
-                    im = ax.imshow(cake_intensity.T,
-                                   extent=[cake_two_thetas.min(), cake_two_thetas.max(),
-                                           cake_deltas.min(), cake_deltas.max()],
-                                   aspect='auto', origin='lower', 
-                                  vmin=0, vmax=np.percentile(cake_intensity, 95),
-                                  cmap='Greys_r')
+                    norm = Normalize(vmin=0,
+                                     vmax=np.percentile(cake_intensity, 95),
+                                     clip=True)
+                    
+                    im = ax.imshow(
+                        cake_intensity.T,
+                        extent=[cake_two_thetas.min(), cake_two_thetas.max(),
+                                cake_deltas.min(), cake_deltas.max()],
+                        aspect='auto', origin='lower',
+                        norm=norm,
+                        cmap='Greys_r'
+                    )
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
@@ -1472,7 +1479,7 @@ if uploaded_file is not None:
 
                     fig, ax = plt.subplots(figsize=(8, 6))
                     im = ax.imshow(det_image, origin='lower', cmap='Greys_r', aspect='equal', vmin=0, vmax=np.percentile(det_image, 95))
-                    fig.colorbar(im, ax=ax, label='Intensity')
+                    #fig.colorbar(im, ax=ax, label='Intensity')
                     ax.set_xlabel('Pixel X')
                     ax.set_ylabel('Pixel Y')
                     st.pyplot(fig)
