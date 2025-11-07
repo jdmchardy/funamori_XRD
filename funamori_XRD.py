@@ -686,7 +686,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
             all_delta.extend(np.unique(df["delta (degrees)"].values))
             st.write(np.unique(df["delta (degrees)"].values))
             all_intensity.extend(norm_intensity)
-            st.write(np.unique(norm_intensity)
+            st.write(np.unique(norm_intensity))
             
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
