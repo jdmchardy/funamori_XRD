@@ -635,7 +635,7 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     
     return cake_dict
 
-def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2):
+def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
     """
     Rasterize cake_dict onto a regular 2D grid using bilinear weighting.
     
@@ -663,17 +663,29 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2):
     all_delta = []
     all_intensity = []
 
-    for df in cake_dict.values():
-        total_I = df["intensity"].iloc[0]
-        n_points = len(df)
-        if total_I == 0 or n_points == 0:
-            continue
-        # Each row contributes equally to the total intensity
-        norm_intensity = df["intensity"] / n_points
-        all_2th.extend(df["2th"])
-        all_delta.extend(df["delta (degrees)"])
-        all_intensity.extend(norm_intensity)
-
+    #Check whether broadening is on or off
+    if broadening == True:
+        for df in cake_dict.values():
+            total_I = df["intensity"].iloc[0]
+            n_points = len(df)
+            if total_I == 0 or n_points == 0:
+                continue
+            # Each row contributes equally to the total intensity
+            norm_intensity = df["intensity"] / n_points
+            all_2th.extend(df["2th"])
+            all_delta.extend(df["delta (degrees)"])
+            all_intensity.extend(norm_intensity)
+    else:
+        for df in cake_dict.values():
+            total_I = df["intensity"].iloc[0]
+            n_points = len(np.unique(df["delta (degrees)"].values))
+            if total_I == 0 or n_points == 0:
+                continue
+            norm_intensity = total_I / n_points
+            all_2th.extend(df["Mean two_th"])
+            all_delta.extend(np.unique(df["delta (degrees)"].values))
+            all_intensity.extend(norm_intensity)
+            
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
     all_intensity = np.array(all_intensity)
@@ -1401,7 +1413,6 @@ if uploaded_file is not None:
                     #Compute the cake data
                     cake_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
-                    #st.write(cake_dict)
                     cake_two_thetas, cake_deltas, cake_intensity = cake_dict_to_2Dcake(cake_dict)
 
                     fig, ax = plt.subplots()
@@ -1414,7 +1425,7 @@ if uploaded_file is not None:
 
                     ax.set_xlabel("2θ (degrees)")
                     ax.set_ylabel("δ (degrees)")
-                    ax.set_title("Summed Cake Intensity Map")
+                    ax.set_title("Cake")
                     plt.colorbar(im, ax=ax, label="Intensity")
                     st.pyplot(fig)
 
