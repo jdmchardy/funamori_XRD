@@ -689,11 +689,6 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
     all_intensity = np.array(all_intensity)
-    st.write(len(all_intensity))
-    st.write(len(all_2th))
-    st.write(len(all_delta))
-    st.write(all_intensity)
-    st.write(all_2th)
 
     # --- Create regular grid ---
     grid_2th = np.arange(all_2th.min()-0.5, all_2th.max()+0.5, step_2th)
