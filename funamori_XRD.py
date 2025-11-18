@@ -467,7 +467,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     sigma_gauss = Gaussian_FWHM / (2 * np.sqrt(2 * np.log(2)))
     twotheta_min = combined_df["2th"].min() - 1
     twotheta_max = combined_df["2th"].max() + 1
-    step = 0.01 # In degrees
+    step = 0.005 # In degrees
     twotheta_grid = np.arange(twotheta_min, twotheta_max, step)
 
     # --- Build normalized Gaussian kernel ---
