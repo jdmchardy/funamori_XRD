@@ -1059,7 +1059,7 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
-st.title("X-Forge (XRD stress simulator)")
+st.title("Broading and displacement XRD stress simulator")
 
 col1, col2, col3, col4 = st.columns(4)
 
