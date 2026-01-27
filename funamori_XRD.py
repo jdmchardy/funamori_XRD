@@ -1267,7 +1267,7 @@ if uploaded_file is not None:
                     hkl_label, df, psi_list, strain_33_list = compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
                     results_dict[hkl_label] = df
 
-                    scatter = ax.scatter(psi_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
+                    scatter = ax.scatter(psi_list, strain_33_list, color="black", s=0.2, alpha=0.1)
                     
                     #Plot the mean strain curve
                     unique_psi = np.unique(psi_list)
@@ -1279,7 +1279,7 @@ if uploaded_file is not None:
                         mean_strain = df["Mean strain"][mask].iloc[0]
                         #Append to list
                         mean_strain_list.append(mean_strain)
-                    ax.plot(unique_psi, mean_strain_list, color="blue", lw=0.8, label="mean strain")
+                    ax.plot(unique_psi, mean_strain_list, color="red", lw=0.8, label="mean strain")
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_xlim(0,90)
