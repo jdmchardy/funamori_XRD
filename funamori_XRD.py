@@ -1283,7 +1283,7 @@ if uploaded_file is not None:
                     ax.set_xlabel("ψ (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_xlim(0,90)
-                    ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
+                    ax.set_title(f"ε′₃₃ - hkl = ({hkl_label})")
                     ax.legend()
                 st.pyplot(fig)
         
