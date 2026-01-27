@@ -1285,6 +1285,7 @@ if uploaded_file is not None:
                     ax.set_xlim(0,90)
                     ax.set_title(f"ε′₃₃ - hkl = ({hkl_label})")
                     ax.legend()
+                    plt.tight_layout()
                 st.pyplot(fig)
         
                 if results_dict != {}:
