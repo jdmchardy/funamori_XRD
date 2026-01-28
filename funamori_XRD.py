@@ -241,17 +241,17 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
             if chi == 0: 
                 # return only one psi_value assuming compression axis aligned with X-rays
                 psi_values = np.asarray([np.pi/2 - theta0])
-                deltas = np.arange(-180,180+2,2)
+                deltas = np.arange(-180,180+1,1)
             else:
                 #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
-                deltas = np.arange(-180,180+2,2)
+                deltas = np.arange(-180,180+1,1)
                 deltas_rad = np.radians(deltas)
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
     else:
         # Assume phi_values and psi_values are 1D numpy arrays. This part is needed for Funamori plots
         psi_values = np.asarray(psi_values)
-        #Addd code here to inversely compute the deltas from the psi values (for completness)
+        #Add code here to inversely compute the deltas from the psi values (for completness)
         deltas = np.zeros(len(psi_values))
     phi_values = np.asarray(phi_values)
     
@@ -546,7 +546,7 @@ def batch_XRD(batch_upload):
     # Store results side-by-side
     results_blocks = []
 
-    phi_values = np.arange(0,360,5)
+    phi_values = np.arange(0,360,2)
     phi_values = np.radians(phi_values)
     psi_values = 0
 
@@ -623,7 +623,7 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     cake_dict = {}
     
     for hkl, intensity in zip(selected_hkls, intensities):
-        phi_values = np.radians(np.arange(0, 360, 5))
+        phi_values = np.radians(np.arange(0, 360, 2))
         psi_values = 0  # let compute_strain calculate psi for each HKL
         hkl_label, df, psi_list, strain_33_list = compute_strain(
             hkl, intensity, symmetry, lattice_params, wavelength, cijs,
@@ -1368,7 +1368,7 @@ if uploaded_file is not None:
         with col1:
             st.subheader("Generate XRD patterns")
             if st.button("Generate 1D-XRD") and selected_hkls:
-                phi_values = np.radians(np.arange(0, 360, 5))
+                phi_values = np.radians(np.arange(0, 360, 2))
                 psi_values = 0
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
 
@@ -1557,7 +1557,7 @@ if uploaded_file is not None:
 
         with col2:
             if st.button("Overlay XRD"):
-                phi_values = np.radians(np.arange(0, 360, 10))
+                phi_values = np.radians(np.arange(0, 360, 2))
                 psi_values = 0
                 t = sigma_33 - sigma_11
                 strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
