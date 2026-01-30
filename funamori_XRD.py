@@ -499,25 +499,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             range=(twotheta_min, twotheta_max),
             weights=mean_df['intensity']
         )
-
-    ## --- Construct histogram of peak positions ---
-    #if broadening:
-    #    # Treat each reflection point as delta function weighted by intensity
-    #    hist, _ = np.histogram(
-    #        combined_df["2th"],
-    #        bins=len(twotheta_grid),
-    #        range=(twotheta_min, twotheta_max),
-    #        weights=combined_df["intensity"]
-    #    )
-    #else:
-    #    # Singh pattern: use mean positions only
-    #    mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
-    #    hist, _ = np.histogram(
-    #        mean_df["Mean two_th"],
-    #        bins=len(twotheta_grid),
-    #        range=(twotheta_min, twotheta_max),
-    #        weights=mean_df["intensity"]
-    #    )
+        
     # Convolve using FFT
     total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
 
@@ -876,11 +858,15 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     y_exp_common = y_exp[mask]
 
     #Here we also determine the x_indices definining the binning around each peak for residual weighting
-    #First we need the 2th center positions of each hkl reflection included
+    #First we need the 2th center positions of each hkl reflection included (use the mean "Singh" position)
     hkl_peak_centers = []
     a = lattice_params.get("a_val")
     c = lattice_params.get("c_val")
-    for hkl in selected_hkls:
+    for hkl, inten in zip(selected_hkls, intensities_opt)]:
+        df = compute_strain(hkl, inten, strain_sim_params)[1]
+        #Compute the average of the mean_2th values (For axial, this averages over many identical values, for radial, we average across a range of psi)
+        mean_2th = np.mean(df["Mean two_th"])
+        st.write(mean_2th)
         h, k, l = hkl
         #Compute d0 and 2th
         if symmetry == 'cubic':
@@ -895,7 +881,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
         #Compute 2ths
         sin_th = wavelength / (2 * d0)
         two_th = 2 * np.degrees(np.arcsin(sin_th))
-        hkl_peak_centers = np.append(hkl_peak_centers, two_th)
+        hkl_peak_centers = np.append(hkl_peak_centers, mean_2th)
 
     #Get the residual bin indices using these centers
     bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
@@ -1586,7 +1572,7 @@ if uploaded_file is not None:
             setup_refinement_toggles(lattice_params, cijs=cijs, stress=stress, other=other)
             
             if st.button("Refine XRD"):
-                phi_values = np.radians(np.arange(0, 360, 10))
+                phi_values = np.radians(np.arange(0, 360, 2))
                 psi_values = 0
                 
                 result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
