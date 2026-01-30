@@ -953,9 +953,9 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
     y_sim_common = interp_sim(x_exp_common)
 
     residuals = np.asarray(y_exp_common - y_sim_common)
-    st.write("y_exp_common:{}".format(y_exp_common))
-    st.write("y_sim_common:{}".format(y_sim_common))
-    st.write("residuals:{}".format(residuals))
+    #st.write("y_exp_common:{}".format(y_exp_common))
+    #st.write("y_sim_common:{}".format(y_sim_common))
+    #st.write("residuals:{}".format(residuals))
 
     # Peak position binned normalization of residuals
     norm_residuals = []
@@ -967,6 +967,8 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
 
         norm = np.max(np.abs(y_bin)) if np.max(np.abs(y_bin)) != 0 else 1
         norm_residuals.append(res_bin / norm)
+        st.write("norm:{}".format(norm))
+        st.write("norm_res:{}".format(norm_residuals))
 
     #Combine bins into a single array of weighted residuals
     weighted_residuals = np.concatenate(norm_residuals)
