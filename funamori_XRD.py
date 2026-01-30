@@ -1673,7 +1673,7 @@ if uploaded_file is not None:
                     mask = (x_exp >= x_min_sim) & (x_exp <= x_max_sim)
                     x_exp_common = x_exp[mask]
                     y_exp_common = y_exp[mask]
-                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=np.nan)
+                    interp_sim = interp1d(twoth_sim, intensity_sim, bounds_error=False, fill_value=0)
                     y_sim_common = interp_sim(x_exp_common)
         
                     plot_overlay(x_exp_common, y_exp_common, x_exp_common, y_sim_common, title="Refined Fit")
