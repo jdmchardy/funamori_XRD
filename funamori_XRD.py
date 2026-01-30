@@ -226,7 +226,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
  
     #Check if phi_values are given or if it must be calculated for XRD generation
     if isinstance(psi_values, int):
-        if psi_values==0:
+        if psi_values==0: #Standard value for fine resolution XRD generation
             if symmetry == "cubic":
                 d0 = a / np.linalg.norm([h, k, l])
             elif symmetry == "hexagonal":
@@ -248,7 +248,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
                 deltas_rad = np.radians(deltas)
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
-        else: #A coarser resolution option for XRD refinement (faster)
+        else: #A coarser resolution option for XRD refinement (less expensive due to refinement iterations required)
             if symmetry == "cubic":
                 d0 = a / np.linalg.norm([h, k, l])
             elif symmetry == "hexagonal":
@@ -497,8 +497,20 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     theta_kernel = np.arange(-kernel_extent, kernel_extent + step, step)
     gaussian_kernel = Gaussian(theta_kernel, 0, sigma_gauss)
 
+    #Extract chi value from strain_sim_params (8th value in list)
+    chi = strain_sim_params[7]
+
     # --- Build single global histogram with scaled contributions ---
-    if broadening:
+    if broadening == False and chi == 0: #Unique axial pattern with precomputed means
+        # Singh pattern: one average peak per reflection
+        mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
+        hist, _ = np.histogram(
+            mean_df['Mean two_th'],
+            bins=len(twotheta_grid),
+            range=(twotheta_min, twotheta_max),
+            weights=mean_df['intensity']
+        )
+    else:
         # Count number of contributions per (h,k,l)
         counts = combined_df.groupby(["h","k","l"])['intensity'].transform('size')
         
@@ -511,16 +523,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             bins=len(twotheta_grid),
             range=(twotheta_min, twotheta_max),
             weights=weights
-        )
-    else:
-        # Singh pattern: one average peak per reflection
-        mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
-        hist, _ = np.histogram(
-            mean_df['Mean two_th'],
-            bins=len(twotheta_grid),
-            range=(twotheta_min, twotheta_max),
-            weights=mean_df['intensity']
-        )
+        )   
         
     # Convolve using FFT
     total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
