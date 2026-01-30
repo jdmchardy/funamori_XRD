@@ -727,8 +727,6 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
         if 0 <= i1 < n_2th and 0 <= j1 < n_delta:
             intensity_grid[i1, j1] += I * w11
 
-    st.write(intensity_grid)
-
     return grid_2th, grid_delta, intensity_grid
 
 def plot_overlay(x_exp, y_exp, x_sim, y_sim, title="XRD Overlay"):
@@ -902,8 +900,6 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     #Get the residual bin indices using these centers
     bin_indices = compute_bin_indices(x_exp_common, hkl_peak_centers, Gaussian_FWHM)
 
-    st.write("Bin indices:{}".format(bin_indices))
-
     # --- Wrapped cost function that implements this fixed domain ---
     def wrapped_cost_function(lm_params):
         return cost_function(lm_params, refine_flags, selected_hkls, selected_indices, Gaussian_FWHM,
@@ -957,6 +953,9 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
     y_sim_common = interp_sim(x_exp_common)
 
     residuals = np.asarray(y_exp_common - y_sim_common)
+    st.write("y_exp_common:{}".format(y_exp_common))
+    st.write("y_sim_common:{}".format(y_sim_common))
+    st.write("residuals:{}".format(residuals))
 
     # Peak position binned normalization of residuals
     norm_residuals = []
