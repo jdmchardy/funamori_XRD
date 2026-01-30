@@ -531,7 +531,6 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
                 {"2th": "mean",        # mean of the actual 2θ values per reflection
                 "intensity": "mean"
                 })
-            st.write(mean_df["2th"])
             hist, _ = np.histogram(
                 mean_df["2th"],          # use the averaged 2θ here
                 bins=len(twotheta_grid),
