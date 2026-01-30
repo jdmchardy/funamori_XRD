@@ -964,9 +964,6 @@ def cost_function(lm_params, refine_flags, selected_hkls, selected_indices,
             continue  # skip empty bins
         res_bin = residuals[idx_range]
         y_bin = y_exp_common[idx_range]
-        st.write("indices:{}".format(idx_range))
-        st.write("selected_residuals:{}".format(res_bin))
-        st.write("selected_y:{}".format(y_bin))
 
         norm = np.max(np.abs(y_bin)) if np.max(np.abs(y_bin)) != 0 else 1
         norm_residuals.append(res_bin / norm)
