@@ -501,16 +501,7 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
     chi = strain_sim_params[7]
 
     # --- Build single global histogram with scaled contributions ---
-    if broadening == False and chi == 0: #Unique axial pattern with precomputed means
-        # Singh pattern: one average peak per reflection
-        mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
-        hist, _ = np.histogram(
-            mean_df['Mean two_th'],
-            bins=len(twotheta_grid),
-            range=(twotheta_min, twotheta_max),
-            weights=mean_df['intensity']
-        )
-    else:
+    if broadening: 
         # Count number of contributions per (h,k,l)
         counts = combined_df.groupby(["h","k","l"])['intensity'].transform('size')
         
@@ -523,8 +514,30 @@ def Generate_XRD(selected_hkls, intensities, Gaussian_FWHM, strain_sim_params, b
             bins=len(twotheta_grid),
             range=(twotheta_min, twotheta_max),
             weights=weights
-        )   
-        
+        )
+    else:
+        if chi == 0: #Unique axial pattern with precomputed means
+            # Singh pattern: one average peak per reflection
+            mean_df = combined_df.drop_duplicates(subset=["h", "k", "l"])
+            hist, _ = np.histogram(
+                mean_df['Mean two_th'],
+                bins=len(twotheta_grid),
+                range=(twotheta_min, twotheta_max),
+                weights=mean_df['intensity']
+            )
+        else: 
+            #Compute the mean across all the computed values
+            mean_df = combined_df.groupby(["h","k","l"]).agg(
+                {"2th": "mean",        # mean of the actual 2θ values per reflection
+                "intensity": "mean"
+                })
+            hist, _ = np.histogram(
+                mean_df["2th"],          # use the averaged 2θ here
+                bins=len(twotheta_grid),
+                range=(twotheta_min, twotheta_max),
+                weights=mean_df["intensity"]
+            )
+            
     # Convolve using FFT
     total_pattern = fftconvolve(hist, gaussian_kernel, mode="same")
 
