@@ -248,6 +248,28 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
                 deltas_rad = np.radians(deltas)
                 chi_rad = np.radians(chi)
                 psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
+        else: #A coarser resolution option for XRD refinement (faster)
+            if symmetry == "cubic":
+                d0 = a / np.linalg.norm([h, k, l])
+            elif symmetry == "hexagonal":
+                d0 = np.sqrt((3*a**2*c**2)/(4*c**2*(h**2+h*k+k**2)+3*a**2*l**2))
+            elif symmetry == "tetragonal_A":
+                d0 = np.sqrt((a**2*c**2)/((h**2+k**2)*c**2+a**2*l**2))
+            else:
+                st.write("Support not yet provided for {} symmetry".format(symmetry))
+            sin_theta0 = wavelength / (2 * d0)
+            theta0 = np.arcsin(sin_theta0)
+            #Check if chi value is zero (axial case) or non-zero (radial)
+            if chi == 0: 
+                # return only one psi_value assuming compression axis aligned with X-rays
+                psi_values = np.asarray([np.pi/2 - theta0])
+                deltas = np.arange(-180,180+5,5)
+            else:
+                #Assume chi is non-zero (radial) and compute a psi for each azimuth bin (delta)
+                deltas = np.arange(-180,180+5,5)
+                deltas_rad = np.radians(deltas)
+                chi_rad = np.radians(chi)
+                psi_values = np.arccos(np.sin(chi_rad)*np.cos(deltas_rad)*np.cos(theta0)+np.cos(chi_rad)*np.sin(theta0))
     else:
         # Assume phi_values and psi_values are 1D numpy arrays. This part is needed for Funamori plots
         psi_values = np.asarray(psi_values)
@@ -1572,8 +1594,8 @@ if uploaded_file is not None:
             setup_refinement_toggles(lattice_params, cijs=cijs, stress=stress, other=other)
             
             if st.button("Refine XRD"):
-                phi_values = np.radians(np.arange(0, 360, 2))
-                psi_values = 0
+                phi_values = np.radians(np.arange(0, 360, 10))
+                psi_values = 1
                 
                 result = run_refinement(st.session_state.ref_params, st.session_state.refine_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, 
                                         phi_values, psi_values, wavelength, symmetry, x_exp, y_exp, lattice_params, cijs,
