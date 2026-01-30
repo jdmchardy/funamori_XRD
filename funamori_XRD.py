@@ -872,7 +872,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     # Handle peak intensities separately 
     if refine_flags.get("peak_intensity", False):
         for i, inten in zip(selected_indices, intensities):
-            lm_params.add(f"intensity_{i}", value=inten, min=0, max=500)
+            lm_params.add(f"intensity_{i}", value=inten, min=0, max=1000)
     else:
         for i, inten in zip(selected_indices, intensities):
             lm_params.add(f"intensity_{i}", value=inten, vary=False)
