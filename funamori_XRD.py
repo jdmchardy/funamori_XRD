@@ -854,7 +854,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     # Handle peak intensities separately 
     if refine_flags.get("peak_intensity", False):
         for i, inten in zip(selected_indices, intensities):
-            lm_params.add(f"intensity_{i}", value=inten, min=0, max=400)
+            lm_params.add(f"intensity_{i}", value=inten, min=0, max=150)
     else:
         for i, inten in zip(selected_indices, intensities):
             lm_params.add(f"intensity_{i}", value=inten, vary=False)
@@ -1678,33 +1678,3 @@ if uploaded_file is not None:
                     
                 else:
                     st.error("Refinement failed.")
-
-        #Next display a button to compute the posterior probability distribution
-        #st.subheader("Probe fit surface")
-        #col1, col2, col3 = st.columns(3)
-        #with col1:
-        #    steps = st.number_input("Total steps", value=200, min_value=10, step=10)
-        #    walkers = st.number_input("Total walkers", value=50, min_value=10, step=10)
-        #    burn = st.number_input("Burn points", value=20, min_value=5, step=5)
-        #    thin = st.number_input("Thinning", value=1, min_value=1, step=1)
-        #if st.button("Compute Posterior probability distribution"):
-        #    phi_values = np.linspace(0, 2 * np.pi, 36)
-        #    psi_values = 0
-
-        #    if "refinement_result" in st.session_state:
-        #        result = st.session_state["refinement_result"]
-        #        if result.success:
-        #            plt.close("all")
-        #            posterior = generate_posterior(steps, walkers, burn, thin, result, param_flags, selected_hkls, selected_indices, intensities, Gaussian_FWHM, phi_values, psi_values, wavelength, c11, c12, symmetry, x_exp, y_exp)
-        #            # Match the sampled parameters only
-        #            truths = [
-        #                posterior.params["a_val"].value,
-        #                posterior.params["intensity_0"].value,
-        #                posterior.params["__lnsigma"].value,
-        #            ]
-        #            emcee_plot = corner.corner(
-        #                posterior.flatchain,
-        #                labels=posterior.var_names,
-        #                truths=truths
-        #            )
-        #            st.pyplot(emcee_plot)
