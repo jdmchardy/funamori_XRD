@@ -863,7 +863,7 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
     a = lattice_params.get("a_val")
     c = lattice_params.get("c_val")
     for hkl, inten in zip(selected_hkls, intensities_opt):
-        df = compute_strain(hkl, inten, strain_sim_params)[1]
+        df = compute_strain(hkl, inten, *strain_sim_params)[1]
         #Compute the average of the mean_2th values (For axial, this averages over many identical values, for radial, we average across a range of psi)
         mean_2th = np.mean(df["Mean two_th"])
         st.write(mean_2th)
