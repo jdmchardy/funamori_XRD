@@ -387,7 +387,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         mask = psi_list == psi
         strains = strain_33_list[mask]
         mean_strain = np.mean(strains)
-        mean_dstrain = d0*(1+mean_strain)
+        mean_dstrain = d0*(1-mean_strain)
         mean_sin_th = wavelength / (2 * mean_dstrain)
         mean_two_th = 2 * np.degrees(np.arcsin(mean_sin_th))
         #Append to list
