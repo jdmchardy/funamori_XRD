@@ -1649,11 +1649,9 @@ if uploaded_file is not None:
                     for key in st.session_state.intensities:
                         if key in result.params:
                             st.session_state.intensities[key] = result.params[key].value
-                            st.write(result.params[key].value)
                     
                     intensities = []
                     for i in selected_indices: 
-                        st.write("Selected_intensities {}".format(i))
                         intensities.append(st.session_state.intensities[f"intensity_{i}"])
 
                     #Ensure the parameters are updated for the plot
