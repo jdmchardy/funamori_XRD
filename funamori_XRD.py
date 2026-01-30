@@ -1601,7 +1601,10 @@ if uploaded_file is not None:
                         else:
                             #Update the other lattice parameters that dont get refined for cubic etc
                             if key in ["b_val", "c_val"]:
-                                st.session_state.params[key] = result.params["a_val"].value
+                                if symmetry == "cubic":
+                                    st.session_state.params[key] = result.params["a_val"].value
+                                elif key == "b_val":
+                                        st.session_state.params[key] = result.params["a_val"].value
                     
                     #Update the t and sigma values
                     t_opt = result.params["t"]
