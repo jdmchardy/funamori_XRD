@@ -251,7 +251,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
     else:
         # Assume phi_values and psi_values are 1D numpy arrays. This part is needed for Funamori plots
         psi_values = np.asarray(psi_values)
-        #Add code here to inversely compute the deltas from the psi values (for completness)
+        #Add deltas placeholder for completeness
         deltas = np.zeros(len(psi_values))
     phi_values = np.asarray(phi_values)
     
@@ -354,7 +354,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         two_th = 0
     else:
         # strains
-        d_strain = d0*(1+strain_33_list)
+        d_strain = d0*(1-strain_33_list) #Positive t yields compressed d values
         # 2ths
         sin_th = wavelength / (2 * d_strain)
         two_th = 2 * np.degrees(np.arcsin(sin_th))
