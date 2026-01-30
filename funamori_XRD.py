@@ -859,6 +859,8 @@ def run_refinement(params, refine_flags, selected_hkls, selected_indices, intens
         for i, inten in zip(selected_indices, intensities):
             lm_params.add(f"intensity_{i}", value=inten, vary=False)
 
+    st.write(lm_params)
+
     # Run first iteration of refinement to determine common 2th domain
     intensities_opt = [lm_params[f"intensity_{i}"].value for i in selected_indices]
     strain_sim_params = (symmetry, lattice_params, wavelength, cijs, sigma_11, sigma_22, sigma_33, chi, phi_values, psi_values)
