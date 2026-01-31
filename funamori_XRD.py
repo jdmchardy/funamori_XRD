@@ -653,7 +653,7 @@ def cake_data(selected_hkls, intensities, symmetry, lattice_params, wavelength, 
     
     return cake_dict
 
-def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
+def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=1, broadening=True):
     """
     Rasterize cake_dict onto a regular 2D grid using bilinear weighting.
     
