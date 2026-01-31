@@ -399,6 +399,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
 
     #Insert a placeholder column for the average strain at each psi
     df["Mean strain"] = np.nan
+    df["Mean d spacing"] = np.nan
     df["Mean two_th"] = np.nan
     #Initialise a list of the mean strains
     mean_strain_list = []
@@ -415,7 +416,7 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         #Append to list
         mean_strain_list.append(mean_strain)
         #Update the mean_strain and mean_two_th column at the correct psi values
-        df.loc[df["psi (degrees)"] == psi, ["Mean strain", "Mean two_th"]] = [mean_strain, mean_two_th]
+        df.loc[df["psi (degrees)"] == psi, ["Mean strain", "Mean d spacing", "Mean two_th"]] = [mean_strain, mean_d_strain, mean_two_th]
 
     # Group by hkl label and sort by azimuth
     df = df.sort_values(by=["hkl", "delta (degrees)"], ignore_index=True)
