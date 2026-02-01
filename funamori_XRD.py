@@ -184,11 +184,11 @@ def compute_strain(hkl, intensity, symmetry, lattice_params, wavelength, cij_par
         c44 = cij_params.get("c44")
         elastic = np.array([
             [c11, c12, c13, 0, 0, 0],
-            [c12, c11, c12, 0, 0, 0],
-            [c13, c12, c33, 0, 0, 0],
+            [c12, c11, c13, 0, 0, 0],
+            [c13, c13, c33, 0, 0, 0],
             [0, 0, 0, c44, 0, 0],
             [0, 0, 0, 0, c44, 0],
-            [0, 0, 0, 0, 0, 2*(c11-c12)]
+            [0, 0, 0, 0, 0, 0.5*(c11-c12)]
         ])
     elif symmetry == "tetragonal_A":
         # Normalize
