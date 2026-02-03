@@ -1338,7 +1338,7 @@ if uploaded_file is not None:
                         file_name="strain_results.xlsx",
                         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                     )
-            #Code for generating axial cake plots
+            #Code for generating cake plots
             if st.button("Cake Plots") and selected_hkls:
                 results_dict = cake_data(selected_hkls, intensities, symmetry, lattice_params, 
                                                     wavelength, cijs, sigma_11, sigma_22, sigma_33, chi)
@@ -1351,12 +1351,12 @@ if uploaded_file is not None:
                     df = results_dict[hkl_label]
                     delta_list = df["delta (degrees)"]
                     strain_33_list = df["strain_33"]
-                    scatter = ax.scatter(delta_list, strain_33_list, color="magenta", s=0.2, alpha=0.1)
+                    scatter = ax.scatter(delta_list, strain_33_list, color="black", s=0.2, alpha=0.1)
 
                     #Plot the mean strain curve
                     unique_delta = np.unique(delta_list)
                     mean_strain_list = [df[df["delta (degrees)"]==d]["Mean strain"].iloc[0] for d in unique_delta]
-                    ax.plot(unique_delta, mean_strain_list, color="blue", lw=0.8, label="mean strain")
+                    ax.plot(unique_delta, mean_strain_list, color="red", lw=0.8, label="mean strain")
                     ax.set_xlabel("azimuth (degrees)")
                     ax.set_ylabel("ε′₃₃")
                     ax.set_title(f"Strain ε′₃₃ for hkl = ({hkl_label})")
@@ -1365,15 +1365,15 @@ if uploaded_file is not None:
 
                 # Cake plot
                 for df in results_dict.values():
-                    axs2.scatter(df["2th"], df["delta (degrees)"], color="black", s=0.2, alpha=0.1)
-                axs2.set_xlabel("2th")
+                    axs2.scatter(df["2th"], df["delta (degrees)"], color="black", s=0.1, alpha=0.1)
+                axs2.set_xlabel("2th (degrees)")
                 axs2.set_ylabel("azimuth (degrees)")
-                axs2.set_title("Cake plot")
+                axs2.set_title("Cake")
                 axs2.set_ylim(-180, 180)
                 plt.tight_layout()
-                st.pyplot(fig)
                 st.pyplot(fig2)
-
+                st.pyplot(fig)
+                
                 if results_dict != {}:
                     st.subheader("Download Computed Data")
                     output_buffer = io.BytesIO()
