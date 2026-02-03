@@ -1365,7 +1365,7 @@ if uploaded_file is not None:
 
                 # Cake plot
                 for df in results_dict.values():
-                    axs2.scatter(df["2th"], df["delta (degrees)"], color="black", s=0.1, alpha=0.1)
+                    axs2.scatter(df["2th"], df["delta (degrees)"], color="black", marker = '.', edgecolors='none', s=0.1, alpha=0.1)
                 axs2.set_xlabel("2th (degrees)")
                 axs2.set_ylabel("azimuth (degrees)")
                 axs2.set_title("Cake")
