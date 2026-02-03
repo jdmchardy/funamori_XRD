@@ -1284,7 +1284,7 @@ if uploaded_file is not None:
 
         #col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("Funamori Plots") and selected_hkls:
+            if st.button("φ-ψ Curves") and selected_hkls:
                 fig, axs = plt.subplots(len(selected_hkls), 1, figsize=(8, 5 * len(selected_hkls)))
                 if len(selected_hkls) == 1:
                     axs = [axs]
