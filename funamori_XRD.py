@@ -1088,7 +1088,7 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
-st.title("JASPER")
+st.title("SPINEL (Strain Prediction IN Elastic Lattices")
 
 col1, col2, col3, col4 = st.columns(4)
 
