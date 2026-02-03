@@ -1096,12 +1096,12 @@ logo_path = BASE_DIR / "logo.png"
 
 img = Image.open(logo_path)
 
-col_img, col_title = st.columns([1, 10])
+col_img, col_title = st.columns([1, 8])
 
 with col_img:
     st.image(img, use_container_width=True)
-with col_title:
-    st.title("SPINEL (Strain Prediction IN Elastic Lattices")
+
+st.title("SPINEL (Strain Prediction IN Elastic Lattices)")
 
 
 #st.title("SPINEL (Strain Prediction IN Elastic Lattices")
