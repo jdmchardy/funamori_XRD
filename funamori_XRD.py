@@ -10,7 +10,9 @@ from scipy.signal import fftconvolve
 from lmfit import Parameters, minimize, fit_report
 from pyFAI import AzimuthalIntegrator
 import tempfile
-#import corner
+
+from PIL import Image
+from pathlib import Path
 
 st.markdown("""
 <style>
@@ -1088,7 +1090,21 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 #### Main App logic -----------------------------------------------------
     
 st.set_page_config(layout="wide")
-st.title("SPINEL (Strain Prediction IN Elastic Lattices")
+
+BASE_DIR = Path(__file__).parent
+logo_path = BASE_DIR / "assets" / "logo.png"
+
+img = Image.open(logo_path)
+
+col_img, col_title = st.columns([1, 10])
+
+with col_img:
+    st.image(img, use_container_width=True)
+with col_title:
+    st.title("SPINEL (Strain Prediction IN Elastic Lattices")
+
+
+#st.title("SPINEL (Strain Prediction IN Elastic Lattices")
 
 col1, col2, col3, col4 = st.columns(4)
 
