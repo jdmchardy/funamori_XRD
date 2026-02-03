@@ -1092,7 +1092,7 @@ def generate_posterior(steps, walkers, burn, thin, fit_result, param_flags, sele
 st.set_page_config(layout="wide")
 
 BASE_DIR = Path(__file__).parent
-logo_path = BASE_DIR / "assets" / "logo.png"
+logo_path = BASE_DIR / "logo.png"
 
 img = Image.open(logo_path)
 
