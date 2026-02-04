@@ -720,7 +720,7 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
                 #Get the mean values for each psi
                 all_delta.extend(unique["delta (degrees)"].values)
                 all_2th.extend(unique["Mean two_th"].values)
-                all_intensity.extend(np.full(n_points,norm_intensity)
+                all_intensity.extend(np.full(n_points,norm_intensity))
             
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
