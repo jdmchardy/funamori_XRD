@@ -699,15 +699,28 @@ def cake_dict_to_2Dcake(cake_dict, step_2th=0.1, step_delta=2, broadening=True):
             all_delta.extend(df["delta (degrees)"])
             all_intensity.extend(norm_intensity)
     else:
-        for df in cake_dict.values():
-            total_I = df["intensity"].iloc[0]
-            n_points = len(np.unique(df["delta (degrees)"].values))
-            if total_I == 0 or n_points == 0:
-                continue
-            norm_intensity = total_I / n_points
-            all_2th.extend(np.full(len(np.unique(df["delta (degrees)"].values)),df["Mean two_th"].iloc[0]))
-            all_delta.extend(np.unique(df["delta (degrees)"].values))
-            all_intensity.extend(np.full(len(np.unique(df["delta (degrees)"].values)),norm_intensity))
+        if chi == 0: #unique option for axial geometry
+            for df in cake_dict.values():
+                total_I = df["intensity"].iloc[0]
+                n_points = len(np.unique(df["delta (degrees)"].values))
+                if total_I == 0 or n_points == 0:
+                    continue
+                norm_intensity = total_I / n_points
+                all_2th.extend(np.full(len(np.unique(df["delta (degrees)"].values)),df["Mean two_th"].iloc[0]))
+                all_delta.extend(np.unique(df["delta (degrees)"].values))
+                all_intensity.extend(np.full(len(np.unique(df["delta (degrees)"].values)),norm_intensity))
+        else: #Transverse geometry with broadening off
+            for df in cake_dict.values():
+                unique = df.drop_duplicates(subset="delta (degrees)") #Pick out the unique delta values
+                total_I = df["intensity"].iloc[0] #Only works if all intensity values are the same with is true for now
+                n_points = unique.shape[0]
+                if total_I == 0 or n_points == 0:
+                    continue
+                norm_intensity = total_I / n_points
+                #Get the mean values for each psi
+                all_d.extend(unique["d"].values)
+                all_2th.extend(unique["Mean two_th"].values)
+                all_intensity.extend(np.full(n_points),norm_intensity))
             
     all_2th = np.array(all_2th)
     all_delta = np.array(all_delta)
