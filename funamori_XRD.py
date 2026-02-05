@@ -1109,7 +1109,7 @@ logo_path = BASE_DIR / "logo.png"
 
 img = Image.open(logo_path)
 
-col_img, col_title = st.columns([1, 6])
+col_img, col_title = st.columns([1, 4])
 
 with col_img:
     st.image(img, use_container_width=True)
