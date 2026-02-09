@@ -1,2 +1,2 @@
-# funamori_XRD
-XRD simulator for uniaxial strain broadening
+# SPINEL (Strain Prediction IN Elastic Lattices)
+XRD simulator for strain broadening under uniaxial stress field
